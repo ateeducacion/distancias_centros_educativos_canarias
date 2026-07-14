@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "code_scheme": {
+    "AIRPORT": "98IINNNN",
+    "PORT": "99IINNNN",
+    "island_digits": "II matches the stable island_id",
+    "sequence_digits": "NNNN is a stable per-island sequence"
+  },
+  "scope": "Public airports and principal passenger or general-interest ports used for inter-island access.",
+  "sources": [
+    {
+      "name": "Aena airport network",
+      "url": "https://www.aena.es/es/pasajeros/aeropuertos.html",
+      "role": "airport names and public network"
+    },
+    {
+      "name": "Puertos Canarios",
+      "url": "https://puertoscanarios.es/puertos/",
+      "role": "regional port inventory"
+    },
+    {
+      "name": "Autoridad Portuaria de Las Palmas",
+      "url": "https://www.palmasport.es/",
+      "role": "state port inventory for the eastern province"
+    },
+    {
+      "name": "Autoridad Portuaria de Santa Cruz de Tenerife",
+      "url": "https://www.puertosdetenerife.org/",
+      "role": "state port inventory for the western province"
+    },
+    {
+      "name": "OpenStreetMap",
+      "url": "https://www.openstreetmap.org/",
+      "role": "road-access coordinates"
+    }
+  ],
+  "nodes": [
+    {"code":"98010001","name":"Aeropuerto de El Hierro","location_type":"AIRPORT","iata":"VDE","island_id":1,"municipality":"Valverde","locality":"","address":"","postal_code":"","longitude":-17.8871,"latitude":27.8148},
+    {"code":"98020001","name":"Aeropuerto de Fuerteventura","location_type":"AIRPORT","iata":"FUE","island_id":2,"municipality":"Puerto del Rosario","locality":"El Matorral","address":"","postal_code":"","longitude":-13.8638,"latitude":28.4527},
+    {"code":"98030001","name":"Aeropuerto de Gran Canaria","location_type":"AIRPORT","iata":"LPA","island_id":3,"municipality":"Telde","locality":"Gando","address":"","postal_code":"","longitude":-15.3866,"latitude":27.9319},
+    {"code":"98040001","name":"Aeropuerto de La Gomera","location_type":"AIRPORT","iata":"GMZ","island_id":4,"municipality":"Alajeró","locality":"Playa de Santiago","address":"","postal_code":"","longitude":-17.2146,"latitude":28.0296},
+    {"code":"98050001","name":"Aeropuerto de La Palma","location_type":"AIRPORT","iata":"SPC","island_id":5,"municipality":"Villa de Mazo","locality":"","address":"","postal_code":"","longitude":-17.7556,"latitude":28.6265},
+    {"code":"98060001","name":"Aeropuerto César Manrique-Lanzarote","location_type":"AIRPORT","iata":"ACE","island_id":6,"municipality":"San Bartolomé","locality":"Guacimeta","address":"","postal_code":"","longitude":-13.6052,"latitude":28.9455},
+    {"code":"98070001","name":"Aeropuerto de Tenerife Norte-Ciudad de La Laguna","location_type":"AIRPORT","iata":"TFN","island_id":7,"municipality":"San Cristóbal de La Laguna","locality":"Los Rodeos","address":"","postal_code":"","longitude":-16.3415,"latitude":28.4827},
+    {"code":"98070002","name":"Aeropuerto de Tenerife Sur","location_type":"AIRPORT","iata":"TFS","island_id":7,"municipality":"Granadilla de Abona","locality":"","address":"","postal_code":"","longitude":-16.5725,"latitude":28.0445},
+    {"code":"99010001","name":"Puerto de La Estaca","location_type":"PORT","island_id":1,"municipality":"Valverde","locality":"La Estaca","address":"","postal_code":"","longitude":-17.9003,"latitude":27.7852},
+    {"code":"99020001","name":"Puerto de Corralejo","location_type":"PORT","island_id":2,"municipality":"La Oliva","locality":"Corralejo","address":"","postal_code":"","longitude":-13.8635,"latitude":28.7407},
+    {"code":"99020002","name":"Puerto del Rosario","location_type":"PORT","island_id":2,"municipality":"Puerto del Rosario","locality":"Puerto del Rosario","address":"","postal_code":"","longitude":-13.8557,"latitude":28.5006},
+    {"code":"99020003","name":"Puerto de Morro Jable","location_type":"PORT","island_id":2,"municipality":"Pájara","locality":"Morro Jable","address":"","postal_code":"","longitude":-14.3578,"latitude":28.0492},
+    {"code":"99030001","name":"Puerto de Las Palmas","location_type":"PORT","island_id":3,"municipality":"Las Palmas de Gran Canaria","locality":"Las Palmas de Gran Canaria","address":"","postal_code":"","longitude":-15.4258,"latitude":28.1414},
+    {"code":"99030002","name":"Puerto de Las Nieves (Agaete)","location_type":"PORT","island_id":3,"municipality":"Agaete","locality":"Puerto de las Nieves","address":"","postal_code":"","longitude":-15.7114,"latitude":28.1002},
+    {"code":"99040001","name":"Puerto de San Sebastián de La Gomera","location_type":"PORT","island_id":4,"municipality":"San Sebastián de La Gomera","locality":"San Sebastián de La Gomera","address":"","postal_code":"","longitude":-17.1087,"latitude":28.0872},
+    {"code":"99040002","name":"Puerto de Playa Santiago","location_type":"PORT","island_id":4,"municipality":"Alajeró","locality":"Playa de Santiago","address":"","postal_code":"","longitude":-17.1964,"latitude":28.0291},
+    {"code":"99040003","name":"Puerto de Vueltas","location_type":"PORT","island_id":4,"municipality":"Valle Gran Rey","locality":"Vueltas","address":"","postal_code":"","longitude":-17.3338,"latitude":28.0798},
+    {"code":"99050001","name":"Puerto de Santa Cruz de La Palma","location_type":"PORT","island_id":5,"municipality":"Santa Cruz de La Palma","locality":"Santa Cruz de La Palma","address":"","postal_code":"","longitude":-17.7652,"latitude":28.6789},
+    {"code":"99060001","name":"Puerto de Arrecife","location_type":"PORT","island_id":6,"municipality":"Arrecife","locality":"Arrecife","address":"","postal_code":"","longitude":-13.528,"latitude":28.9684},
+    {"code":"99060002","name":"Puerto de Playa Blanca","location_type":"PORT","island_id":6,"municipality":"Yaiza","locality":"Playa Blanca","address":"","postal_code":"","longitude":-13.8329,"latitude":28.8582},
+    {"code":"99060003","name":"Puerto de Órzola","location_type":"PORT","island_id":6,"municipality":"Haría","locality":"Órzola","address":"","postal_code":"","longitude":-13.4524,"latitude":29.2219},
+    {"code":"99070001","name":"Puerto de Santa Cruz de Tenerife","location_type":"PORT","island_id":7,"municipality":"Santa Cruz de Tenerife","locality":"Santa Cruz de Tenerife","address":"","postal_code":"","longitude":-16.2468,"latitude":28.4709},
+    {"code":"99070002","name":"Puerto de Los Cristianos","location_type":"PORT","island_id":7,"municipality":"Arona","locality":"Los Cristianos","address":"","postal_code":"","longitude":-16.7192,"latitude":28.0488}
+  ]
+}
