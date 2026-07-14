@@ -2,6 +2,8 @@
 
 La matriz se consulta localmente. Puedes probarla sin instalar nada en la web o descargar el archivo más reciente para consultarlo desde Python, Bash o PowerShell.
 
+Los artefactos actuales usan CEDIST03 y devuelven distancias con una resolución de 10 metros. Los readers mantienen compatibilidad con archivos CEDIST02.
+
 === "Web (sin instalar)"
 
     La [demo de la portada](index.md) funciona directamente en el navegador. Selecciona una isla, un origen y un destino; no necesita claves ni envía la consulta a una API.

@@ -10,6 +10,12 @@
 - Decouple generated data versions from the Python and JavaScript package versions.
 - Replace CEDIST01 with the incompatible distance-only CEDIST02 format.
 - Remove duration generation, storage and API fields, reducing the uncompressed matrix to approximately half its former size.
+- Add CEDIST03 with `uint16` decameter cells, reducing the distance matrices by a further 50%.
+- Preserve CEDIST02 read compatibility in the Python, PHP and JavaScript readers.
+- Round generated distances to the nearest decameter, halves up, and reject values above 655,340 meters.
+- Publish `canarias-distances.dat.seekable.zst` using `zeekstd` alongside the normal `.dat` and `.dat.zst` artifacts.
+- Record cell encoding, quantization, maximum representable distance and observed maximum distance in the manifest.
+- Add a CEDIST03 ADR, migration notes and cross-language CEDIST02/CEDIST03 conformance fixtures.
 - Rename the primary artifact to `canarias-distances.dat` and provide distance-only readers for Python, PHP and JavaScript.
 - Move the automatic live demo to the documentation homepage.
 - Redesign the homepage around a local interactive map, origin and destination search, and a clearer distance result.
