@@ -86,9 +86,10 @@
 }
 
 .route-visual {
+  display: block;
   width: 100%;
   height: 100%;
-  opacity: 0.82;
+  opacity: 0.95;
 }
 
 .island-shape {
@@ -96,7 +97,7 @@
   stroke: currentColor;
   stroke-linejoin: round;
   stroke-width: 2;
-  opacity: 0.58;
+  opacity: 0.78;
   transition:
     opacity 0.35s ease,
     filter 0.35s ease;
@@ -151,9 +152,9 @@
   padding: clamp(1rem, 3vw, 1.5rem);
   border: 1px solid color-mix(in srgb, var(--distance-border) 80%, transparent);
   border-radius: 1rem;
-  background: color-mix(in srgb, var(--md-default-bg-color) 88%, transparent);
+  background: color-mix(in srgb, var(--md-default-bg-color) 72%, transparent);
   box-shadow: 0 0.75rem 2.5rem rgb(0 0 0 / 10%);
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(4px);
 }
 
 .distance-island-field {
@@ -222,7 +223,7 @@
   padding: 1rem 1.15rem;
   border: 1px solid color-mix(in srgb, var(--md-primary-fg-color) 28%, transparent);
   border-radius: 0.8rem;
-  background: color-mix(in srgb, var(--md-default-bg-color) 86%, transparent);
+  background: color-mix(in srgb, var(--md-default-bg-color) 78%, transparent);
 }
 
 #result-state {
