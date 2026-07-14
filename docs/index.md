@@ -81,9 +81,11 @@
     <p class="distance-limit">Solo se calculan distancias dentro de una misma isla. La línea del fondo une los puntos seleccionados como referencia visual: no representa el trazado de la carretera.</p>
     <nav class="distance-links" aria-label="Documentación y descargas">
       <a href="architecture/">Arquitectura</a>
+      <a href="python/">Python</a>
       <a href="javascript/">JavaScript</a>
       <a href="php/">PHP</a>
-      <a href="quick-start/">Bash, PowerShell y Python</a>
+      <a href="wordpress/">WordPress</a>
+      <a href="quick-start/">Uso rápido</a>
       <a href="data/latest/canarias-distances.dat">Descargar datos</a>
       <a href="data/latest/manifest.json">Manifiesto</a>
     </nav>

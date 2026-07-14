@@ -1,3 +1,5 @@
 # Cobertura actual
 
-Se genera automáticamente desde `manifest.json` durante la publicación. No hay artefacto de producción en el repositorio.
+Esta página se completa automáticamente desde `manifest.json` durante la publicación. Los recuentos no se mantienen manualmente en el repositorio.
+
+[Consultar el manifiesto de la última release de datos](https://github.com/ateeducacion/distancias_centros_educativos_canarias/releases/latest/download/manifest.json)

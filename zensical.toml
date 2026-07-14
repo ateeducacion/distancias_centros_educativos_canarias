@@ -22,13 +22,17 @@ nav = [
     { "Formato CEDIST03" = "binary-format.md" },
     { "Fuentes" = "data-sources.md" },
     { "Calidad" = "data-quality.md" },
+    { "Versión publicada" = "generated/current-version.md" },
+    { "Cobertura publicada" = "generated/coverage.md" },
     { "Generación" = "generation.md" },
     { "Actualización" = "updating.md" },
     { "Limitaciones" = "limitations.md" },
     { "Licencias" = "licensing.md" },
   ] },
+  { "Python" = "python.md" },
   { "JavaScript" = "javascript.md" },
   { "PHP" = "php.md" },
+  { "WordPress" = "wordpress.md" },
   { "Uso rápido" = "quick-start.md" },
 ]
 

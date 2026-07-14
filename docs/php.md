@@ -14,34 +14,77 @@ composer require ateeducacion/canarias-route-matrix:dev-main
 
 ## Descargar y conservar los datos localmente
 
-La URL de GitHub Pages contiene siempre la generación actual de `main`:
+La URL de GitHub Pages contiene una copia verificada de la última release `data-*`. Descarga primero el manifiesto y no sustituyas el archivo activo hasta haber comprobado tamaño y SHA-256:
 
 ```php
 <?php
 
 declare(strict_types=1);
 
-$dataUrl = 'https://ateeducacion.github.io/'
-    . 'distancias_centros_educativos_canarias/data/latest/'
-    . 'canarias-distances.dat';
+$dataBaseUrl = 'https://ateeducacion.github.io/'
+    . 'distancias_centros_educativos_canarias/data/latest/';
 $dataPath = __DIR__ . '/var/data/canarias-distances.dat';
 
-if (!is_file($dataPath)) {
-    if (!is_dir(dirname($dataPath))) {
-        mkdir(dirname($dataPath), 0755, true);
+$manifestJson = file_get_contents($dataBaseUrl . 'manifest.json');
+if ($manifestJson === false) {
+    throw new RuntimeException('No se pudo descargar el manifiesto');
+}
+
+$manifest = json_decode($manifestJson, true, flags: JSON_THROW_ON_ERROR);
+$artifact = $manifest['artifacts']['canarias-distances.dat'] ?? null;
+if (
+    !is_array($artifact)
+    || !is_int($artifact['size'] ?? null)
+    || !is_string($artifact['sha256'] ?? null)
+) {
+    throw new RuntimeException('El manifiesto no describe el archivo esperado');
+}
+
+$directory = dirname($dataPath);
+if (!is_dir($directory) && !mkdir($directory, 0755, true) && !is_dir($directory)) {
+    throw new RuntimeException('No se pudo crear el directorio de datos');
+}
+
+$temporaryPath = tempnam($directory, 'canarias-distances-');
+if ($temporaryPath === false) {
+    throw new RuntimeException('No se pudo crear el archivo temporal');
+}
+
+try {
+    $input = fopen($dataBaseUrl . 'canarias-distances.dat', 'rb');
+    if ($input === false) {
+        throw new RuntimeException('No se pudo abrir la descarga');
     }
 
-    $temporaryPath = $dataPath . '.tmp';
-    $input = fopen($dataUrl, 'rb');
     $output = fopen($temporaryPath, 'wb');
-    if ($input === false || $output === false) {
-        throw new RuntimeException('No se pudo abrir el origen o el destino');
+    if ($output === false) {
+        fclose($input);
+        throw new RuntimeException('No se pudo abrir el archivo temporal');
     }
 
-    stream_copy_to_stream($input, $output);
-    fclose($input);
-    fclose($output);
-    rename($temporaryPath, $dataPath);
+    try {
+        $copied = stream_copy_to_stream($input, $output);
+    } finally {
+        fclose($input);
+        fclose($output);
+    }
+
+    $actualHash = hash_file('sha256', $temporaryPath);
+    if (
+        $copied !== $artifact['size']
+        || $actualHash === false
+        || !hash_equals($artifact['sha256'], $actualHash)
+    ) {
+        throw new RuntimeException('La descarga no coincide con el manifiesto');
+    }
+
+    if (!rename($temporaryPath, $dataPath)) {
+        throw new RuntimeException('No se pudo activar el archivo verificado');
+    }
+} finally {
+    if (is_file($temporaryPath)) {
+        unlink($temporaryPath);
+    }
 }
 ```
 
@@ -94,26 +137,8 @@ final class CanaryDistanceService
 
 En una aplicación Symfony, Laravel o similar, registra `Reader` como servicio compartido para abrir el archivo una vez por proceso.
 
-## Verificar el artefacto
+## Versionar el artefacto
 
-`manifest.json` publica el tamaño y SHA-256 de cada archivo. Durante el despliegue puede comprobarse así:
-
-```php
-$manifest = json_decode(
-    file_get_contents('https://ateeducacion.github.io/'
-        . 'distancias_centros_educativos_canarias/data/latest/manifest.json'),
-    true,
-    flags: JSON_THROW_ON_ERROR,
-);
-
-$expected = $manifest['artifacts']['canarias-distances.dat']['sha256'];
-$actual = hash_file('sha256', $dataPath);
-
-if (!hash_equals($expected, $actual)) {
-    throw new RuntimeException('El archivo de distancias no coincide con el manifiesto');
-}
-```
-
-Para fijar resultados en el tiempo, usa los artefactos de una GitHub Release y almacénalos junto con la aplicación. La URL `data/latest` está pensada para seguir automáticamente la versión de `main`.
+La descarga anterior verifica el tamaño y SHA-256 antes del `rename()`. Para fijar resultados en el tiempo, usa los artefactos de una release `data-*` concreta y almacénalos junto con la aplicación. La URL `data/latest/` está pensada para seguir automáticamente la release de datos más reciente.
 
 `getRoute()` se mantiene temporalmente como alias de `getDistance()`. CEDIST02 y CEDIST03 no almacenan ni devuelven duración.

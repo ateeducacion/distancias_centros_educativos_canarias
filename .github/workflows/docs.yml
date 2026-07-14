@@ -236,6 +236,13 @@ jobs:
           grep -E '  (canarias-distances\.dat|centers\.min\.json|manifest\.json)$' SHA256SUMS |
             sha256sum -c -
 
+      - name: Generate published data documentation
+        run: |
+          python3 scripts/generate-docs-from-manifest.py \
+            --manifest docs/data/latest/manifest.json \
+            --islands config/islands.json \
+            --output docs/generated
+
       - name: Build documentation
         run: uvx zensical build --clean
 
