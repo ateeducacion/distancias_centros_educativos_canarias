@@ -13,8 +13,7 @@ La generación convierte fuentes abiertas en un archivo estático de distancias.
 7. Solicitar tablas por bloques con la anotación `distance`.
 8. Comprobar que ninguna distancia supera el máximo CEDIST03 de 655.340 metros.
 9. Redondear a decámetros y escribir las matrices dirigidas en `canarias-distances.dat`.
-10. Generar las copias Zstandard convencional y seekable.
-11. Generar JSON, informes, manifiesto y hashes.
+10. Generar JSON, informes, manifiesto y hashes.
 
 El proceso completo puede ejecutarse con `scripts/build-data-ci.sh`, indicando `DATA_VERSION` cuando se quiera asignar una versión concreta:
 
@@ -30,62 +29,11 @@ También puede ejecutarse mediante Docker:
 make build-data
 ```
 
-## Artefactos binarios
+## Artefacto binario
 
-La generación publica tres representaciones del mismo contenido:
+La generación publica `canarias-distances.dat` como matriz CEDIST03. El archivo permite acceso aleatorio directo y es el que consumen los readers Python, PHP y JavaScript.
 
-```text
-canarias-distances.dat
-canarias-distances.dat.zst
-canarias-distances.dat.seekable.zst
-```
-
-- El `.dat` permite acceso aleatorio directo y es el archivo que consumen los readers.
-- El `.dat.zst` ofrece la mejor distribución convencional con Zstandard nivel 19.
-- El `.dat.seekable.zst` divide el contenido en frames independientes y añade una tabla de búsqueda.
-
-Los readers Python, PHP y JavaScript no abren directamente las variantes comprimidas. Deben recibir el `.dat` descomprimido. Esto evita incorporar un decoder Zstandard diferente en cada lenguaje y mantiene la consulta como `seek` más lectura de dos bytes.
-
-## Instalar `zeekstd`
-
-La generación seekable usa la implementación Rust `zeekstd`. La versión fijada en CI y Docker es `0.4.5`.
-
-### Ubuntu y GitHub Actions
-
-```sh
-cargo install zeekstd_cli --version 0.4.5 --locked
-```
-
-### macOS
-
-```sh
-brew install rust
-cargo install zeekstd_cli --version 0.4.5 --locked
-```
-
-### Generar solo la copia seekable
-
-Con un `.dat` existente:
-
-```sh
-make seekable-zstd
-```
-
-El comando exacto ejecutado es:
-
-```sh
-zeekstd compress --frame-size 1M \
-  -o dist/canarias-distances.dat.seekable.zst \
-  < dist/canarias-distances.dat
-```
-
-El tamaño de frame puede cambiarse sin modificar CEDIST03:
-
-```sh
-make seekable-zstd SEEKABLE_FRAME_SIZE=256K
-```
-
-Frames más pequeños reducen el volumen adicional que debe descomprimirse para una lectura parcial, pero añaden overhead y suelen empeorar la compresión. `1M` es el valor inicial conservador.
+No se generan copias comprimidas. CEDIST03 ya reduce la parte dominante de la matriz a dos bytes por celda, y mantener un único artefacto evita dependencias y pasos adicionales de publicación y consumo.
 
 ## Publicación automática
 
