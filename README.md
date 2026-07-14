@@ -52,7 +52,7 @@ REST opcional: `GET /v1/distances/{origin}/{destination}`.
 
 ## Artefactos
 
-Cada generación publica:
+Cada release de datos publica:
 
 - `canarias-distances.dat`: matriz CEDIST02 para acceso aleatorio.
 - `canarias-distances.dat.zst`: copia comprimida para distribución.
@@ -61,6 +61,12 @@ Cada generación publica:
 - `manifest.json`: formato, fuentes, recuentos y hashes.
 - informes de validación y ajuste a la red viaria.
 - `SHA256SUMS`.
+
+La última matriz publicada está disponible mediante una URL estable:
+
+```text
+https://github.com/ateeducacion/distancias_centros_educativos_canarias/releases/latest/download/canarias-distances.dat
+```
 
 Por compatibilidad histórica, los JSON conservan el nombre `centers`, aunque incluyen todas las ubicaciones consultables.
 
@@ -75,7 +81,7 @@ Los centros mantienen sus códigos oficiales de ocho cifras. Los nodos sintétic
 
 Los códigos deben intercambiarse como cadenas, aunque se almacenen como `uint32` dentro del `.dat`.
 
-## Generación
+## Generación y publicación
 
 ```sh
 make bootstrap
@@ -83,7 +89,14 @@ make test
 sh scripts/build-data-ci.sh
 ```
 
-Cada push a `main` reconstruye la matriz y despliega GitHub Pages. Los tags `v*` publican snapshots opcionales en GitHub Releases.
+GitHub Pages siempre se construye desde el estado actual de `main`, pero consume los artefactos de la última release de datos. Un cambio de documentación o de los lectores no recalcula la matriz.
+
+El workflow **Publish** comprueba semanalmente el CSV oficial de centros. También reconstruye los datos cuando cambian el generador o su configuración, y puede ejecutarse manualmente. Después de generar compara los hashes de `canarias-distances.dat` y `centers.min.json` con la última release:
+
+- si ambos son iguales, no crea una release nueva;
+- si alguno cambia, publica `data-YYYYMMDD-HHMM`, usando fecha y hora UTC, y la marca como la release más reciente.
+
+La demo utiliza una copia verificada de esa release bajo `data/latest/`.
 
 ## Arquitectura
 
