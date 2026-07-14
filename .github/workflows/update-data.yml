@@ -14,7 +14,7 @@ jobs:
     env: {CHECK_ONLY: "${{ inputs.check_only || 'true' }}", PUBLISH: "${{ inputs.publish || 'false' }}"}
     steps:
       - uses: actions/checkout@v4 # v4
-      - uses: astral-sh/setup-uv@v5 # v5
+      - uses: astral-sh/setup-uv@v7 # v5
       - run: uv sync --all-extras
       - run: make download-centers validate-centers
       - if: env.CHECK_ONLY != 'true'
