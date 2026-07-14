@@ -1,46 +1,57 @@
-const MAGIC = "CEDIST01";
+const MAGIC = "CEDIST02";
+const MAJOR = 2;
 const UNREACHABLE = 0xffffffff;
 let view;
-let centerCount;
+let locationCount;
 let indexOffset;
 let islands;
-let centers;
+let locations;
 
 const u16 = (offset) => view.getUint16(offset, true);
 const u32 = (offset) => view.getUint32(offset, true);
 const u64 = (offset) => {
   const value = view.getBigUint64(offset, true);
-  if (value > BigInt(Number.MAX_SAFE_INTEGER)) throw new Error("Offset inválido");
+  if (value > BigInt(Number.MAX_SAFE_INTEGER)) {
+    throw new Error("Offset inválido");
+  }
   return Number(value);
 };
 
 function parse(buffer) {
   view = new DataView(buffer);
-  if (buffer.byteLength < 64) throw new Error("Binario truncado");
+  if (buffer.byteLength < 64) throw new Error("Archivo de distancias truncado");
   const magic = String.fromCharCode(...new Uint8Array(buffer, 0, 8));
-  if (magic !== MAGIC || u16(8) > 1 || u32(12) !== 64) {
-    throw new Error("Formato CEDIST01 no válido");
+  if (magic !== MAGIC || u16(8) !== MAJOR || u32(12) !== 64) {
+    throw new Error("Formato CEDIST02 no válido");
   }
-  centerCount = u32(24);
+  locationCount = u32(24);
   indexOffset = u64(28);
   const directoryOffset = u64(36);
-  if (u64(44) !== buffer.byteLength) throw new Error("Tamaño binario inválido");
+  if (u64(44) !== buffer.byteLength) {
+    throw new Error("Tamaño del archivo de distancias inválido");
+  }
   islands = new Map();
-  for (let i = 0; i < u16(20); i += 1) {
-    const offset = directoryOffset + i * 24;
-    islands.set(view.getUint8(offset), {
-      count: u32(offset + 4),
-      distanceOffset: u64(offset + 8),
-      durationOffset: u64(offset + 16),
-    });
+  let expectedOffset = directoryOffset + u16(20) * 16;
+  for (let index = 0; index < u16(20); index += 1) {
+    const offset = directoryOffset + index * 16;
+    const count = u32(offset + 4);
+    const distanceOffset = u64(offset + 8);
+    if (distanceOffset !== expectedOffset) {
+      throw new Error("Directorio de islas no válido");
+    }
+    islands.set(view.getUint8(offset), { count, distanceOffset });
+    expectedOffset += count * count * 4;
+  }
+  if (expectedOffset !== buffer.byteLength) {
+    throw new Error("El archivo contiene datos inesperados");
   }
 }
 
 function find(code) {
-  if (!/^\d{8}$/.test(code)) throw new Error("Código de centro inválido");
+  if (!/^\d{8}$/.test(code)) throw new Error("Código de ubicación inválido");
   const target = Number(code);
   let low = 0;
-  let high = centerCount - 1;
+  let high = locationCount - 1;
   while (low <= high) {
     const middle = Math.floor((low + high) / 2);
     const offset = indexOffset + middle * 12;
@@ -54,46 +65,52 @@ function find(code) {
     if (value < target) low = middle + 1;
     else high = middle - 1;
   }
-  throw new Error(`Centro desconocido: ${code}`);
+  throw new Error(`Ubicación desconocida: ${code}`);
 }
 
-function route(originCode, destinationCode) {
+function distance(originCode, destinationCode) {
   const origin = find(originCode);
   const destination = find(destinationCode);
   if (origin.islandId !== destination.islandId) {
-    throw new Error("No se calculan rutas entre islas diferentes.");
+    throw new Error("No se calculan distancias entre islas diferentes.");
   }
   const island = islands.get(origin.islandId);
   const position = origin.localIndex * island.count + destination.localIndex;
   const distanceMeters = u32(island.distanceOffset + position * 4);
-  const durationSeconds = u32(island.durationOffset + position * 4);
-  if (distanceMeters === UNREACHABLE || durationSeconds === UNREACHABLE) {
-    throw new Error("La ruta no está disponible.");
+  if (distanceMeters === UNREACHABLE) {
+    throw new Error("La distancia no está disponible.");
   }
-  return { distanceMeters, durationSeconds };
+  return { distanceMeters };
 }
 
 self.addEventListener("message", async ({ data }) => {
   try {
     if (data.type === "load") {
-      const [binaryResponse, centersResponse, manifestResponse] = await Promise.all([
-        fetch(data.binaryUrl),
-        fetch(data.centersUrl),
-        fetch(data.manifestUrl),
-      ]);
-      if (!binaryResponse.ok || !centersResponse.ok || !manifestResponse.ok) {
-        throw new Error("No se pudieron descargar los artefactos.");
+      const [dataResponse, locationsResponse, manifestResponse] =
+        await Promise.all([
+          fetch(data.dataUrl),
+          fetch(data.locationsUrl),
+          fetch(data.manifestUrl),
+        ]);
+      if (!dataResponse.ok || !locationsResponse.ok || !manifestResponse.ok) {
+        throw new Error("No se pudieron descargar los datos de la demo.");
       }
-      parse(await binaryResponse.arrayBuffer());
-      centers = await centersResponse.json();
+      parse(await dataResponse.arrayBuffer());
+      locations = await locationsResponse.json();
       const manifest = await manifestResponse.json();
-      self.postMessage({ type: "ready", centers, dataVersion: manifest.data_version });
+      self.postMessage({
+        type: "ready",
+        locations,
+        dataVersion: manifest.data_version,
+      });
     } else if (data.type === "query") {
       self.postMessage({
-        type: "route",
-        route: route(data.origin, data.destination),
-        origin: centers.find((center) => center.code === data.origin),
-        destination: centers.find((center) => center.code === data.destination),
+        type: "distance",
+        result: distance(data.origin, data.destination),
+        origin: locations.find((location) => location.code === data.origin),
+        destination: locations.find(
+          (location) => location.code === data.destination,
+        ),
       });
     }
   } catch (error) {

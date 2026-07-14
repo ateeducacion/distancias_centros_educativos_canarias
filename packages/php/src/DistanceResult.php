@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace AteEducacion\CanariasRouteMatrix;
 
-/** @deprecated Use DistanceResult. */
-final readonly class RouteResult
+final readonly class DistanceResult
 {
     public function __construct(public int $distanceMeters)
     {

@@ -1,4 +1,5 @@
-import { readFileSync } from "node:fs";
+import fs from "node:fs";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -7,15 +8,17 @@ import {
   UnreachableRouteError,
 } from "../src/index.js";
 
-const bytes = readFileSync(
-  new URL("../../../data/samples/sample.dat", import.meta.url),
-);
-const matrix = new DistanceMatrix(
-  bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength),
+const fixtureUrl = new URL("../../../data/samples/sample.dat", import.meta.url);
+const fixture = fs.readFileSync(fileURLToPath(fixtureUrl));
+const buffer = fixture.buffer.slice(
+  fixture.byteOffset,
+  fixture.byteOffset + fixture.byteLength,
 );
 
-describe("CEDIST02", () => {
+describe("DistanceMatrix", () => {
   it("reads directed distances", () => {
+    const matrix = new DistanceMatrix(buffer);
+
     expect(matrix.getDistance("10000001", "10000002").distanceMeters).toBe(
       1200,
     );
@@ -24,7 +27,9 @@ describe("CEDIST02", () => {
     );
   });
 
-  it("rejects cross-island and unreachable distances", () => {
+  it("rejects unsupported distances", () => {
+    const matrix = new DistanceMatrix(buffer);
+
     expect(() => matrix.getDistance("10000001", "20000004")).toThrow(
       CrossIslandRouteError,
     );

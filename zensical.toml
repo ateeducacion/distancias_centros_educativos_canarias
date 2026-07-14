@@ -1,7 +1,7 @@
 [project]
-site_name = "Distancias entre centros educativos de Canarias"
+site_name = "Distancias por carretera en Canarias"
 site_url = "https://ateeducacion.github.io/distancias_centros_educativos_canarias/"
-site_description = "Matriz abierta de rutas entre centros educativos"
+site_description = "Matriz estática de distancias entre centros educativos, aeropuertos y puertos"
 repo_url = "https://github.com/ateeducacion/distancias_centros_educativos_canarias"
 repo_name = "ateeducacion/distancias_centros_educativos_canarias"
 edit_uri = "edit/main/docs/"
@@ -17,30 +17,29 @@ extra_javascript = [
 ]
 nav = [
   { "Inicio" = "index.md" },
+  { "JavaScript" = "javascript.md" },
+  { "PHP" = "php.md" },
   { "Arquitectura" = "architecture.md" },
+  { "Formato CEDIST02" = "binary-format.md" },
   { "Fuentes" = "data-sources.md" },
   { "Calidad" = "data-quality.md" },
-  { "Formato" = "binary-format.md" },
   { "Generación" = "generation.md" },
   { "Actualización" = "updating.md" },
-  { "PHP" = "php.md" },
-  { "JavaScript" = "javascript.md" },
-  { "CLI" = "cli.md" },
-  { "REST" = "rest-api.md" },
-  { "Demo" = "demo.md" },
-  { "Rendimiento" = "performance.md" },
-  { "Licencias" = "licensing.md" },
-  { "Seguridad" = "security.md" },
   { "Limitaciones" = "limitations.md" },
+  { "Licencias" = "licensing.md" },
 ]
+
 [project.theme]
 language = "es"
 features = ["navigation.tabs","navigation.sections","search.highlight","content.code.copy","content.tabs.link"]
+
 [[project.theme.palette]]
 scheme = "default"
 toggle = {icon="lucide/sun",name="Cambiar a modo oscuro"}
+
 [[project.theme.palette]]
 scheme = "slate"
 toggle = {icon="lucide/moon",name="Cambiar a modo claro"}
+
 [project.markdown_extensions.pymdownx.superfences]
 custom_fences = [{name="mermaid",class="mermaid",format="pymdownx.superfences.fence_code_format"}]

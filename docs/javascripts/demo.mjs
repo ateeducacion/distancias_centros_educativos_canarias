@@ -13,7 +13,8 @@ if (form) {
   const worker = new Worker(new URL("demo-worker.mjs", import.meta.url), {
     type: "module",
   });
-  let centers = [];
+  let locations = [];
+  let ready = false;
   let lastResult = "";
 
   const option = (value, label) => new Option(label, value);
@@ -27,21 +28,48 @@ if (form) {
     return `${prefix}${location.name} (${location.code})`;
   };
 
-  function populateCenters(islandId) {
-    const filtered = centers.filter(
-      (center) => String(center.island_id) === String(islandId),
+  function updateUrl() {
+    if (!originSelect.value || !destinationSelect.value) return;
+    const next = new URLSearchParams({
+      origin: originSelect.value,
+      destination: destinationSelect.value,
+    });
+    window.history.replaceState(null, "", `?${next}`);
+  }
+
+  function querySelection() {
+    if (!ready || !originSelect.value || !destinationSelect.value) {
+      result.textContent = "Selecciona un origen y un destino.";
+      copyButton.hidden = true;
+      return;
+    }
+    result.textContent = "Consultando la matriz local…";
+    worker.postMessage({
+      type: "query",
+      origin: originSelect.value,
+      destination: destinationSelect.value,
+    });
+    updateUrl();
+  }
+
+  function populateLocations(islandId) {
+    const filtered = locations.filter(
+      (location) => String(location.island_id) === String(islandId),
     );
+    ready = false;
     for (const select of [originSelect, destinationSelect]) {
       const selected = select.value;
       select.replaceChildren(option("", "Selecciona una ubicación"));
-      for (const center of filtered) {
-        select.add(option(center.code, locationLabel(center)));
+      for (const location of filtered) {
+        select.add(option(location.code, locationLabel(location)));
       }
-      if (filtered.some((center) => center.code === selected)) {
+      if (filtered.some((location) => location.code === selected)) {
         select.value = selected;
       }
-      window.jQuery(select).trigger("change");
+      window.jQuery(select).trigger("change.select2");
     }
+    ready = true;
+    querySelection();
   }
 
   function initializeSelect2() {
@@ -59,40 +87,49 @@ if (form) {
       allowClear: true,
       width: "100%",
     });
-    window.jQuery(islandSelect).on("change", () =>
-      populateCenters(islandSelect.value),
-    );
+    window.jQuery(islandSelect).on("change", () => {
+      populateLocations(islandSelect.value);
+    });
+    for (const select of [originSelect, destinationSelect]) {
+      window.jQuery(select).on("change", querySelection);
+    }
   }
 
   worker.addEventListener("message", ({ data }) => {
     if (data.type === "ready") {
-      centers = data.centers;
-      const islands = [...new Map(
-        centers.map((center) => [center.island_id, center.island]),
-      )].sort((a, b) => a[1].localeCompare(b[1], "es"));
+      locations = data.locations;
+      const islands = [
+        ...new Map(
+          locations.map((location) => [location.island_id, location.island]),
+        ),
+      ].sort((first, second) => first[1].localeCompare(second[1], "es"));
       islandSelect.replaceChildren();
       for (const [id, name] of islands) islandSelect.add(option(id, name));
       initializeSelect2();
+
       const requestedOrigin = params.get("origin");
       const requestedDestination = params.get("destination");
-      const requestedCenter = centers.find(
-        (center) => center.code === requestedOrigin,
+      const requestedLocation = locations.find(
+        (location) => location.code === requestedOrigin,
       );
-      islandSelect.value = String(requestedCenter?.island_id ?? islands[0][0]);
-      window.jQuery(islandSelect).trigger("change");
+      islandSelect.value = String(requestedLocation?.island_id ?? islands[0][0]);
+      window.jQuery(islandSelect).trigger("change.select2");
+      populateLocations(islandSelect.value);
       if (requestedOrigin) originSelect.value = requestedOrigin;
       if (requestedDestination) destinationSelect.value = requestedDestination;
-      window.jQuery(originSelect).trigger("change");
-      window.jQuery(destinationSelect).trigger("change");
-      version.textContent = `Versión de datos: ${data.dataVersion}`;
-      status.textContent = "Datos cargados.";
+      window.jQuery(originSelect).trigger("change.select2");
+      window.jQuery(destinationSelect).trigger("change.select2");
+
+      ready = true;
+      version.textContent = `Datos: ${data.dataVersion}`;
+      status.textContent = "Matriz cargada. Las consultas se resuelven en este navegador.";
       form.hidden = false;
-    } else if (data.type === "route") {
+      querySelection();
+    } else if (data.type === "distance") {
       const distance = new Intl.NumberFormat("es-ES", {
         maximumFractionDigits: 2,
-      }).format(data.route.distanceMeters / 1000);
-      const minutes = Math.round(data.route.durationSeconds / 60);
-      lastResult = `${data.origin.name} → ${data.destination.name}: ${distance} km, ${minutes} min`;
+      }).format(data.result.distanceMeters / 1000);
+      lastResult = `${data.origin.name} → ${data.destination.name}: ${distance} km`;
       result.textContent = lastResult;
       copyButton.hidden = false;
     } else if (data.type === "error") {
@@ -102,33 +139,18 @@ if (form) {
   });
 
   worker.addEventListener("error", () => {
-    status.textContent = "No se pudieron cargar los artefactos de la demo.";
+    status.textContent = "No se pudieron cargar los datos de la demo.";
   });
 
-  form.addEventListener("submit", (event) => {
-    event.preventDefault();
-    if (!originSelect.value || !destinationSelect.value) {
-      result.textContent = "Selecciona un origen y un destino.";
-      return;
-    }
-    worker.postMessage({
-      type: "query",
-      origin: originSelect.value,
-      destination: destinationSelect.value,
-    });
-    const next = new URLSearchParams({
-      origin: originSelect.value,
-      destination: destinationSelect.value,
-    });
-    window.history.replaceState(null, "", `?${next}`);
-  });
+  form.addEventListener("submit", (event) => event.preventDefault());
 
   document.querySelector("#swap-centers").addEventListener("click", () => {
     const origin = originSelect.value;
     originSelect.value = destinationSelect.value;
     destinationSelect.value = origin;
-    window.jQuery(originSelect).trigger("change");
-    window.jQuery(destinationSelect).trigger("change");
+    window.jQuery(originSelect).trigger("change.select2");
+    window.jQuery(destinationSelect).trigger("change.select2");
+    querySelection();
   });
 
   copyButton.addEventListener("click", async () => {
@@ -138,8 +160,8 @@ if (form) {
 
   worker.postMessage({
     type: "load",
-    binaryUrl: new URL("canarias-education-routes.bin", base).href,
-    centersUrl: new URL("centers.min.json", base).href,
+    dataUrl: new URL("canarias-distances.dat", base).href,
+    locationsUrl: new URL("centers.min.json", base).href,
     manifestUrl: new URL("manifest.json", base).href,
   });
 }

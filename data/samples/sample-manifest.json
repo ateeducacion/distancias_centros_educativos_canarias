@@ -1,24 +1,25 @@
 {
   "artifacts": {
-    "sample.bin": {
-      "sha256": "02c196b841565539acc5a6e4209c29b63875149ce1756b77ee19d705bc2c6f43",
-      "size": 240
+    "sample.dat": {
+      "sha256": "402769dd5075cf497d8ab3213923f7820b91f9f660898137fd58c0a9b5ec7fba",
+      "size": 184
     }
   },
   "counts": {
     "centers": 4,
-    "directed_routes": 10,
+    "directed_distances": 10,
     "islands": {
       "3": 3,
       "7": 1
     },
-    "unreachable_routes": 1
+    "unreachable_distances": 1
   },
-  "data_version": "fixture-1",
+  "data_version": "fixture-2",
   "format": {
     "endianness": "little",
-    "magic": "CEDIST01",
-    "major": 1,
+    "magic": "CEDIST02",
+    "major": 2,
+    "metric": "road_distance_meters",
     "minor": 0
   },
   "schema_version": 1
