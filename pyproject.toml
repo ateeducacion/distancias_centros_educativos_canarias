@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "canarias-route-matrix"
-version = "0.0.1"
+version = "0.0.2"
 description = "Static road route matrix for Canary Islands educational centers"
 requires-python = ">=3.11"
 license = {text = "MIT"}

@@ -1,8 +1,12 @@
 {
   "artifacts": {
-    "sample.bin": {
+    "canarias-education-routes.bin": {
       "sha256": "02c196b841565539acc5a6e4209c29b63875149ce1756b77ee19d705bc2c6f43",
       "size": 240
+    },
+    "centers.min.json": {
+      "sha256": "3ddab0e8e639200c04e78907858d7c5596a518f32c410bccf3aaddacb4ec8970",
+      "size": 1077
     }
   },
   "counts": {
@@ -14,7 +18,7 @@
     },
     "unreachable_routes": 1
   },
-  "data_version": "fixture-1",
+  "data_version": "v0.0.2",
   "format": {
     "endianness": "little",
     "magic": "CEDIST01",
