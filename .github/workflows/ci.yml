@@ -60,8 +60,29 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7 # v4
-      - run: sudo apt-get update && sudo apt-get install -y shellcheck
+      - run: sudo apt-get update && sudo apt-get install -y jq shellcheck
       - run: shellcheck scripts/*.sh bin/route-matrix
+      - name: Test latest data release selector
+        run: |
+          latest_tag="$(
+            cat <<'JSON' | jq -r -f scripts/latest-data-release.jq
+          [
+            {
+              "tagName": "v0.0.3",
+              "publishedAt": "2026-07-14T18:00:00Z"
+            },
+            {
+              "tagName": "data-20260714-2030",
+              "publishedAt": "2026-07-14T20:30:00Z"
+            },
+            {
+              "tagName": "data-20260714-2045",
+              "publishedAt": "2026-07-14T20:45:00Z"
+            }
+          ]
+          JSON
+          )"
+          test "$latest_tag" = "data-20260714-2045"
   docker:
     runs-on: ubuntu-latest
     timeout-minutes: 20
