@@ -38,6 +38,7 @@ coverage: ## Generate Python coverage
 validate-config: ## Validate JSON syntax
 	$(PYTHON) -m json.tool config/sources.json >/dev/null
 	$(PYTHON) -m json.tool config/routing.json >/dev/null
+	$(PYTHON) -m json.tool config/transport-nodes.json >/dev/null
 download-centers: ## Resolve and download official center CSV
 	bin/route-matrix download-centers
 validate-centers: ## Validate downloaded center CSV
