@@ -1,7 +1,7 @@
 {
   "name": "@ateeducacion/canarias-route-matrix",
   "version": "0.0.3",
-  "description": "CEDIST02/CEDIST03 distance reader for JavaScript",
+  "description": "CEDIST03 distance reader for JavaScript",
   "type": "module",
   "exports": "./src/index.js",
   "types": "./src/index.d.ts",
