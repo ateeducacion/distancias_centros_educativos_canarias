@@ -1,4 +1,4 @@
-FROM python:3.12-alpine3.20
+FROM python:3.13-alpine3.20
 RUN addgroup -S app && adduser -S -G app app
 WORKDIR /app
 COPY pyproject.toml ./
