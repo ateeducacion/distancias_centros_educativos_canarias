@@ -3,7 +3,6 @@ from __future__ import annotations
 
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
-import hashlib
 import json
 import os
 from pathlib import Path
@@ -73,10 +72,10 @@ def main() -> None:
         durations: list[list[int | None]] = [[None] * n for _ in range(n)]
         for source_start in range(0, n, block_size):
             source_end = min(n, source_start + block_size)
-            source_coords = [tuple(snapping[str(center["code"])] ["snapped"]) for center in group[source_start:source_end]]
+            source_coords = [tuple(snapping[str(center["code"])]["snapped"]) for center in group[source_start:source_end]]
             for destination_start in range(0, n, block_size):
                 destination_end = min(n, destination_start + block_size)
-                destination_coords = [tuple(snapping[str(center["code"])] ["snapped"]) for center in group[destination_start:destination_end]]
+                destination_coords = [tuple(snapping[str(center["code"])]["snapped"]) for center in group[destination_start:destination_end]]
                 print(f"island={island_id} sources={source_start}:{source_end} destinations={destination_start}:{destination_end}", flush=True)
                 try:
                     distance_block, duration_block = table(osrm_url, source_coords, destination_coords, timeout=120, retries=3)
