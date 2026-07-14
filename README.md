@@ -11,11 +11,11 @@ Matriz abierta y versionada de distancias por carretera entre centros educativos
 - Matrices dirigidas separadas por isla.
 - Formato CEDIST03 little-endian con una distancia `uint16` en decámetros por combinación.
 - Acceso directo por offset: búsqueda de códigos y lectura de dos bytes.
-- Lectores para Python, PHP y JavaScript, compatibles también con CEDIST02.
+- Lectores CEDIST03 para Python, PHP y JavaScript.
 - Centros educativos, aeropuertos y puertos con códigos numéricos estables.
 - Generación reproducible y artefactos verificados con SHA-256.
 
-> La métrica es la distancia de la ruta para automóvil considerada más rápida por el perfil OSRM utilizado, sin tráfico en tiempo real. CEDIST03 la publica con una resolución de 10 metros.
+> La métrica es la distancia de la ruta para automóvil considerada más rápida por el perfil OSRM utilizado, sin tráfico en tiempo real. Los resultados tienen una resolución de 10 metros.
 
 ## Uso rápido
 
@@ -51,31 +51,18 @@ console.log(matrix.getDistance("35000011", "98030001").distanceMeters);
 
 REST opcional: `GET /v1/distances/{origin}/{destination}`.
 
-## CEDIST03 frente a CEDIST02
+## Formato CEDIST03
 
-CEDIST03 conserva la cabecera de 64 bytes, el índice global ordenado y el directorio por islas de CEDIST02. El cambio incompatible está limitado a las celdas de las matrices:
-
-| Formato | Celda | Unidad | Máximo válido | No disponible |
-|---|---:|---:|---:|---:|
-| CEDIST02 | `uint32` | 1 metro | 4.294.967.294 m | `0xFFFFFFFF` |
-| CEDIST03 | `uint16` | 10 metros | 655.340 m | `0xFFFF` |
-
-La conversión CEDIST03 es:
+Cada celda de la matriz ocupa dos bytes y almacena decámetros:
 
 ```text
 stored = max(1, (distance_meters + 5) // 10)
 decoded_meters = stored * 10
 ```
 
-Esto reduce aproximadamente un 50 % la parte dominante del `.dat`. El generador calcula la máxima distancia producida por OSRM y aborta si supera 655.340 metros. El razonamiento completo está en [`docs/decisions/0001-cedist03-decameters.md`](docs/decisions/0001-cedist03-decameters.md).
+`0` se reserva a la diagonal y `0xFFFF` representa una distancia no disponible. La máxima distancia representable es 655.340 metros. El generador aborta si una distancia supera ese límite.
 
-### Migración
-
-- Los nuevos artefactos usan magic `CEDIST03` y major `3`.
-- Los readers actuales detectan y leen tanto CEDIST02 como CEDIST03.
-- Los readers anteriores que solo aceptan `CEDIST02` deben actualizarse antes de consumir una nueva release.
-- La API continúa devolviendo `distanceMeters`; no cambia la interfaz pública.
-- Los resultados CEDIST03 son múltiplos de 10 metros.
+La especificación completa está en [`docs/FORMAT.md`](docs/FORMAT.md) y la decisión de diseño en [`docs/decisions/0001-cedist03-decameters.md`](docs/decisions/0001-cedist03-decameters.md).
 
 ## Artefactos
 
@@ -93,8 +80,6 @@ La última matriz publicada está disponible mediante una URL estable:
 ```text
 https://github.com/ateeducacion/distancias_centros_educativos_canarias/releases/latest/download/canarias-distances.dat
 ```
-
-Por compatibilidad histórica, los JSON conservan el nombre `centers`, aunque incluyen todas las ubicaciones consultables.
 
 ## Códigos
 
@@ -115,7 +100,7 @@ make test
 sh scripts/build-data-ci.sh
 ```
 
-GitHub Pages siempre se construye desde el estado actual de `main`, pero consume los artefactos de la última release de datos. El workflow **Publish** reconstruye cuando cambian el generador, el formato o las fuentes y publica `data-YYYYMMDD-HHMM` únicamente cuando cambian la matriz o los metadatos.
+GitHub Pages se construye desde `main` y consume los artefactos de la última release de datos. El workflow **Publish** reconstruye cuando cambian el generador, el formato o las fuentes y publica `data-YYYYMMDD-HHMM` únicamente cuando cambian la matriz o los metadatos.
 
 ## Arquitectura
 

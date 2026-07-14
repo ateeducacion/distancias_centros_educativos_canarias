@@ -1,13 +1,14 @@
-const MAGIC_V2 = "CEDIST02";
-const MAGIC_V3 = "CEDIST03";
+const MAGIC = "CEDIST03";
+const MAJOR = 3;
+const CELL_SIZE = 2;
+const DISTANCE_UNIT_METERS = 10;
+const UNREACHABLE = 0xffff;
+
 let view;
 let locationCount;
 let indexOffset;
 let islands;
 let locations;
-let cellSize;
-let distanceUnitMeters;
-let unreachable;
 
 const u16 = (offset) => view.getUint16(offset, true);
 const u32 = (offset) => view.getUint32(offset, true);
@@ -23,19 +24,10 @@ function parse(buffer) {
   view = new DataView(buffer);
   if (buffer.byteLength < 64) throw new Error("Archivo de distancias truncado");
   const magic = String.fromCharCode(...new Uint8Array(buffer, 0, 8));
-  const major = u16(8);
-  if (magic === MAGIC_V2 && major === 2) {
-    cellSize = 4;
-    distanceUnitMeters = 1;
-    unreachable = 0xffffffff;
-  } else if (magic === MAGIC_V3 && major === 3) {
-    cellSize = 2;
-    distanceUnitMeters = 10;
-    unreachable = 0xffff;
-  } else {
-    throw new Error("Formato CEDIST no válido");
+  if (magic !== MAGIC || u16(8) !== MAJOR) {
+    throw new Error("El archivo no usa el formato CEDIST03");
   }
-  if (u32(12) !== 64) throw new Error("Cabecera CEDIST no válida");
+  if (u32(12) !== 64) throw new Error("Cabecera CEDIST03 no válida");
   locationCount = u32(24);
   indexOffset = u64(28);
   const directoryOffset = u64(36);
@@ -52,7 +44,7 @@ function parse(buffer) {
       throw new Error("Directorio de islas no válido");
     }
     islands.set(view.getUint8(offset), { count, distanceOffset });
-    expectedOffset += count * count * cellSize;
+    expectedOffset += count * count * CELL_SIZE;
   }
   if (expectedOffset !== buffer.byteLength) {
     throw new Error("El archivo contiene datos inesperados");
@@ -88,12 +80,11 @@ function distance(originCode, destinationCode) {
   }
   const island = islands.get(origin.islandId);
   const position = origin.localIndex * island.count + destination.localIndex;
-  const offset = island.distanceOffset + position * cellSize;
-  const stored = cellSize === 2 ? u16(offset) : u32(offset);
-  if (stored === unreachable) {
+  const stored = u16(island.distanceOffset + position * CELL_SIZE);
+  if (stored === UNREACHABLE) {
     throw new Error("La distancia no está disponible.");
   }
-  return { distanceMeters: stored * distanceUnitMeters };
+  return { distanceMeters: stored * DISTANCE_UNIT_METERS };
 }
 
 self.addEventListener("message", async ({ data }) => {

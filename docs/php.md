@@ -1,6 +1,6 @@
 # Usar la matriz desde PHP
 
-El lector PHP trabaja con un archivo local y usa `fseek()`/`fread()` para leer únicamente la celda solicitada. CEDIST03 requiere dos bytes por consulta; CEDIST02 usa cuatro. El lector detecta ambos formatos, no carga la matriz completa en memoria y no hace llamadas externas durante cada consulta.
+El lector PHP abre un archivo CEDIST03 local y usa `fseek()`/`fread()` para leer únicamente la celda solicitada. Cada distancia ocupa dos bytes y se devuelve en metros con una resolución de 10 metros. No se carga la matriz completa en memoria ni se hacen llamadas externas durante cada consulta.
 
 ## Instalar el lector
 
@@ -12,9 +12,9 @@ composer config repositories.canarias-route-matrix vcs \
 composer require ateeducacion/canarias-route-matrix:dev-main
 ```
 
-## Descargar y conservar los datos localmente
+## Descargar y verificar los datos
 
-La URL de GitHub Pages contiene una copia verificada de la última release `data-*`. Descarga primero el manifiesto y no sustituyas el archivo activo hasta haber comprobado tamaño y SHA-256:
+Descarga el manifiesto y valida el tamaño y SHA-256 antes de sustituir el archivo activo:
 
 ```php
 <?php
@@ -52,14 +52,9 @@ if ($temporaryPath === false) {
 
 try {
     $input = fopen($dataBaseUrl . 'canarias-distances.dat', 'rb');
-    if ($input === false) {
-        throw new RuntimeException('No se pudo abrir la descarga');
-    }
-
     $output = fopen($temporaryPath, 'wb');
-    if ($output === false) {
-        fclose($input);
-        throw new RuntimeException('No se pudo abrir el archivo temporal');
+    if ($input === false || $output === false) {
+        throw new RuntimeException('No se pudo abrir la descarga');
     }
 
     try {
@@ -88,9 +83,7 @@ try {
 }
 ```
 
-No conviene descargar el `.dat` dentro de cada petición HTTP. Actualízalo mediante una tarea programada, durante el despliegue o cuando cambie el hash publicado en `manifest.json`.
-
-Las variantes `.dat.zst` y `.dat.seekable.zst` son de distribución. Deben descomprimirse antes de construir `Reader`.
+No descargues el `.dat` dentro de cada petición HTTP. Actualízalo durante el despliegue o mediante una tarea programada.
 
 ## Consultar una distancia
 
@@ -109,13 +102,7 @@ $distance = $reader->getDistance('35000011', '98030001');
 echo number_format($distance->distanceMeters / 1000, 2, ',', '.') . ' km';
 ```
 
-La llamada devuelve un `DistanceResult` con la propiedad pública de solo lectura `distanceMeters`. En CEDIST03 el valor es múltiplo de 10 metros; CEDIST02 conserva sus metros originales.
-
-El formato detectado puede consultarse mediante:
-
-```php
- echo $reader->getFormat(); // CEDIST02 o CEDIST03
-```
+La llamada devuelve un `DistanceResult` con la propiedad pública de solo lectura `distanceMeters`.
 
 ## Servicio reutilizable
 
@@ -141,10 +128,4 @@ final class CanaryDistanceService
 }
 ```
 
-En una aplicación Symfony, Laravel o similar, registra `Reader` como servicio compartido para abrir el archivo una vez por proceso.
-
-## Versionar el artefacto
-
-La descarga anterior verifica el tamaño y SHA-256 antes del `rename()`. Para fijar resultados en el tiempo, usa los artefactos de una release `data-*` concreta y almacénalos junto con la aplicación. La URL `data/latest/` está pensada para seguir automáticamente la release de datos más reciente.
-
-`getRoute()` se mantiene temporalmente como alias de `getDistance()`. CEDIST02 y CEDIST03 no almacenan ni devuelven duración.
+En Symfony, Laravel o una aplicación similar, registra `Reader` como servicio compartido para abrir el archivo una vez por proceso.

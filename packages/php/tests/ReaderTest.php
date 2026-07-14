@@ -10,35 +10,24 @@ use PHPUnit\Framework\TestCase;
 
 final class ReaderTest extends TestCase
 {
-    /** @return array<string, string> */
-    private static function fixtures(): array
-    {
-        return [
-            'CEDIST03' => __DIR__ . '/../../../data/samples/sample.dat',
-            'CEDIST02' => __DIR__ . '/../../../data/samples/sample-v2.dat',
-        ];
-    }
+    private const FIXTURE = __DIR__ . '/../../../data/samples/sample.dat';
 
-    public function testDirectedDistanceInCurrentAndLegacyFormats(): void
+    public function testDirectedDistance(): void
     {
-        foreach (self::fixtures() as $format => $fixture) {
-            $reader = new Reader($fixture);
-            self::assertSame($format, $reader->getFormat());
-            self::assertSame(
-                1200,
-                $reader->getDistance('10000001', '10000002')->distanceMeters
-            );
-            self::assertSame(
-                1100,
-                $reader->getDistance('10000002', '10000001')->distanceMeters
-            );
-        }
+        $reader = new Reader(self::FIXTURE);
+        self::assertSame(
+            1200,
+            $reader->getDistance('10000001', '10000002')->distanceMeters
+        );
+        self::assertSame(
+            1100,
+            $reader->getDistance('10000002', '10000001')->distanceMeters
+        );
     }
 
     public function testCrossIsland(): void
     {
         $this->expectException(CrossIslandRouteException::class);
-        (new Reader(self::fixtures()['CEDIST03']))
-            ->getDistance('10000001', '20000004');
+        (new Reader(self::FIXTURE))->getDistance('10000001', '20000004');
     }
 }

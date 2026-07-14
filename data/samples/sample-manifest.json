@@ -1,9 +1,5 @@
 {
   "artifacts": {
-    "sample-v2.dat": {
-      "sha256": "402769dd5075cf497d8ab3213923f7820b91f9f660898137fd58c0a9b5ec7fba",
-      "size": 184
-    },
     "sample.dat": {
       "sha256": "471d1d9d457a5626d3a8de0dbfadcaa5a20bd828a41dfa2a3c5f0bbb148b0a43",
       "size": 164
