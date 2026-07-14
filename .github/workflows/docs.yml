@@ -97,13 +97,6 @@ jobs:
 
           echo "rebuild_data=$rebuild" >> "$GITHUB_OUTPUT"
 
-      - name: Install data build dependencies
-        if: steps.plan.outputs.rebuild_data == 'true'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y zstd
-          cargo install zeekstd_cli --version 0.4.5 --locked
-
       - name: Build current data
         id: build-data
         if: steps.plan.outputs.rebuild_data == 'true'
