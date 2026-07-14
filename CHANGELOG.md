@@ -14,6 +14,8 @@
 - Move the automatic live demo to the documentation homepage.
 - Redesign the homepage around a local interactive map, origin and destination search, and a clearer distance result.
 - Simplify the homepage to select an island first and render only its locations and map.
+- Replace the interactive map with a lightweight SVG route backdrop and add Bash, PowerShell and Python quick starts.
+- Group format, sources, quality, generation, updates, limitations and licensing under Architecture.
 - Expand the PHP, JavaScript, architecture and binary-format documentation.
 
 ## 0.0.3 - 2026-07-14
