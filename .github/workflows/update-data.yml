@@ -20,5 +20,5 @@ jobs:
       - if: env.CHECK_ONLY != 'true'
         run: make download-osm build-data verify-artifacts test-conformance
       - if: env.CHECK_ONLY != 'true'
-        uses: actions/upload-artifact@v4 # v4
+        uses: actions/upload-artifact@v7 # v4
         with: {name: validated-data, path: dist, retention-days: 14}
