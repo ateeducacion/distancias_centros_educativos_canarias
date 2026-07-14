@@ -3,7 +3,6 @@ from __future__ import annotations
 
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
-import hashlib
 import json
 import os
 from pathlib import Path
@@ -17,6 +16,7 @@ from canarias_route_matrix.binary.writer import write_binary  # noqa: E402
 from canarias_route_matrix.csv_importer import import_centers, write_report  # noqa: E402
 from canarias_route_matrix.manifest import sha256, stable_json, write_checksums  # noqa: E402
 from canarias_route_matrix.osrm import nearest, table  # noqa: E402
+from canarias_route_matrix.transport_nodes import load_transport_nodes, merge_locations  # noqa: E402
 
 
 def source_epoch_iso() -> str:
@@ -40,7 +40,10 @@ def main() -> None:
     result = import_centers(cache / "centers.csv", overrides=overrides)
     if result.errors:
         raise SystemExit(f"Official CSV has {len(result.errors)} rejected rows")
-    centers = sorted(result.centers, key=lambda center: str(center["code"]))
+    education_centers = sorted(result.centers, key=lambda center: str(center["code"]))
+    transport_nodes_path = ROOT / "config/transport-nodes.json"
+    transport_nodes = load_transport_nodes(transport_nodes_path)
+    centers = merge_locations(education_centers, transport_nodes)
     write_report(result, output / "validation-report.json", output / "validation-report.md")
 
     def snap(center: dict[str, object]) -> tuple[str, dict[str, object]]:
@@ -101,20 +104,25 @@ def main() -> None:
     stable_json(output / "centers.min.json", centers, minified=True)
     centers_meta = load_json(cache / "centers.meta.json")
     osm_meta = load_json(cache / "osm.meta.json")
+    transport_nodes_config = load_json(transport_nodes_path)
+    stable_json(output / "transport-nodes.json", transport_nodes_config)
     profile_sha = "cb3df0546318665609606b746a1297f3d65ca3c2ff825f8a6f3c57247d86a2d3"
     docker_digest = "sha256:855614a38f464b0558a2ad6eaa7cb8c139f39887da9b38b485ce453c6e6e6124"
-    artifact_paths = [binary, Path(str(binary) + ".zst"), output / "centers.json", output / "centers.min.json", output / "validation-report.json", output / "validation-report.md", output / "snapping-report.json"]
+    artifact_paths = [binary, Path(str(binary) + ".zst"), output / "centers.json", output / "centers.min.json", output / "transport-nodes.json", output / "validation-report.json", output / "validation-report.md", output / "snapping-report.json"]
+    airport_count = sum(node["location_type"] == "AIRPORT" for node in transport_nodes)
+    port_count = sum(node["location_type"] == "PORT" for node in transport_nodes)
     manifest = {
         "schema_version": 1,
         "format": {"magic": "CEDIST01", "major": 1, "minor": 0, "endianness": "little"},
         "generated_at": source_epoch_iso(),
         "data_version": "v0.0.3",
         "centers_source": {"dataset_url": "https://datos.canarias.es/catalogos/general/dataset/centros-educativos-de-canarias", "resource_url": centers_meta["url"], "etag": centers_meta["etag"], "last_modified": centers_meta["last_modified"], "size": centers_meta["size"], "sha256": centers_meta["sha256"]},
+        "transport_nodes_source": {"path": "config/transport-nodes.json", "sha256": sha256(transport_nodes_path), "scope": transport_nodes_config["scope"], "sources": transport_nodes_config["sources"]},
         "osm_source": {"url": osm_meta["url"], "etag": osm_meta["etag"], "last_modified": osm_meta["last_modified"], "size": osm_meta["size"], "sha256": osm_meta["sha256"]},
         "routing": {"engine": "OSRM", "version": "5.27.1", "docker_digest": docker_digest, "algorithm": "MLD", "profile": "car-fastest", "profile_sha256": profile_sha},
         "rounding": "nearest integer, halves up",
         "overrides": overrides,
-        "counts": {"centers": len(centers), "directed_routes": sum(value * value for value in counts.values()), "unreachable_routes": unreachable, "islands": counts, "included": result.included, "excluded": result.excluded, "rejected": result.rejected},
+        "counts": {"centers": len(education_centers), "locations": len(centers), "airports": airport_count, "ports": port_count, "directed_routes": sum(value * value for value in counts.values()), "unreachable_routes": unreachable, "islands": counts, "included": result.included, "excluded": result.excluded, "rejected": result.rejected},
         "artifacts": {path.name: {"size": path.stat().st_size, "sha256": sha256(path)} for path in artifact_paths},
     }
     stable_json(output / "manifest.json", manifest)
