@@ -1,2 +1,33 @@
-<?php declare(strict_types=1); namespace AteEducacion\CanariasRouteMatrix\Tests; use PHPUnit\Framework\TestCase; use AteEducacion\CanariasRouteMatrix\Reader; use AteEducacion\CanariasRouteMatrix\Exception\CrossIslandRouteException;
-final class ReaderTest extends TestCase { public function testDirectedRoute():void{$r=new Reader(__DIR__."/../../../data/samples/sample.bin");self::assertSame(1200,$r->getRoute("10000001","10000002")->distanceMeters);self::assertSame(1100,$r->getRoute("10000002","10000001")->distanceMeters);} public function testCrossIsland():void{$this->expectException(CrossIslandRouteException::class);(new Reader(__DIR__."/../../../data/samples/sample.bin"))->getRoute("10000001","20000004");}}
+<?php
+
+declare(strict_types=1);
+
+namespace AteEducacion\CanariasRouteMatrix\Tests;
+
+use AteEducacion\CanariasRouteMatrix\Exception\CrossIslandRouteException;
+use AteEducacion\CanariasRouteMatrix\Reader;
+use PHPUnit\Framework\TestCase;
+
+final class ReaderTest extends TestCase
+{
+    private const FIXTURE = __DIR__ . '/../../../data/samples/sample.dat';
+
+    public function testDirectedDistance(): void
+    {
+        $reader = new Reader(self::FIXTURE);
+        self::assertSame(
+            1200,
+            $reader->getDistance('10000001', '10000002')->distanceMeters
+        );
+        self::assertSame(
+            1100,
+            $reader->getDistance('10000002', '10000001')->distanceMeters
+        );
+    }
+
+    public function testCrossIsland(): void
+    {
+        $this->expectException(CrossIslandRouteException::class);
+        (new Reader(self::FIXTURE))->getDistance('10000001', '20000004');
+    }
+}
