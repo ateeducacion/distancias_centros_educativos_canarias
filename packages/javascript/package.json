@@ -1,6 +1,7 @@
 {
   "name": "@ateeducacion/canarias-route-matrix",
   "version": "0.0.3",
+  "description": "Distance-only CEDIST02 reader for JavaScript",
   "type": "module",
   "exports": "./src/index.js",
   "types": "./src/index.d.ts",
@@ -10,9 +11,9 @@
     "test": "vitest run"
   },
   "devDependencies": {
-    "@eslint/js": "9.39.5",
+    "@eslint/js": "10.0.1",
     "eslint": "10.7.0",
-    "prettier": "3.8.2",
+    "prettier": "3.9.5",
     "vitest": "4.1.10"
   },
   "engines": {
