@@ -36,12 +36,6 @@ La reducción de cuatro a dos bytes por celda disminuye aproximadamente a la mit
 offset = distance_offset + position * 2
 ```
 
-## Distribución comprimida
+## Distribución
 
-Cada generación publica:
-
-- `canarias-distances.dat`: acceso aleatorio directo.
-- `canarias-distances.dat.zst`: Zstandard convencional.
-- `canarias-distances.dat.seekable.zst`: Zstandard Seekable por frames.
-
-Los readers incluidos usan el `.dat`. Las dos variantes comprimidas deben descomprimirse antes de pasarlas a los readers; la variante seekable está pensada para consumidores que implementen recuperación parcial por frames.
+Cada generación publica `canarias-distances.dat` como representación binaria única. El mismo archivo permite descarga, almacenamiento y acceso aleatorio directo por parte de los readers, sin una etapa previa de descompresión.
