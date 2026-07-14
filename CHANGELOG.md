@@ -4,8 +4,9 @@
 
 - Add eight public airports and fifteen principal ports as numeric routable locations.
 - Reserve `98IINNNN` for airports and `99IINNNN` for ports, with stable island digits.
-- Build and deploy the GitHub Pages data bundle directly from `main`.
-- Build release assets from tags and allow manual repair of an existing tag publication.
+- Build GitHub Pages from `main` with the latest published data snapshot.
+- Publish data releases as `data-YYYYMMDD-HHMM` only when the matrix or location metadata changes.
+- Check the official centers CSV weekly and rebuild when its SHA-256 changes.
 - Decouple generated data versions from the Python and JavaScript package versions.
 - Replace CEDIST01 with the incompatible distance-only CEDIST02 format.
 - Remove duration generation, storage and API fields, reducing the uncompressed matrix to approximately half its former size.
