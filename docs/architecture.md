@@ -11,10 +11,8 @@ flowchart LR
     E --> F
     F --> G[Tablas de distancias por bloques e isla]
     G --> H[CEDIST03 .dat]
-    H --> Z[Zstandard y Zstandard Seekable]
     C --> I[centers.min.json]
     H --> J[GitHub Pages y Releases]
-    Z --> J
     I --> J
     J --> K[Navegador]
     J --> L[Aplicación PHP]
@@ -30,7 +28,7 @@ flowchart LR
 6. OSRM calcula tablas dirigidas por bloques solicitando únicamente la anotación `distance`.
 7. Se calcula la máxima distancia y se comprueba que no supera 655.340 metros.
 8. Los metros de OSRM se redondean a decámetros y se escriben en CEDIST03.
-9. Se generan las copias Zstandard, el manifiesto, los informes y los hashes SHA-256.
+9. Se generan el manifiesto, los informes y los hashes SHA-256.
 
 El trabajo intensivo sucede aquí. La generación puede tardar, pero se ejecuta una sola vez por versión de datos, no una vez por usuario o consulta.
 
@@ -91,9 +89,9 @@ Las distancias no se consideran simétricas: sentidos únicos, accesos y enlaces
 
 Los códigos públicos se transmiten como cadenas, pero se almacenan como `uint32`. El índice ocupa 12 bytes por ubicación y permite una búsqueda binaria simple en todos los lenguajes.
 
-### Archivo sin compresión para consulta
+### Archivo sin compresión para consulta y distribución
 
-El `.dat` permite acceso aleatorio inmediato. `canarias-distances.dat.zst` sirve para distribución convencional y `canarias-distances.dat.seekable.zst` añade frames independientes y una tabla de búsqueda. Los readers oficiales siguen recibiendo un `.dat` descomprimido para mantener una implementación pequeña y predecible.
+El proyecto publica directamente `canarias-distances.dat`. El archivo ya usa celdas compactas de dos bytes y permite acceso aleatorio inmediato, sin añadir dependencias de compresión ni pasos de descompresión en los consumidores.
 
 ### Metadatos separados
 
