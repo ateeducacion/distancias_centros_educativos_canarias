@@ -21,8 +21,8 @@ cleanup() {
 
 trap cleanup 0 INT TERM
 
-bin/route-matrix --cache-dir "$CACHE_DIR" download-centers
-bin/route-matrix --cache-dir "$CACHE_DIR" download-osm
+uv run python -m canarias_route_matrix.cli --cache-dir "$CACHE_DIR" download-centers
+uv run python -m canarias_route_matrix.cli --cache-dir "$CACHE_DIR" download-osm
 
 rm -rf "$OUTPUT_DIR" "$OSRM_PATH"
 mkdir -p "$OSRM_PATH"
