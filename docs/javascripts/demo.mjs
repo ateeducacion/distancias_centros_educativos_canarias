@@ -2,15 +2,19 @@ const form = document.querySelector("#route-demo");
 
 if (form) {
   const status = document.querySelector("#demo-status");
+  const islandSelect = document.querySelector("#island");
+  const locationControls = document.querySelector("#location-controls");
+  const originSelect = document.querySelector("#origin");
+  const destinationSelect = document.querySelector("#destination");
   const resultState = document.querySelector("#result-state");
   const resultValue = document.querySelector("#result-value");
   const resultKilometers = document.querySelector("#result-kilometers");
   const resultMeters = document.querySelector("#result-meters");
   const resultRoute = document.querySelector("#result-route");
   const copyButton = document.querySelector("#copy-result");
-  const originSelect = document.querySelector("#origin");
-  const destinationSelect = document.querySelector("#destination");
   const version = document.querySelector("#demo-version");
+  const mapPanel = document.querySelector("#map-panel");
+  const mapTitle = document.querySelector("#map-title");
   const mapElement = document.querySelector("#locations-map");
   const mapFallback = document.querySelector("#map-fallback");
   const mapModeButtons = [...document.querySelectorAll("[data-map-target]")];
@@ -19,28 +23,15 @@ if (form) {
   const worker = new Worker(new URL("demo-worker.mjs", import.meta.url), {
     type: "module",
   });
-  const defaultBounds = [
-    [27.55, -18.25],
-    [29.45, -13.25],
-  ];
-  const islandColors = [
-    "#2563eb",
-    "#db2777",
-    "#16a34a",
-    "#9333ea",
-    "#ea580c",
-    "#0891b2",
-    "#ca8a04",
-    "#4f46e5",
-  ];
+
   let locations = [];
+  let locationsByIsland = new Map();
   let locationByCode = new Map();
   let markerByCode = new Map();
-  let colorByIsland = new Map();
   let map = null;
-  let ready = false;
-  let syncing = false;
+  let mapLayer = null;
   let activeMapTarget = "origin";
+  let ready = false;
   let lastResult = "";
 
   const option = (value, label) => new Option(label, value);
@@ -66,45 +57,11 @@ if (form) {
     return [
       locationTypeLabels[location.location_type],
       location.municipality,
-      formatIsland(location.island),
+      location.locality,
       location.code,
     ]
       .filter(Boolean)
       .join(" · ");
-  }
-
-  function convexHull(points) {
-    if (points.length <= 2) return points;
-    const sorted = [...points].sort(
-      (first, second) =>
-        first[0] - second[0] || first[1] - second[1],
-    );
-    const cross = (origin, first, second) =>
-      (first[0] - origin[0]) * (second[1] - origin[1]) -
-      (first[1] - origin[1]) * (second[0] - origin[0]);
-    const lower = [];
-    for (const point of sorted) {
-      while (
-        lower.length >= 2 &&
-        cross(lower.at(-2), lower.at(-1), point) <= 0
-      ) {
-        lower.pop();
-      }
-      lower.push(point);
-    }
-    const upper = [];
-    for (const point of [...sorted].reverse()) {
-      while (
-        upper.length >= 2 &&
-        cross(upper.at(-2), upper.at(-1), point) <= 0
-      ) {
-        upper.pop();
-      }
-      upper.push(point);
-    }
-    lower.pop();
-    upper.pop();
-    return lower.concat(upper);
   }
 
   function setResultState(message) {
@@ -112,6 +69,13 @@ if (form) {
     resultState.hidden = false;
     resultValue.hidden = true;
     copyButton.hidden = true;
+  }
+
+  function setMapTarget(target) {
+    activeMapTarget = target;
+    for (const button of mapModeButtons) {
+      button.classList.toggle("is-active", button.dataset.mapTarget === target);
+    }
   }
 
   function updateUrl() {
@@ -126,25 +90,8 @@ if (form) {
     window.history.replaceState(null, "", `?${next}`);
   }
 
-  function setMapTarget(target) {
-    activeMapTarget = target;
-    for (const button of mapModeButtons) {
-      button.classList.toggle("is-active", button.dataset.mapTarget === target);
-    }
-  }
-
-  function selectCandidates(select) {
-    const otherCode =
-      select === originSelect ? destinationSelect.value : originSelect.value;
-    const otherLocation = locationByCode.get(otherCode);
-    if (!otherLocation) return locations;
-    return locations.filter(
-      (location) => String(location.island_id) === String(otherLocation.island_id),
-    );
-  }
-
-  function populateSelect(select, candidates, selectedValue = "") {
-    select.replaceChildren(option("", "Busca por nombre o código"));
+  function populateLocationSelect(select, candidates, selectedValue = "") {
+    select.replaceChildren(option("", "Buscar por nombre o código"));
     for (const location of candidates) {
       select.add(option(location.code, locationLabel(location)));
     }
@@ -154,67 +101,47 @@ if (form) {
     window.jQuery(select).trigger("change.select2");
   }
 
-  function synchronizeSelects(changedSelect) {
-    if (syncing) return;
-    syncing = true;
-    const otherSelect =
-      changedSelect === originSelect ? destinationSelect : originSelect;
-    const otherValue = otherSelect.value;
-    populateSelect(otherSelect, selectCandidates(otherSelect), otherValue);
-    syncing = false;
-  }
-
-  function selectedLocations() {
-    return {
-      origin: locationByCode.get(originSelect.value),
-      destination: locationByCode.get(destinationSelect.value),
-    };
-  }
-
   function updateMarkerStyles() {
-    const { origin, destination } = selectedLocations();
-    for (const location of locations) {
-      const marker = markerByCode.get(location.code);
-      if (!marker) continue;
-      let color = colorByIsland.get(String(location.island_id));
+    const origin = originSelect.value;
+    const destination = destinationSelect.value;
+    for (const [code, marker] of markerByCode) {
+      let color = "#2563eb";
       let radius = 4;
       let weight = 1;
-      let fillOpacity = 0.72;
-      if (location.code === origin?.code) {
+      if (code === origin) {
         color = "#15803d";
         radius = 8;
         weight = 3;
-        fillOpacity = 1;
-      } else if (location.code === destination?.code) {
+      } else if (code === destination) {
         color = "#7c3aed";
         radius = 8;
         weight = 3;
-        fillOpacity = 1;
-      } else if (
-        origin &&
-        String(location.island_id) !== String(origin.island_id)
-      ) {
-        fillOpacity = 0.2;
       }
       marker.setRadius(radius);
-      marker.setStyle({ color, fillColor: color, fillOpacity, weight });
+      marker.setStyle({
+        color,
+        fillColor: color,
+        fillOpacity: code === origin || code === destination ? 1 : 0.72,
+        weight,
+      });
     }
   }
 
   function focusSelection() {
     if (!map) return;
-    const { origin, destination } = selectedLocations();
+    const origin = locationByCode.get(originSelect.value);
+    const destination = locationByCode.get(destinationSelect.value);
     if (origin && destination) {
       map.fitBounds(
         [
           [origin.latitude, origin.longitude],
           [destination.latitude, destination.longitude],
         ],
-        { maxZoom: 12, padding: [48, 48] },
+        { maxZoom: 13, padding: [48, 48] },
       );
     } else if (origin || destination) {
       const location = origin ?? destination;
-      map.flyTo([location.latitude, location.longitude], 11, { duration: 0.5 });
+      map.flyTo([location.latitude, location.longitude], 12, { duration: 0.4 });
     }
   }
 
@@ -236,156 +163,54 @@ if (form) {
     updateUrl();
   }
 
-  function handleSelection(select) {
-    synchronizeSelects(select);
-    if (select === originSelect && originSelect.value && !destinationSelect.value) {
-      setMapTarget("destination");
-    }
-    querySelection();
-  }
-
-  function initializeSelect2() {
-    const select2Options = {
-      allowClear: true,
-      width: "100%",
-      language: {
-        noResults: () => "No se encontraron ubicaciones",
-      },
-    };
-    window.jQuery(originSelect).select2({
-      ...select2Options,
-      placeholder: "Buscar origen",
-    });
-    window.jQuery(destinationSelect).select2({
-      ...select2Options,
-      placeholder: "Buscar destino",
-    });
-    window.jQuery(originSelect).on("change", () => handleSelection(originSelect));
-    window
-      .jQuery(destinationSelect)
-      .on("change", () => handleSelection(destinationSelect));
-  }
-
   function chooseLocationFromMap(code) {
-    const target = activeMapTarget;
-    const select = target === "origin" ? originSelect : destinationSelect;
-    const candidates = selectCandidates(select);
-    const resetsOtherSelection = !candidates.some(
-      (candidate) => candidate.code === code,
-    );
-    if (resetsOtherSelection) {
-      const otherSelect =
-        select === originSelect ? destinationSelect : originSelect;
-      syncing = true;
-      otherSelect.value = "";
-      populateSelect(select, locations, code);
-      populateSelect(otherSelect, locations, "");
-      syncing = false;
-    } else {
-      select.value = code;
-      window.jQuery(select).trigger("change.select2");
-    }
-    handleSelection(select);
-    if (resetsOtherSelection) {
-      setMapTarget(target === "origin" ? "destination" : "origin");
-    } else if (target === "origin") {
-      setMapTarget("destination");
-    }
+    const select = activeMapTarget === "origin" ? originSelect : destinationSelect;
+    select.value = code;
+    window.jQuery(select).trigger("change.select2");
+    querySelection();
+    if (activeMapTarget === "origin") setMapTarget("destination");
   }
 
-  function initializeMap() {
+  function clearMap() {
+    markerByCode = new Map();
+    if (mapLayer) mapLayer.clearLayers();
+  }
+
+  function renderIslandMap(islandLocations) {
     if (!window.L) {
       mapElement.hidden = true;
       mapFallback.hidden = false;
       return;
     }
-
-    map = window.L.map(mapElement, {
-      preferCanvas: true,
-      zoomControl: true,
-      attributionControl: false,
-      minZoom: 6,
-      maxZoom: 18,
-      maxBounds: defaultBounds,
-      maxBoundsViscosity: 0.8,
-    });
-    map.fitBounds(defaultBounds);
-
-    const islands = [
-      ...new Map(
-        locations.map((location) => [String(location.island_id), location.island]),
-      ),
-    ].sort((first, second) => first[1].localeCompare(second[1], "es"));
-    colorByIsland = new Map(
-      islands.map(([id], index) => [id, islandColors[index % islandColors.length]]),
-    );
-
-    for (const [islandId, islandName] of islands) {
-      const islandLocations = locations.filter(
-        (location) => String(location.island_id) === islandId,
-      );
-      const points = islandLocations
-        .filter(
-          (location) =>
-            Number.isFinite(location.latitude) &&
-            Number.isFinite(location.longitude),
-        )
-        .map((location) => [location.longitude, location.latitude]);
-      const color = colorByIsland.get(islandId);
-      const hull = convexHull(points);
-      if (hull.length >= 3) {
-        window.L
-          .polygon(
-            hull.map(([longitude, latitude]) => [latitude, longitude]),
-            {
-              color,
-              fillColor: color,
-              fillOpacity: 0.08,
-              interactive: false,
-              weight: 1,
-            },
-          )
-          .addTo(map);
-      }
-      if (points.length > 0) {
-        const center = points.reduce(
-          (current, point) => [
-            current[0] + point[0] / points.length,
-            current[1] + point[1] / points.length,
-          ],
-          [0, 0],
-        );
-        window.L
-          .tooltip({
-            className: "island-map-label",
-            direction: "center",
-            interactive: false,
-            permanent: true,
-          })
-          .setLatLng([center[1], center[0]])
-          .setContent(formatIsland(islandName))
-          .addTo(map);
-      }
+    if (!map) {
+      map = window.L.map(mapElement, {
+        preferCanvas: true,
+        attributionControl: false,
+        minZoom: 8,
+        maxZoom: 18,
+      });
+      mapLayer = window.L.layerGroup().addTo(map);
     }
 
-    for (const location of locations) {
+    clearMap();
+    const bounds = [];
+    for (const location of islandLocations) {
       if (!Number.isFinite(location.latitude) || !Number.isFinite(location.longitude)) {
         continue;
       }
-      const color = colorByIsland.get(String(location.island_id));
       const marker = window.L.circleMarker(
         [location.latitude, location.longitude],
         {
           radius: 4,
           weight: 1,
-          color,
-          fillColor: color,
+          color: "#2563eb",
+          fillColor: "#2563eb",
           fillOpacity: 0.72,
         },
       );
       marker.bindTooltip(location.name, { direction: "top" });
       marker.bindPopup(
-        `<span class="location-popup-name"></span><span class="location-popup-meta"></span>`,
+        '<span class="location-popup-name"></span><span class="location-popup-meta"></span>',
       );
       marker.on("popupopen", ({ popup }) => {
         const element = popup.getElement();
@@ -394,20 +219,88 @@ if (form) {
           locationMeta(location);
       });
       marker.on("click", () => chooseLocationFromMap(location.code));
-      marker.addTo(map);
+      marker.addTo(mapLayer);
       markerByCode.set(location.code, marker);
+      bounds.push([location.latitude, location.longitude]);
     }
+
+    window.setTimeout(() => {
+      map.invalidateSize();
+      if (bounds.length > 0) {
+        map.fitBounds(bounds, { maxZoom: 12, padding: [32, 32] });
+      }
+    }, 0);
+  }
+
+  function selectIsland(islandId, selectedOrigin = "", selectedDestination = "") {
+    const islandLocations = locationsByIsland.get(String(islandId)) ?? [];
+    const islandName = islandLocations[0]?.island;
+    const hasIsland = islandLocations.length > 0;
+
+    locationControls.hidden = !hasIsland;
+    mapPanel.hidden = !hasIsland;
+    populateLocationSelect(originSelect, islandLocations, selectedOrigin);
+    populateLocationSelect(destinationSelect, islandLocations, selectedDestination);
+    setMapTarget("origin");
+    setResultState("Selecciona un origen y un destino.");
+    updateUrl();
+
+    if (hasIsland) {
+      mapTitle.textContent = `Ubicaciones de ${formatIsland(islandName)}`;
+      renderIslandMap(islandLocations);
+      updateMarkerStyles();
+    } else {
+      clearMap();
+    }
+  }
+
+  function initializeSelect2() {
+    window.jQuery(islandSelect).select2({
+      placeholder: "Selecciona una isla",
+      width: "100%",
+    });
+    const locationOptions = {
+      allowClear: true,
+      width: "100%",
+      language: {
+        noResults: () => "No se encontraron ubicaciones",
+      },
+    };
+    window.jQuery(originSelect).select2({
+      ...locationOptions,
+      placeholder: "Buscar origen",
+    });
+    window.jQuery(destinationSelect).select2({
+      ...locationOptions,
+      placeholder: "Buscar destino",
+    });
+
+    window.jQuery(islandSelect).on("change", () => {
+      selectIsland(islandSelect.value);
+    });
+    window.jQuery(originSelect).on("change", () => {
+      if (originSelect.value && !destinationSelect.value) {
+        setMapTarget("destination");
+      }
+      querySelection();
+    });
+    window.jQuery(destinationSelect).on("change", querySelection);
   }
 
   function applyRequestedSelection() {
     const requestedOrigin = params.get("origin");
     const requestedDestination = params.get("destination");
-    populateSelect(originSelect, locations, requestedOrigin ?? "");
-    populateSelect(destinationSelect, locations, requestedDestination ?? "");
-    if (requestedOrigin) synchronizeSelects(originSelect);
-    if (!originSelect.value && requestedDestination) {
-      synchronizeSelects(destinationSelect);
-    }
+    const requestedLocation =
+      locationByCode.get(requestedOrigin) ?? locationByCode.get(requestedDestination);
+    if (!requestedLocation) return;
+
+    islandSelect.value = String(requestedLocation.island_id);
+    window.jQuery(islandSelect).trigger("change.select2");
+    selectIsland(
+      requestedLocation.island_id,
+      requestedOrigin ?? "",
+      requestedDestination ?? "",
+    );
   }
 
   worker.addEventListener("message", ({ data }) => {
@@ -418,18 +311,32 @@ if (form) {
       locationByCode = new Map(
         locations.map((location) => [location.code, location]),
       );
-      populateSelect(originSelect, locations);
-      populateSelect(destinationSelect, locations);
-      initializeSelect2();
-      applyRequestedSelection();
-      initializeMap();
+      locationsByIsland = new Map();
+      for (const location of locations) {
+        const islandId = String(location.island_id);
+        const islandLocations = locationsByIsland.get(islandId) ?? [];
+        islandLocations.push(location);
+        locationsByIsland.set(islandId, islandLocations);
+      }
 
+      const islands = [...locationsByIsland.entries()]
+        .map(([id, islandLocations]) => [id, islandLocations[0].island])
+        .sort((first, second) =>
+          formatIsland(first[1]).localeCompare(formatIsland(second[1]), "es"),
+        );
+      islandSelect.replaceChildren(option("", "Selecciona una isla"));
+      for (const [id, name] of islands) {
+        islandSelect.add(option(id, formatIsland(name)));
+      }
+
+      populateLocationSelect(originSelect, []);
+      populateLocationSelect(destinationSelect, []);
+      initializeSelect2();
       ready = true;
-      version.textContent = `Datos: ${data.dataVersion}`;
-      status.textContent =
-        "Matriz cargada. Las consultas se resuelven en este navegador.";
+      status.hidden = true;
       form.hidden = false;
-      querySelection();
+      version.textContent = `Datos: ${data.dataVersion}`;
+      applyRequestedSelection();
     } else if (data.type === "distance") {
       const kilometers = new Intl.NumberFormat("es-ES", {
         maximumFractionDigits: 2,
@@ -452,6 +359,7 @@ if (form) {
 
   worker.addEventListener("error", () => {
     status.textContent = "No se pudieron cargar los datos de la demo.";
+    status.hidden = false;
     setResultState("La calculadora no está disponible en este momento.");
   });
 
@@ -463,11 +371,10 @@ if (form) {
 
   document.querySelector("#swap-centers").addEventListener("click", () => {
     const origin = originSelect.value;
-    const destination = destinationSelect.value;
-    syncing = true;
-    populateSelect(originSelect, locations, destination);
-    populateSelect(destinationSelect, selectCandidates(destinationSelect), origin);
-    syncing = false;
+    originSelect.value = destinationSelect.value;
+    destinationSelect.value = origin;
+    window.jQuery(originSelect).trigger("change.select2");
+    window.jQuery(destinationSelect).trigger("change.select2");
     querySelection();
   });
 
