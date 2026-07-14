@@ -4,22 +4,22 @@
 }
 
 .md-content__inner:has(.distance-home) {
-  max-width: 68rem;
+  max-width: 72rem;
 }
 
 .distance-home {
-  max-width: 62rem;
+  max-width: 68rem;
   margin: 0.75rem auto 0;
 }
 
 .distance-home-header {
-  margin-bottom: 1.25rem;
+  margin-bottom: 1rem;
 }
 
 .distance-home h1 {
   max-width: none;
   margin: 0;
-  font-size: clamp(1.75rem, 4vw, 2.4rem);
+  font-size: clamp(1.7rem, 3.5vw, 2.25rem);
   line-height: 1.12;
 }
 
@@ -47,25 +47,117 @@
   }
 }
 
-.distance-demo {
-  display: grid;
-  gap: 1.25rem;
-  padding: clamp(1rem, 3vw, 1.5rem);
-  border: 1px solid var(--distance-border);
-  border-radius: 1rem;
-  background: var(--md-default-bg-color);
-  box-shadow: 0 0.75rem 2.5rem rgb(0 0 0 / 7%);
-}
-
 .demo-status[hidden],
-.distance-demo[hidden],
-.location-controls[hidden],
-.distance-map-panel[hidden] {
+.distance-demo[hidden] {
   display: none;
 }
 
+.distance-stage {
+  position: relative;
+  min-height: 35rem;
+  overflow: hidden;
+  border: 1px solid var(--distance-border);
+  border-radius: 1.15rem;
+  background:
+    radial-gradient(circle at 75% 35%, rgb(59 130 246 / 14%), transparent 30%),
+    radial-gradient(circle at 30% 80%, rgb(14 165 233 / 10%), transparent 36%),
+    var(--distance-surface);
+  box-shadow: 0 1rem 3rem rgb(0 0 0 / 9%);
+  isolation: isolate;
+}
+
+.distance-visual {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  color: var(--md-primary-fg-color);
+}
+
+.distance-visual::after {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--md-default-bg-color) 45%, transparent),
+    transparent 58%
+  );
+  content: "";
+  pointer-events: none;
+}
+
+.route-visual {
+  width: 100%;
+  height: 100%;
+  opacity: 0.82;
+}
+
+.island-shape {
+  fill: url("#island-fill");
+  stroke: currentColor;
+  stroke-linejoin: round;
+  stroke-width: 2;
+  opacity: 0.58;
+  transition:
+    opacity 0.35s ease,
+    filter 0.35s ease;
+  vector-effect: non-scaling-stroke;
+}
+
+.island-shape.is-selected {
+  filter: drop-shadow(0 0 0.45rem rgb(37 99 235 / 30%));
+  opacity: 1;
+}
+
+.island-shape-secondary {
+  opacity: 0.4;
+}
+
+.route-line[hidden],
+.route-point[hidden] {
+  display: none;
+}
+
+.route-line {
+  filter: url("#route-glow");
+  stroke: var(--md-primary-fg-color);
+  stroke-dasharray: 10 8;
+  stroke-linecap: round;
+  stroke-width: 3;
+  vector-effect: non-scaling-stroke;
+}
+
+.route-point {
+  filter: url("#route-glow");
+  stroke: var(--md-default-bg-color);
+  stroke-width: 3;
+  vector-effect: non-scaling-stroke;
+}
+
+.route-point-origin {
+  fill: #15803d;
+}
+
+.route-point-destination {
+  fill: #7c3aed;
+}
+
+.distance-demo {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 1.15rem;
+  width: min(42rem, calc(100% - 3rem));
+  margin: clamp(1.25rem, 5vw, 3rem);
+  padding: clamp(1rem, 3vw, 1.5rem);
+  border: 1px solid color-mix(in srgb, var(--distance-border) 80%, transparent);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--md-default-bg-color) 88%, transparent);
+  box-shadow: 0 0.75rem 2.5rem rgb(0 0 0 / 10%);
+  backdrop-filter: blur(12px);
+}
+
 .distance-island-field {
-  max-width: 34rem;
+  max-width: 25rem;
 }
 
 .distance-island-field label,
@@ -86,17 +178,17 @@
   padding-top: 0.43rem;
   border-color: var(--distance-border);
   border-radius: 0.65rem;
+  background: color-mix(in srgb, var(--md-default-bg-color) 92%, transparent);
+}
+
+.select2-container--default.select2-container--disabled
+  .select2-selection--single {
+  cursor: not-allowed;
+  opacity: 0.62;
 }
 
 .select2-container--default .select2-selection--single .select2-selection__arrow {
   top: 0.38rem;
-}
-
-.location-controls {
-  display: grid;
-  gap: 1rem;
-  padding-top: 1.1rem;
-  border-top: 1px solid var(--distance-border);
 }
 
 .distance-fields {
@@ -111,12 +203,17 @@
   padding: 0 0.85rem;
   border: 1px solid var(--distance-border);
   border-radius: 0.65rem;
-  background: var(--distance-surface);
+  background: color-mix(in srgb, var(--md-default-bg-color) 88%, transparent);
   color: var(--md-primary-fg-color);
   font: inherit;
   font-size: 0.8rem;
   font-weight: 700;
   cursor: pointer;
+}
+
+.swap-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
 .distance-result {
@@ -125,7 +222,7 @@
   padding: 1rem 1.15rem;
   border: 1px solid color-mix(in srgb, var(--md-primary-fg-color) 28%, transparent);
   border-radius: 0.8rem;
-  background: color-mix(in srgb, var(--md-primary-fg-color) 7%, var(--md-default-bg-color));
+  background: color-mix(in srgb, var(--md-default-bg-color) 86%, transparent);
 }
 
 #result-state {
@@ -174,99 +271,14 @@
   cursor: pointer;
 }
 
-.distance-map-panel {
-  margin-top: 1rem;
-  padding: clamp(0.8rem, 2vw, 1rem);
-  border: 1px solid var(--distance-border);
-  border-radius: 1rem;
-  background: var(--distance-surface);
-}
-
-.distance-map-heading {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 0.2rem 0.2rem 0.8rem;
-}
-
-.distance-map-heading h2 {
-  margin: 0;
-  font-size: 1.05rem;
-}
-
-.distance-map-heading p {
-  margin: 0.2rem 0 0;
-  color: var(--md-default-fg-color--light);
-  font-size: 0.8rem;
-}
-
-.map-selection-mode {
-  display: flex;
-  flex: 0 0 auto;
-  gap: 0.2rem;
-  padding: 0.18rem;
-  border: 1px solid var(--distance-border);
-  border-radius: 0.6rem;
-  background: var(--md-default-bg-color);
-}
-
-.map-mode-button {
-  padding: 0.38rem 0.6rem;
-  border: 0;
-  border-radius: 0.42rem;
-  background: transparent;
-  color: var(--md-default-fg-color--light);
-  font: inherit;
-  font-size: 0.76rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.map-mode-button.is-active {
-  background: var(--md-primary-fg-color);
-  color: var(--md-primary-bg-color);
-}
-
-.locations-map {
-  height: clamp(22rem, 46vw, 30rem);
-  overflow: hidden;
-  border: 1px solid var(--distance-border);
-  border-radius: 0.8rem;
-  background:
-    radial-gradient(circle at 30% 35%, rgb(37 99 235 / 8%), transparent 30%),
-    linear-gradient(145deg, #edf4f7, #dce8ee);
-}
-
-.locations-map .leaflet-popup-content {
-  margin: 0.8rem 1rem;
-}
-
-.location-popup-name {
-  display: block;
-  margin-bottom: 0.2rem;
-  font-weight: 700;
-}
-
-.location-popup-meta {
-  color: #4b5563;
-  font-size: 0.78rem;
-}
-
-.map-fallback {
-  margin: 0.65rem 0 0;
-  color: var(--md-default-fg-color--light);
-  font-size: 0.78rem;
-}
-
 .distance-footer {
   display: grid;
   gap: 0.65rem;
-  margin-top: 1.25rem;
+  margin-top: 1.1rem;
 }
 
 .distance-limit {
-  max-width: 78ch;
+  max-width: 90ch;
   margin: 0;
   color: var(--md-default-fg-color--light);
   font-size: 0.78rem;
@@ -287,6 +299,15 @@
 }
 
 @media (max-width: 48rem) {
+  .distance-stage {
+    min-height: 40rem;
+  }
+
+  .distance-demo {
+    width: auto;
+    margin: 1rem;
+  }
+
   .distance-fields {
     grid-template-columns: 1fr;
   }
@@ -297,30 +318,26 @@
     padding: 0.45rem 0.7rem;
   }
 
-  .distance-map-heading {
-    display: grid;
-  }
-
-  .map-selection-mode {
-    justify-self: start;
-  }
-
-  .locations-map {
-    height: 22rem;
+  .distance-visual::after {
+    background: color-mix(
+      in srgb,
+      var(--md-default-bg-color) 24%,
+      transparent
+    );
   }
 }
 
 @media (max-width: 30rem) {
   .distance-home h1 {
-    font-size: 1.65rem;
+    font-size: 1.6rem;
   }
 
-  .distance-demo,
-  .distance-map-panel {
+  .distance-stage,
+  .distance-demo {
     border-radius: 0.8rem;
   }
 
-  .locations-map {
-    height: 19rem;
+  .distance-stage {
+    min-height: 42rem;
   }
 }
