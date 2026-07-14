@@ -13,7 +13,7 @@ services:
     depends_on: [osrm]
   api:
     build: {context: ., dockerfile: docker/api/Dockerfile}
-    environment: [MATRIX_BINARY=/data/canarias-education-routes.bin, CORS_ORIGIN=*]
+    environment: [MATRIX_DATA=/data/canarias-distances.dat, CORS_ORIGIN=*]
     volumes: [./dist:/data:ro]
     profiles: [api]
     read_only: true
