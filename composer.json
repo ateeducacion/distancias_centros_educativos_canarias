@@ -1,0 +1,14 @@
+{
+  "name": "ateeducacion/canarias-route-matrix",
+  "description": "Distance-only CEDIST02 reader for PHP",
+  "type": "library",
+  "license": "MIT",
+  "require": {
+    "php": "^8.2"
+  },
+  "autoload": {
+    "psr-4": {
+      "AteEducacion\\CanariasRouteMatrix\\": "packages/php/src/"
+    }
+  }
+}
