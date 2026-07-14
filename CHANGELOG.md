@@ -16,6 +16,8 @@
 - Publish `canarias-distances.dat.seekable.zst` using `zeekstd` alongside the normal `.dat` and `.dat.zst` artifacts.
 - Record cell encoding, quantization, maximum representable distance and observed maximum distance in the manifest.
 - Add a CEDIST03 ADR, migration notes and cross-language CEDIST02/CEDIST03 conformance fixtures.
+- Report the detected CEDIST version through the PHP reader and optional REST API.
+- Update the Python, CLI and WordPress integrations to accept both CEDIST02 and CEDIST03.
 - Rename the primary artifact to `canarias-distances.dat` and provide distance-only readers for Python, PHP and JavaScript.
 - Move the automatic live demo to the documentation homepage.
 - Redesign the homepage around a local interactive map, origin and destination search, and a clearer distance result.

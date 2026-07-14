@@ -2,7 +2,7 @@ openapi: 3.1.0
 info:
   title: Canarias Distance Matrix API
   version: 2.0.0
-  description: API opcional para consultar distancias CEDIST02 en metros.
+  description: API opcional para consultar distancias CEDIST02 o CEDIST03 en metros.
 paths:
   /v1/health:
     get:
@@ -136,7 +136,7 @@ components:
         distance_m:
           type: integer
           minimum: 0
-          description: Distancia por carretera en metros.
+          description: Distancia por carretera en metros. CEDIST03 usa resolución de 10 metros; CEDIST02 conserva metros enteros.
     HealthResponse:
       type: object
       additionalProperties: false
@@ -155,7 +155,9 @@ components:
       properties:
         format:
           type: string
-          const: CEDIST02
+          enum:
+            - CEDIST02
+            - CEDIST03
         api_version:
           type: string
           const: v1

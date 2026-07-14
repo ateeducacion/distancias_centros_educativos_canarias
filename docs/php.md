@@ -1,6 +1,6 @@
 # Usar la matriz desde PHP
 
-El lector PHP trabaja con un archivo local y usa `fseek()`/`fread()` para leer únicamente la celda solicitada. CEDIST03 requiere dos bytes por consulta; CEDIST02 usa cuatro. El lector detecta ambos formatos y no carga la matriz completa en memoria.
+El lector PHP trabaja con un archivo local y usa `fseek()`/`fread()` para leer únicamente la celda solicitada. CEDIST03 requiere dos bytes por consulta; CEDIST02 usa cuatro. El lector detecta ambos formatos, no carga la matriz completa en memoria y no hace llamadas externas durante cada consulta.
 
 ## Instalar el lector
 
@@ -109,7 +109,13 @@ $distance = $reader->getDistance('35000011', '98030001');
 echo number_format($distance->distanceMeters / 1000, 2, ',', '.') . ' km';
 ```
 
-La llamada devuelve un `DistanceResult` con la propiedad pública de solo lectura `distanceMeters`. En CEDIST03 el valor siempre es múltiplo de 10 metros; CEDIST02 conserva sus metros originales.
+La llamada devuelve un `DistanceResult` con la propiedad pública de solo lectura `distanceMeters`. En CEDIST03 el valor es múltiplo de 10 metros; CEDIST02 conserva sus metros originales.
+
+El formato detectado puede consultarse mediante:
+
+```php
+ echo $reader->getFormat(); // CEDIST02 o CEDIST03
+```
 
 ## Servicio reutilizable
 

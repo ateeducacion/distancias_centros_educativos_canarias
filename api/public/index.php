@@ -25,7 +25,7 @@ try {
     if ($method === 'GET' && $path === '/v1/health') {
         $body = ['status' => 'ok'];
     } elseif ($method === 'GET' && $path === '/v1/version') {
-        $body = ['format' => 'CEDIST02', 'api_version' => 'v1'];
+        $body = ['format' => $reader->getFormat(), 'api_version' => 'v1'];
     } elseif (
         $method === 'GET'
         && preg_match(
