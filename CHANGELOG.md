@@ -13,7 +13,7 @@
 - Add CEDIST03 with `uint16` decameter cells, reducing the distance matrices by a further 50%.
 - Preserve CEDIST02 read compatibility in the Python, PHP and JavaScript readers.
 - Round generated distances to the nearest decameter, halves up, and reject values above 655,340 meters.
-- Publish `canarias-distances.dat.seekable.zst` using `zeekstd` alongside the normal `.dat` and `.dat.zst` artifacts.
+- Publish only the uncompressed `canarias-distances.dat` matrix artifact.
 - Record cell encoding, quantization, maximum representable distance and observed maximum distance in the manifest.
 - Add a CEDIST03 ADR, migration notes and cross-language CEDIST02/CEDIST03 conformance fixtures.
 - Report the detected CEDIST version through the PHP reader and optional REST API.
