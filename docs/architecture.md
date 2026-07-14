@@ -1,6 +1,6 @@
 # Arquitectura
 
-El sistema separa una fase de generación costosa y poco frecuente de una fase de consulta sencilla. OSRM calcula las distancias cuando se publica una nueva versión; las aplicaciones consumidoras solo descargan un archivo estático y leen un entero.
+El sistema separa una fase de generación costosa y poco frecuente de una fase de consulta sencilla. OSRM calcula las distancias cuando se publica una nueva versión; las aplicaciones consumidoras solo descargan un archivo estático CEDIST03 y leen un entero.
 
 ```mermaid
 flowchart LR
@@ -30,7 +30,7 @@ flowchart LR
 8. Los metros de OSRM se redondean a decámetros y se escriben en CEDIST03.
 9. Se generan el manifiesto, los informes y los hashes SHA-256.
 
-El trabajo intensivo sucede aquí. La generación puede tardar, pero se ejecuta una sola vez por versión de datos, no una vez por usuario o consulta.
+El trabajo intensivo sucede en esta fase. La generación se ejecuta una vez por versión de datos, no una vez por usuario o consulta.
 
 ## Fase de consulta
 
@@ -43,30 +43,7 @@ Para resolver una pareja origen-destino:
 5. Se leen dos bytes en esa posición: `O(1)`.
 6. El `uint16` se multiplica por 10 para devolver metros.
 
-No se ejecuta un algoritmo de caminos, no se abre una base de datos y no se consulta una API externa. En JavaScript la lectura se hace sobre un `ArrayBuffer`; en PHP se usa `fseek()` seguido de `fread(2)` para CEDIST03. Los lectores detectan CEDIST02 y usan cuatro bytes cuando reciben un archivo antiguo.
-
-## Evolución del formato
-
-### CEDIST01
-
-Almacenaba una matriz de distancias y otra de duraciones, ambas con celdas de cuatro bytes.
-
-### CEDIST02
-
-Eliminó la duración y mantuvo las distancias como `uint32` en metros. Esto redujo aproximadamente a la mitad el tamaño respecto a CEDIST01.
-
-### CEDIST03
-
-Mantiene la cabecera, el índice y el directorio de CEDIST02, pero almacena cada distancia como `uint16` en decámetros. La matriz vuelve a reducirse aproximadamente a la mitad:
-
-```text
-CEDIST02: n × n × 4 bytes
-CEDIST03: n × n × 2 bytes
-```
-
-La pérdida máxima habitual por redondeo es de cinco metros. Las distancias positivas muy pequeñas se fijan en un decámetro para que `0` continúe reservado a la diagonal.
-
-[ADR: CEDIST03 usa uint16 en decámetros](decisions/0001-cedist03-decameters.md)
+No se ejecuta un algoritmo de caminos, no se abre una base de datos y no se consulta una API externa. En JavaScript la lectura se hace sobre un `ArrayBuffer`; en PHP se usa `fseek()` seguido de `fread(2)`.
 
 ## Comparación con una API de mapas
 
@@ -89,9 +66,9 @@ Las distancias no se consideran simétricas: sentidos únicos, accesos y enlaces
 
 Los códigos públicos se transmiten como cadenas, pero se almacenan como `uint32`. El índice ocupa 12 bytes por ubicación y permite una búsqueda binaria simple en todos los lenguajes.
 
-### Archivo sin compresión para consulta y distribución
+### Archivo único para consulta y distribución
 
-El proyecto publica directamente `canarias-distances.dat`. El archivo ya usa celdas compactas de dos bytes y permite acceso aleatorio inmediato, sin añadir dependencias de compresión ni pasos de descompresión en los consumidores.
+El proyecto publica directamente `canarias-distances.dat`. El archivo usa celdas de dos bytes y permite acceso aleatorio inmediato, sin dependencias de compresión ni pasos de descompresión en los consumidores.
 
 ### Metadatos separados
 
@@ -102,6 +79,6 @@ Los nombres y otros campos descriptivos permanecen en `centers.min.json`. El `.d
 - solo ubicaciones publicadas en el conjunto de datos;
 - solo distancias dentro de la misma isla;
 - perfil de automóvil y red disponibles en la fecha de generación;
-- precisión de 10 metros en CEDIST03;
+- precisión de 10 metros;
 - sin tráfico, obras o incidencias en tiempo real;
 - el resultado representa la ruta considerada más rápida por el perfil usado, no necesariamente la ruta geométricamente más corta.
