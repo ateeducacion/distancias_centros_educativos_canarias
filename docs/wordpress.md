@@ -2,31 +2,30 @@
 
 Esta integración se añade como un único **snippet PHP**, sin modificar `functions.php`. Instala el plugin [Code Snippets](https://es.wordpress.org/plugins/code-snippets/), crea un fragmento nuevo, pega el código **sin** añadir `<?php`, selecciona «Ejecutar en todas partes» y actívalo.
 
-El snippet está pensado para no penalizar las visitas:
+El snippet:
 
 - guarda `canarias-distances.dat` en `uploads/canarias-route-matrix/`;
-- consulta el manifiesto remoto como máximo una vez al día;
-- usa ETag y Last-Modified cuando están disponibles;
-- solo descarga el binario si cambia su SHA-256 o tamaño;
-- descarga en streaming y verifica antes de sustituir el archivo activo;
-- evita actualizaciones simultáneas mediante un bloqueo;
-- consulta el `.dat` por acceso aleatorio, sin cargarlo completo en memoria.
+- consulta el manifiesto como máximo una vez al día;
+- descarga en streaming y valida tamaño y SHA-256;
+- sustituye el archivo activo mediante `rename()`;
+- detecta y consulta tanto CEDIST02 como CEDIST03;
+- usa acceso aleatorio sin cargar la matriz completa en memoria.
 
 ## Snippet completo
 
 ```php
-// URL estable de la última release de datos.
+// Stable URL for the latest verified data release.
 define(
     'ATE_CANARIAS_DATA_BASE_URL',
     'https://ateeducacion.github.io/distancias_centros_educativos_canarias/data/latest/'
 );
 
 define('ATE_CANARIAS_STATE_OPTION', 'ate_canarias_distances_state');
-define('ATE_CANARIAS_LOCK_OPTION', 'ate_canarias_distances_lock');
+define('ATE_CANARIAS_LOCK_TRANSIENT', 'ate_canarias_distances_lock');
 define('ATE_CANARIAS_CRON_HOOK', 'ate_canarias_distances_daily_update');
 
 /**
- * Devuelve las rutas donde se guarda la matriz.
+ * Return the storage paths used by the matrix.
  *
  * @return array|WP_Error
  */
@@ -49,7 +48,9 @@ function ate_canarias_storage_paths()
 }
 
 /**
- * Guarda el estado sin cargarlo automáticamente en cada petición.
+ * Save update state without autoloading it on every request.
+ *
+ * @param array $state Update metadata.
  */
 function ate_canarias_save_state($state)
 {
@@ -58,33 +59,13 @@ function ate_canarias_save_state($state)
         return;
     }
 
-    update_option(ATE_CANARIAS_STATE_OPTION, $state);
+    update_option(ATE_CANARIAS_STATE_OPTION, $state, false);
 }
 
 /**
- * Crea un bloqueo corto para evitar dos descargas a la vez.
- */
-function ate_canarias_acquire_lock()
-{
-    $now = time();
-    if (add_option(ATE_CANARIAS_LOCK_OPTION, $now, '', false)) {
-        return true;
-    }
-
-    $started_at = (int) get_option(ATE_CANARIAS_LOCK_OPTION, 0);
-    if ($started_at > 0 && ($now - $started_at) < 10 * MINUTE_IN_SECONDS) {
-        return false;
-    }
-
-    // Borra únicamente un bloqueo antiguo que quedó sin liberar.
-    delete_option(ATE_CANARIAS_LOCK_OPTION);
-    return add_option(ATE_CANARIAS_LOCK_OPTION, $now, '', false);
-}
-
-/**
- * Comprueba el manifiesto y descarga la matriz solo cuando cambia.
+ * Download and activate the latest verified matrix when it changes.
  *
- * @param bool $force Permite una comprobación manual sin esperar un día.
+ * @param bool $force Ignore the daily check interval.
  * @return true|WP_Error
  */
 function ate_canarias_update_data($force = false)
@@ -92,7 +73,6 @@ function ate_canarias_update_data($force = false)
     $state = get_option(ATE_CANARIAS_STATE_OPTION, array());
     $now = time();
 
-    // WP-Cron puede ejecutarse dos veces; esta marca evita repetir la petición.
     if (
         !$force
         && !empty($state['last_check'])
@@ -101,12 +81,13 @@ function ate_canarias_update_data($force = false)
         return true;
     }
 
-    if (!ate_canarias_acquire_lock()) {
+    if (get_transient(ATE_CANARIAS_LOCK_TRANSIENT)) {
         return new WP_Error('update_locked', 'Ya hay una actualización en curso.');
     }
 
+    set_transient(ATE_CANARIAS_LOCK_TRANSIENT, 1, 10 * MINUTE_IN_SECONDS);
+
     try {
-        // Se guarda antes de llamar a la red para no insistir si el servidor falla.
         $state['last_check'] = $now;
         ate_canarias_save_state($state);
 
@@ -115,40 +96,25 @@ function ate_canarias_update_data($force = false)
             return $paths;
         }
 
-        $headers = array();
-        if (is_file($paths['data'])) {
-            if (!empty($state['etag'])) {
-                $headers['If-None-Match'] = $state['etag'];
-            }
-            if (!empty($state['last_modified'])) {
-                $headers['If-Modified-Since'] = $state['last_modified'];
-            }
-        }
-
-        $response = wp_safe_remote_get(
+        $manifest_response = wp_safe_remote_get(
             ATE_CANARIAS_DATA_BASE_URL . 'manifest.json',
             array(
                 'timeout' => 20,
                 'redirection' => 3,
-                'headers' => $headers,
                 'limit_response_size' => 512 * KB_IN_BYTES,
             )
         );
 
-        if (is_wp_error($response)) {
-            return $response;
+        if (is_wp_error($manifest_response)) {
+            return $manifest_response;
         }
-
-        $status = wp_remote_retrieve_response_code($response);
-        if (304 === $status) {
-            return true;
-        }
-        if (200 !== $status) {
+        if (200 !== wp_remote_retrieve_response_code($manifest_response)) {
             return new WP_Error('manifest_http_error', 'El manifiesto no respondió correctamente.');
         }
 
-        $manifest = json_decode(wp_remote_retrieve_body($response), true);
-        $artifact = isset($manifest['artifacts']['canarias-distances.dat'])
+        $manifest = json_decode(wp_remote_retrieve_body($manifest_response), true);
+        $artifact = is_array($manifest)
+            && isset($manifest['artifacts']['canarias-distances.dat'])
             ? $manifest['artifacts']['canarias-distances.dat']
             : null;
 
@@ -163,27 +129,16 @@ function ate_canarias_update_data($force = false)
             return new WP_Error('invalid_manifest', 'El manifiesto no contiene un artefacto válido.');
         }
 
-        $remote_hash = $artifact['sha256'];
         $remote_size = $artifact['size'];
+        $remote_hash = $artifact['sha256'];
         $current_size = is_file($paths['data']) ? filesize($paths['data']) : false;
 
-        $state['etag'] = (string) wp_remote_retrieve_header($response, 'etag');
-        $state['last_modified'] = (string) wp_remote_retrieve_header(
-            $response,
-            'last-modified'
-        );
-        $state['data_version'] = isset($manifest['data_version'])
-            ? sanitize_text_field((string) $manifest['data_version'])
-            : '';
-
-        // Si hash y tamaño coinciden, no se vuelve a descargar ni a calcular el hash local.
         if (
             is_file($paths['data'])
             && isset($state['sha256'])
             && hash_equals((string) $state['sha256'], $remote_hash)
             && $current_size === $remote_size
         ) {
-            ate_canarias_save_state($state);
             return true;
         }
 
@@ -193,7 +148,6 @@ function ate_canarias_update_data($force = false)
         }
 
         try {
-            // La descarga se escribe directamente en disco para no ocupar memoria PHP.
             $download = wp_safe_remote_get(
                 ATE_CANARIAS_DATA_BASE_URL . 'canarias-distances.dat',
                 array(
@@ -222,13 +176,15 @@ function ate_canarias_update_data($force = false)
                 return new WP_Error('download_validation_error', 'La descarga no coincide con el manifiesto.');
             }
 
-            // El temporal está en el mismo directorio para que el cambio sea atómico.
             if (!rename($temporary_path, $paths['data'])) {
                 return new WP_Error('rename_error', 'No se pudo activar la matriz verificada.');
             }
 
             $state['sha256'] = $remote_hash;
             $state['size'] = $remote_size;
+            $state['data_version'] = isset($manifest['data_version'])
+                ? sanitize_text_field((string) $manifest['data_version'])
+                : '';
             $state['updated_at'] = $now;
             ate_canarias_save_state($state);
         } finally {
@@ -239,12 +195,12 @@ function ate_canarias_update_data($force = false)
 
         return true;
     } finally {
-        delete_option(ATE_CANARIAS_LOCK_OPTION);
+        delete_transient(ATE_CANARIAS_LOCK_TRANSIENT);
     }
 }
 
 /**
- * Programa la comprobación diaria si todavía no existe.
+ * Schedule the daily data check.
  */
 function ate_canarias_schedule_updates()
 {
@@ -260,7 +216,7 @@ function ate_canarias_schedule_updates()
 }
 
 /**
- * Elimina la tarea diaria antes de retirar definitivamente el snippet.
+ * Remove the scheduled update before deleting the snippet.
  */
 function ate_canarias_unschedule_updates()
 {
@@ -271,8 +227,11 @@ add_action('init', 'ate_canarias_schedule_updates');
 add_action(ATE_CANARIAS_CRON_HOOK, 'ate_canarias_update_data');
 
 /**
- * Lee una cantidad exacta de bytes del archivo.
+ * Read an exact number of bytes from the matrix.
  *
+ * @param resource $handle Open file handle.
+ * @param int      $offset Byte offset.
+ * @param int      $length Number of bytes.
  * @return string|WP_Error
  */
 function ate_canarias_read_exact($handle, $offset, $length)
@@ -290,8 +249,10 @@ function ate_canarias_read_exact($handle, $offset, $length)
 }
 
 /**
- * Convierte un entero little-endian de 64 bits.
+ * Decode a little-endian unsigned 64-bit integer.
  *
+ * @param string $value Binary data.
+ * @param int    $offset Offset inside the binary data.
  * @return int|WP_Error
  */
 function ate_canarias_uint64($value, $offset)
@@ -309,7 +270,7 @@ function ate_canarias_uint64($value, $offset)
 }
 
 /**
- * Abre y valida la estructura necesaria para consultar la matriz.
+ * Open and validate a CEDIST02 or CEDIST03 matrix.
  *
  * @return array|WP_Error
  */
@@ -339,7 +300,21 @@ function ate_canarias_open_reader()
         return $header;
     }
 
+    $magic = substr($header, 0, 8);
     $major = unpack('vvalue', substr($header, 8, 2));
+    if ('CEDIST02' === $magic && 2 === $major['value']) {
+        $cell_size = 4;
+        $distance_unit = 1;
+        $unreachable = 0xFFFFFFFF;
+    } elseif ('CEDIST03' === $magic && 3 === $major['value']) {
+        $cell_size = 2;
+        $distance_unit = 10;
+        $unreachable = 0xFFFF;
+    } else {
+        fclose($handle);
+        return new WP_Error('invalid_format', 'El formato CEDIST no es compatible.');
+    }
+
     $header_size = unpack('Vvalue', substr($header, 12, 4));
     $flags = unpack('Vvalue', substr($header, 16, 4));
     $island_count = unpack('vvalue', substr($header, 20, 2));
@@ -354,8 +329,6 @@ function ate_canarias_open_reader()
         is_wp_error($index_offset)
         || is_wp_error($directory_offset)
         || is_wp_error($declared_size)
-        || 'CEDIST02' !== substr($header, 0, 8)
-        || 2 !== $major['value']
         || 64 !== $header_size['value']
         || 0 !== $flags['value']
         || 0 !== $reserved['value']
@@ -365,13 +338,17 @@ function ate_canarias_open_reader()
         || $directory_offset !== 64 + $location_count['value'] * 12
     ) {
         fclose($handle);
-        return new WP_Error('invalid_format', 'La cabecera CEDIST02 no es válida.');
+        return new WP_Error('invalid_format', 'La cabecera CEDIST no es válida.');
     }
 
     $islands = array();
     $expected_offset = $directory_offset + $island_count['value'] * 16;
     for ($position = 0; $position < $island_count['value']; $position++) {
-        $entry = ate_canarias_read_exact($handle, $directory_offset + $position * 16, 16);
+        $entry = ate_canarias_read_exact(
+            $handle,
+            $directory_offset + $position * 16,
+            16
+        );
         if (is_wp_error($entry)) {
             fclose($handle);
             return $entry;
@@ -389,7 +366,8 @@ function ate_canarias_open_reader()
             return new WP_Error('invalid_directory', 'El directorio de islas no es válido.');
         }
 
-        $expected_offset = $distance_offset + $count['value'] * $count['value'] * 4;
+        $expected_offset = $distance_offset
+            + $count['value'] * $count['value'] * $cell_size;
         if ($expected_offset > $declared_size) {
             fclose($handle);
             return new WP_Error('invalid_matrix', 'La matriz queda fuera del archivo.');
@@ -408,6 +386,10 @@ function ate_canarias_open_reader()
 
     $reader = array(
         'handle' => $handle,
+        'format' => $magic,
+        'cell_size' => $cell_size,
+        'distance_unit' => $distance_unit,
+        'unreachable' => $unreachable,
         'location_count' => $location_count['value'],
         'index_offset' => $index_offset,
         'islands' => $islands,
@@ -417,8 +399,10 @@ function ate_canarias_open_reader()
 }
 
 /**
- * Busca un código mediante búsqueda binaria.
+ * Find a location code using binary search.
  *
+ * @param array  $reader Parsed reader state.
+ * @param string $code Eight-digit location code.
  * @return array|WP_Error
  */
 function ate_canarias_find_location($reader, $code)
@@ -462,8 +446,10 @@ function ate_canarias_find_location($reader, $code)
 }
 
 /**
- * Devuelve la distancia en metros sin cargar la matriz en memoria.
+ * Return a road distance in meters without loading the matrix into memory.
  *
+ * @param string $origin Origin code.
+ * @param string $destination Destination code.
  * @return int|WP_Error
  */
 function ate_canarias_distance_meters($origin, $destination)
@@ -498,25 +484,30 @@ function ate_canarias_distance_meters($origin, $destination)
 
     $matrix_position = $source['local_index'] * $island['count']
         + $target['local_index'];
-    $value = ate_canarias_read_exact(
+    $raw = ate_canarias_read_exact(
         $reader['handle'],
-        $island['distance_offset'] + $matrix_position * 4,
-        4
+        $island['distance_offset'] + $matrix_position * $reader['cell_size'],
+        $reader['cell_size']
     );
-    if (is_wp_error($value)) {
-        return $value;
+    if (is_wp_error($raw)) {
+        return $raw;
     }
 
-    $distance = unpack('Vvalue', $value);
-    if (0xFFFFFFFF === $distance['value']) {
+    $stored = 2 === $reader['cell_size']
+        ? unpack('vvalue', $raw)
+        : unpack('Vvalue', $raw);
+    if ($reader['unreachable'] === $stored['value']) {
         return new WP_Error('unreachable', 'La distancia no está disponible.');
     }
 
-    return $distance['value'];
+    return $stored['value'] * $reader['distance_unit'];
 }
 
 /**
- * Shortcode: [distancia_canarias origen="35000011" destino="98030001"]
+ * Render [distancia_canarias origen="35000011" destino="98030001"].
+ *
+ * @param array $attributes Shortcode attributes.
+ * @return string
  */
 function ate_canarias_distance_shortcode($attributes)
 {
@@ -552,43 +543,32 @@ add_shortcode('distancia_canarias', 'ate_canarias_distance_shortcode');
 
 ## Usar el shortcode
 
-Cuando WP-Cron haya realizado la primera descarga, inserta este shortcode en una entrada, página o bloque compatible:
+Cuando WP-Cron haya realizado la primera descarga, inserta:
 
 ```text
 [distancia_canarias origen="35000011" destino="98030001"]
 ```
 
-La salida muestra kilómetros con dos decimales y conserva los metros exactos en el atributo `data-distance-meters`. Los dos códigos deben tener ocho cifras y pertenecer a la misma isla.
+La salida muestra kilómetros con dos decimales y conserva los metros en `data-distance-meters`. En CEDIST03 la distancia tiene resolución de 10 metros; el mismo snippet continúa leyendo artefactos CEDIST02 antiguos.
 
 ## Funciones disponibles
 
-El mismo snippet expone estas funciones para plantillas u otros snippets:
-
 ```php
-// Devuelve int en metros o WP_Error.
+// Return an integer distance in meters or WP_Error.
 $distance = ate_canarias_distance_meters('35000011', '98030001');
 
-// Fuerza una comprobación manual; normalmente no hace falta llamarla.
+// Force a one-off administrative update check.
 $updated = ate_canarias_update_data(true);
 
-// Elimina la tarea programada antes de borrar definitivamente el snippet.
+// Remove the scheduled task before deleting the snippet.
 ate_canarias_unschedule_updates();
 ```
 
-`ate_canarias_update_data()` sin argumentos respeta siempre el intervalo diario. El parámetro `true` está pensado únicamente para una comprobación administrativa puntual.
-
-WP-Cron se ejecuta cuando el sitio recibe una visita después de la hora programada. En sitios sin tráfico o con `DISABLE_WP_CRON`, configura el cron del sistema para invocar `wp-cron.php`; el control mediante `last_check` seguirá evitando más de una consulta remota al día.
+WP-Cron se ejecuta cuando el sitio recibe una visita después de la hora programada. En sitios sin tráfico o con `DISABLE_WP_CRON`, configura el cron del sistema para invocar `wp-cron.php`.
 
 ## Qué se guarda
 
-- El binario queda en `wp-content/uploads/canarias-route-matrix/canarias-distances.dat` o en el directorio de subidas configurado por el sitio.
-- La opción `ate_canarias_distances_state` guarda únicamente metadatos pequeños: última comprobación, SHA-256, tamaño, versión de datos, ETag y Last-Modified.
+- El binario queda en `wp-content/uploads/canarias-route-matrix/canarias-distances.dat`.
+- La opción `ate_canarias_distances_state` guarda únicamente metadatos pequeños.
 - La matriz no se guarda en la base de datos ni se carga completa en memoria.
 - Si una descarga o su verificación falla, el archivo anterior permanece activo.
-
-## Referencias de WordPress
-
-- [Programar eventos con `wp_schedule_event()`](https://developer.wordpress.org/reference/functions/wp_schedule_event/)
-- [Realizar descargas seguras con `wp_safe_remote_get()`](https://developer.wordpress.org/reference/functions/wp_safe_remote_get/)
-- [Obtener el directorio de subidas con `wp_upload_dir()`](https://developer.wordpress.org/reference/functions/wp_upload_dir/)
-- [Registrar shortcodes con `add_shortcode()`](https://developer.wordpress.org/reference/functions/add_shortcode/)

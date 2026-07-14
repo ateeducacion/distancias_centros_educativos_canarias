@@ -10,19 +10,20 @@ use PHPUnit\Framework\TestCase;
 
 final class ReaderTest extends TestCase
 {
-    /** @return list<string> */
+    /** @return array<string, string> */
     private static function fixtures(): array
     {
         return [
-            __DIR__ . '/../../../data/samples/sample.dat',
-            __DIR__ . '/../../../data/samples/sample-v2.dat',
+            'CEDIST03' => __DIR__ . '/../../../data/samples/sample.dat',
+            'CEDIST02' => __DIR__ . '/../../../data/samples/sample-v2.dat',
         ];
     }
 
     public function testDirectedDistanceInCurrentAndLegacyFormats(): void
     {
-        foreach (self::fixtures() as $fixture) {
+        foreach (self::fixtures() as $format => $fixture) {
             $reader = new Reader($fixture);
+            self::assertSame($format, $reader->getFormat());
             self::assertSame(
                 1200,
                 $reader->getDistance('10000001', '10000002')->distanceMeters
@@ -37,6 +38,7 @@ final class ReaderTest extends TestCase
     public function testCrossIsland(): void
     {
         $this->expectException(CrossIslandRouteException::class);
-        (new Reader(self::fixtures()[0]))->getDistance('10000001', '20000004');
+        (new Reader(self::fixtures()['CEDIST03']))
+            ->getDistance('10000001', '20000004');
     }
 }

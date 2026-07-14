@@ -22,6 +22,7 @@ final class Reader
     private int $distanceSize;
     private int $distanceUnitMeters;
     private int $unreachable;
+    private string $format;
 
     /** @var array<int, array{count: int, distance_offset: int}> */
     private array $islands = [];
@@ -44,10 +45,12 @@ final class Reader
         $magic = substr($header, 0, 8);
         $major = $this->u16($header, 8);
         if ($magic === 'CEDIST02' && $major === 2) {
+            $this->format = 'CEDIST02';
             $this->distanceSize = 4;
             $this->distanceUnitMeters = 1;
             $this->unreachable = 0xFFFFFFFF;
         } elseif ($magic === 'CEDIST03' && $major === 3) {
+            $this->format = 'CEDIST03';
             $this->distanceSize = 2;
             $this->distanceUnitMeters = 10;
             $this->unreachable = 0xFFFF;
@@ -178,6 +181,11 @@ final class Reader
             }
         }
         throw new UnknownCenterException("Unknown location: {$code}");
+    }
+
+    public function getFormat(): string
+    {
+        return $this->format;
     }
 
     public function getDistance(string $origin, string $destination): DistanceResult

@@ -1,6 +1,6 @@
 # Usar la matriz desde Python
 
-El lector Python abre un archivo CEDIST02 local y lee únicamente las entradas necesarias para cada consulta. Requiere Python 3.11 o posterior y no llama a OSRM ni a otros servicios durante la lectura.
+El lector Python abre un archivo CEDIST02 o CEDIST03 local y lee únicamente las entradas necesarias para cada consulta. Requiere Python 3.11 o posterior y no llama a OSRM ni a otros servicios durante la lectura.
 
 ## Instalar el lector
 
@@ -30,6 +30,8 @@ print(distance.distance_meters)
 
 El contexto `with` cierra el archivo incluso si la consulta falla. `get_distance()` recibe códigos como cadenas de ocho cifras y devuelve un objeto `Distance` cuya propiedad `distance_meters` contiene un número entero de metros.
 
+El lector expone el formato detectado mediante `reader.format.major`. CEDIST03 devuelve múltiplos de 10 metros; CEDIST02 conserva los metros almacenados originalmente.
+
 ## Errores previstos
 
 ```python
@@ -51,7 +53,7 @@ except CrossIslandRouteError:
 except UnreachableRouteError:
     print("No hay una distancia disponible")
 except InvalidFormatError:
-    print("El archivo CEDIST02 no es válido")
+    print("El archivo CEDIST02/CEDIST03 no es válido")
 else:
     print(distance.distance_meters)
 ```
