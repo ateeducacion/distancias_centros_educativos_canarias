@@ -1,0 +1,28 @@
+services:
+  osrm:
+    image: ghcr.io/project-osrm/osrm-backend:v5.27.1
+    command: osrm-routed --algorithm mld /data/canary-islands.osrm
+    volumes: [osrm-data:/data:ro]
+    profiles: [generation]
+    read_only: true
+  generator:
+    build: {context: ., dockerfile: docker/generator/Dockerfile}
+    user: app
+    volumes: [./.cache:/cache, ./dist:/output, osrm-data:/osrm]
+    profiles: [generation]
+    depends_on: [osrm]
+  api:
+    build: {context: ., dockerfile: docker/api/Dockerfile}
+    environment: [MATRIX_BINARY=/data/canarias-education-routes.bin, CORS_ORIGIN=*]
+    volumes: [./dist:/data:ro]
+    profiles: [api]
+    read_only: true
+    healthcheck: {test: [CMD, php, -r, "exit(0);"], interval: 30s, timeout: 5s, retries: 3}
+  docs:
+    image: python:3.12-alpine3.20
+    working_dir: /app
+    command: sh -c "pip install zensical && zensical serve --dev-addr 0.0.0.0:8000"
+    volumes: [.:/app:ro]
+    ports: ["8000:8000"]
+    profiles: [docs]
+volumes: {osrm-data: {}}

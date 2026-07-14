@@ -1,0 +1,1 @@
+import {RouteMatrix} from "../../packages/javascript/src/index.js";let matrix;self.onmessage=async({data})=>{try{if(data.type==="load")matrix=await RouteMatrix.load(data);else if(data.type==="query")self.postMessage({ok:true,route:matrix.getRoute(data.origin,data.destination)});}catch(error){self.postMessage({ok:false,error:{name:error.name,message:error.message}})}};

@@ -1,0 +1,14 @@
+.cache/
+.venv/
+vendor/
+node_modules/
+site/
+dist/*
+!dist/.gitkeep
+*.pyc
+__pycache__/
+.coverage
+coverage/
+*.osm.pbf
+*.osrm*
+.DS_Store

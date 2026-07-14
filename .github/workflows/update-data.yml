@@ -1,0 +1,24 @@
+name: Update data
+on:
+  schedule: [{cron: '17 3 * * 2'}]
+  workflow_dispatch:
+    inputs:
+      check_only: {type: boolean, default: true}
+      publish: {type: boolean, default: false}
+permissions: {contents: read}
+concurrency: {group: update-data, cancel-in-progress: false}
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    env: {CHECK_ONLY: "${{ inputs.check_only || 'true' }}", PUBLISH: "${{ inputs.publish || 'false' }}"}
+    steps:
+      - uses: actions/checkout@v4 # v4
+      - uses: astral-sh/setup-uv@v5 # v5
+      - run: uv sync --all-extras
+      - run: make download-centers validate-centers
+      - if: env.CHECK_ONLY != 'true'
+        run: make download-osm build-data verify-artifacts test-conformance
+      - if: env.CHECK_ONLY != 'true'
+        uses: actions/upload-artifact@v4 # v4
+        with: {name: validated-data, path: dist, retention-days: 14}

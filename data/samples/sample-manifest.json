@@ -1,0 +1,25 @@
+{
+  "artifacts": {
+    "sample.bin": {
+      "sha256": "02c196b841565539acc5a6e4209c29b63875149ce1756b77ee19d705bc2c6f43",
+      "size": 240
+    }
+  },
+  "counts": {
+    "centers": 4,
+    "directed_routes": 10,
+    "islands": {
+      "3": 3,
+      "7": 1
+    },
+    "unreachable_routes": 1
+  },
+  "data_version": "fixture-1",
+  "format": {
+    "endianness": "little",
+    "magic": "CEDIST01",
+    "major": 1,
+    "minor": 0
+  },
+  "schema_version": 1
+}

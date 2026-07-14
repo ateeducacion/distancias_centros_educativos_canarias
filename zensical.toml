@@ -1,0 +1,22 @@
+[project]
+site_name = "Distancias entre centros educativos de Canarias"
+site_url = "https://ateeducacion.github.io/distancias_centros_educativos_canarias/"
+site_description = "Matriz abierta de rutas entre centros educativos"
+repo_url = "https://github.com/ateeducacion/distancias_centros_educativos_canarias"
+repo_name = "ateeducacion/distancias_centros_educativos_canarias"
+edit_uri = "edit/main/docs/"
+docs_dir = "docs"
+extra_css = ["stylesheets/extra.css"]
+extra_javascript = ["javascripts/demo.mjs"]
+nav = [{Inicio="index.md"},{Arquitectura="architecture.md"},{Fuentes="data-sources.md"},{Calidad="data-quality.md"},{Formato="binary-format.md"},{Generación="generation.md"},{Actualización="updating.md"},{PHP="php.md"},{JavaScript="javascript.md"},{CLI="cli.md"},{REST="rest-api.md"},{Demo="demo.md"},{Rendimiento="performance.md"},{Licencias="licensing.md"},{Seguridad="security.md"},{Limitaciones="limitations.md"}]
+[project.theme]
+language = "es"
+features = ["navigation.tabs","navigation.sections","search.highlight","content.code.copy","content.tabs.link"]
+[[project.theme.palette]]
+scheme = "default"
+toggle = {icon="lucide/sun",name="Cambiar a modo oscuro"}
+[[project.theme.palette]]
+scheme = "slate"
+toggle = {icon="lucide/moon",name="Cambiar a modo claro"}
+[project.markdown_extensions.pymdownx.superfences]
+custom_fences = [{name="mermaid",class="mermaid",format="pymdownx.superfences.fence_code_format"}]

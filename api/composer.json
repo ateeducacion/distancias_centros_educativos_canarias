@@ -1,0 +1,1 @@
+{"name":"ateeducacion/canarias-route-matrix-api","private":true,"require":{"php":"^8.2","ateeducacion/canarias-route-matrix":"@dev"},"repositories":[{"type":"path","url":"../packages/php"}],"autoload":{"psr-4":{"AteEducacion\\CanariasRouteMatrixApi\\":"src/"}},"license":"MIT"}

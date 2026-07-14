@@ -1,0 +1,23 @@
+name: Documentation
+on: {workflow_dispatch: {}, push: {branches: [main], paths: ['docs/**', 'zensical.toml']}}
+permissions: {contents: read}
+concurrency: {group: pages, cancel-in-progress: true}
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4 # v4
+      - uses: astral-sh/setup-uv@v5 # v5
+      - run: uvx zensical build --clean
+      - uses: actions/upload-pages-artifact@v3 # v3
+        with: {path: site}
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions: {pages: write, id-token: write}
+    environment: {name: github-pages, url: "${{ steps.deployment.outputs.page_url }}"}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4 # v4

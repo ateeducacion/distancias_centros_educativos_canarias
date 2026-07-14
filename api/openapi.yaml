@@ -1,0 +1,11 @@
+openapi: 3.1.0
+info: {title: Canarias Education Route Matrix API, version: 1.0.0}
+paths:
+  /v1/health:
+    get: {responses: {'200': {description: Healthy}}}
+  /v1/routes/{origin}/{destination}:
+    get:
+      parameters:
+        - {name: origin, in: path, required: true, schema: {type: string, pattern: '^[0-9]{8}$'}}
+        - {name: destination, in: path, required: true, schema: {type: string, pattern: '^[0-9]{8}$'}}
+      responses: {'200': {description: Route}, '404': {description: Unknown center}, '422': {description: Unsupported route}, '503': {description: Artifact unavailable}}

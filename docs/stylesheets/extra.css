@@ -1,0 +1,1 @@
+:root{--demo-gap:1rem}#route-demo{display:grid;gap:var(--demo-gap);max-width:40rem}#route-demo label{display:grid;gap:.25rem}#result{min-height:2rem}
