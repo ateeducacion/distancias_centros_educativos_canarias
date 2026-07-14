@@ -2,10 +2,12 @@
 
 La integración web descarga dos archivos estáticos una sola vez:
 
-- `canarias-distances.dat`, con el índice y las distancias CEDIST02.
+- `canarias-distances.dat`, con el índice y las distancias CEDIST03.
 - `centers.min.json`, con los nombres y códigos de las ubicaciones.
 
 Después de cargarlos, `getDistance()` no realiza ninguna petición de red. La consulta consiste en una búsqueda binaria del código y una lectura directa mediante `DataView`.
+
+El lector detecta automáticamente CEDIST02 y CEDIST03. En CEDIST03 lee un `uint16` y lo multiplica por 10 para devolver `distanceMeters`.
 
 ## Ejemplo completo en el navegador
 
@@ -52,6 +54,17 @@ export async function distanceBetween(origin, destination) {
 
 Para una aplicación de producción con requisitos de reproducibilidad, copia los artefactos de una release `data-*` concreta a tu propio alojamiento estático y fija también la versión del módulo JavaScript. Así una nueva release de datos o un cambio posterior en `main` no modifica el despliegue.
 
+## Compatibilidad y precisión
+
+```javascript
+console.log(matrix.formatMajor); // 2 o 3
+```
+
+- CEDIST02 devuelve metros exactos almacenados como `uint32`.
+- CEDIST03 devuelve múltiplos de 10 metros almacenados como `uint16`.
+- La API pública continúa devolviendo `{ distanceMeters }` en ambos formatos.
+
+Los readers no abren directamente `.dat.zst` ni `.dat.seekable.zst`. Descomprime primero cualquiera de esas variantes y pasa el `ArrayBuffer` del `.dat` resultante.
 ## Mostrar nombres y filtrar por isla
 
 La propiedad `centers` contiene los metadatos descargados:
@@ -93,4 +106,4 @@ try {
 }
 ```
 
-`getRoute()` se mantiene temporalmente como alias de `getDistance()` para facilitar la migración desde CEDIST01, pero ya no devuelve `durationSeconds`.
+`getRoute()` se mantiene temporalmente como alias de `getDistance()` para facilitar la migración desde CEDIST01, pero no devuelve duración.

@@ -7,29 +7,39 @@ import {
   UnreachableRouteError,
 } from "../src/index.js";
 
-const bytes = readFileSync(
-  new URL("../../../data/samples/sample.dat", import.meta.url),
-);
-const matrix = new DistanceMatrix(
-  bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength),
-);
+const load = (name) => {
+  const bytes = readFileSync(
+    new URL(`../../../data/samples/${name}`, import.meta.url),
+  );
+  return new DistanceMatrix(
+    bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength),
+  );
+};
 
-describe("CEDIST02", () => {
-  it("reads directed distances", () => {
-    expect(matrix.getDistance("10000001", "10000002").distanceMeters).toBe(
-      1200,
-    );
-    expect(matrix.getDistance("10000002", "10000001").distanceMeters).toBe(
-      1100,
-    );
-  });
+for (const [name, major] of [
+  ["sample.dat", 3],
+  ["sample-v2.dat", 2],
+]) {
+  describe(`CEDIST0${major}`, () => {
+    const matrix = load(name);
 
-  it("rejects cross-island and unreachable distances", () => {
-    expect(() => matrix.getDistance("10000001", "20000004")).toThrow(
-      CrossIslandRouteError,
-    );
-    expect(() => matrix.getDistance("10000002", "10000009")).toThrow(
-      UnreachableRouteError,
-    );
+    it("reads directed distances", () => {
+      expect(matrix.formatMajor).toBe(major);
+      expect(matrix.getDistance("10000001", "10000002").distanceMeters).toBe(
+        1200,
+      );
+      expect(matrix.getDistance("10000002", "10000001").distanceMeters).toBe(
+        1100,
+      );
+    });
+
+    it("rejects cross-island and unreachable distances", () => {
+      expect(() => matrix.getDistance("10000001", "20000004")).toThrow(
+        CrossIslandRouteError,
+      );
+      expect(() => matrix.getDistance("10000002", "10000009")).toThrow(
+        UnreachableRouteError,
+      );
+    });
   });
-});
+}

@@ -1,11 +1,13 @@
-const MAGIC = "CEDIST02";
-const MAJOR = 2;
-const UNREACHABLE = 0xffffffff;
+const MAGIC_V2 = "CEDIST02";
+const MAGIC_V3 = "CEDIST03";
 let view;
 let locationCount;
 let indexOffset;
 let islands;
 let locations;
+let cellSize;
+let distanceUnitMeters;
+let unreachable;
 
 const u16 = (offset) => view.getUint16(offset, true);
 const u32 = (offset) => view.getUint32(offset, true);
@@ -21,9 +23,19 @@ function parse(buffer) {
   view = new DataView(buffer);
   if (buffer.byteLength < 64) throw new Error("Archivo de distancias truncado");
   const magic = String.fromCharCode(...new Uint8Array(buffer, 0, 8));
-  if (magic !== MAGIC || u16(8) !== MAJOR || u32(12) !== 64) {
-    throw new Error("Formato CEDIST02 no válido");
+  const major = u16(8);
+  if (magic === MAGIC_V2 && major === 2) {
+    cellSize = 4;
+    distanceUnitMeters = 1;
+    unreachable = 0xffffffff;
+  } else if (magic === MAGIC_V3 && major === 3) {
+    cellSize = 2;
+    distanceUnitMeters = 10;
+    unreachable = 0xffff;
+  } else {
+    throw new Error("Formato CEDIST no válido");
   }
+  if (u32(12) !== 64) throw new Error("Cabecera CEDIST no válida");
   locationCount = u32(24);
   indexOffset = u64(28);
   const directoryOffset = u64(36);
@@ -40,7 +52,7 @@ function parse(buffer) {
       throw new Error("Directorio de islas no válido");
     }
     islands.set(view.getUint8(offset), { count, distanceOffset });
-    expectedOffset += count * count * 4;
+    expectedOffset += count * count * cellSize;
   }
   if (expectedOffset !== buffer.byteLength) {
     throw new Error("El archivo contiene datos inesperados");
@@ -76,11 +88,12 @@ function distance(originCode, destinationCode) {
   }
   const island = islands.get(origin.islandId);
   const position = origin.localIndex * island.count + destination.localIndex;
-  const distanceMeters = u32(island.distanceOffset + position * 4);
-  if (distanceMeters === UNREACHABLE) {
+  const offset = island.distanceOffset + position * cellSize;
+  const stored = cellSize === 2 ? u16(offset) : u32(offset);
+  if (stored === unreachable) {
     throw new Error("La distancia no está disponible.");
   }
-  return { distanceMeters };
+  return { distanceMeters: stored * distanceUnitMeters };
 }
 
 self.addEventListener("message", async ({ data }) => {

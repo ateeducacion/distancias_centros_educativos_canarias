@@ -3,8 +3,10 @@ PYTHON ?= python3
 UV ?= uv
 NPM ?= npm
 COMPOSER ?= composer
+ZEEKSTD ?= zeekstd
+SEEKABLE_FRAME_SIZE ?= 1M
 
-.PHONY: help bootstrap install lint format format-check test test-python test-php test-js test-shell test-conformance coverage validate-config download-centers validate-centers download-osm prepare-osrm validate-snapping build-matrix build-data verify-artifacts query api-serve demo-serve docs-serve docs-build docker-build docker-test ci release-check clean distclean
+.PHONY: help bootstrap install lint format format-check test test-python test-php test-js test-shell test-conformance coverage validate-config download-centers validate-centers download-osm prepare-osrm validate-snapping build-matrix build-data seekable-zstd verify-artifacts query api-serve demo-serve docs-serve docs-build docker-build docker-test ci release-check clean distclean
 help:
 	@awk 'BEGIN{FS=":.*## "} /^[a-zA-Z0-9_-]+:.*## /{printf "%-22s %s\n",$$1,$$2}' $(MAKEFILE_LIST)
 bootstrap: ## Prepare local dependencies
@@ -49,8 +51,12 @@ prepare-osrm: ## Prepare OSRM MLD graph
 	docker compose --profile generation run --rm generator bin/route-matrix prepare-osrm
 validate-snapping: ## Audit center coordinate snapping
 	docker compose --profile generation run --rm generator bin/route-matrix validate-snapping
-build-matrix build-data: ## Build production data artifacts
+build-matrix build-data: ## Build production data artifacts, including seekable Zstandard
 	docker compose --profile generation run --rm generator bin/route-matrix build
+seekable-zstd: ## Build a seekable Zstandard copy of an existing dist matrix
+	rm -f dist/canarias-distances.dat.seekable.zst
+	$(ZEEKSTD) compress --frame-size $(SEEKABLE_FRAME_SIZE) \
+		-o dist/canarias-distances.dat.seekable.zst < dist/canarias-distances.dat
 verify-artifacts: ## Verify distribution checksums
 	./scripts/verify-artifacts.sh
 query: ## Query fixture; set ORIGIN and DESTINATION

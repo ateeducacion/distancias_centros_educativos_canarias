@@ -1,8 +1,7 @@
-"""Defensive random-access CEDIST02 reader."""
+"""Defensive random-access CEDIST02/CEDIST03 reader."""
 from __future__ import annotations
 
 from pathlib import Path
-import struct
 
 from ..errors import (
     CrossIslandRouteError,
@@ -16,11 +15,10 @@ from .format import (
     INDEX,
     ISLAND,
     Distance,
+    FormatSpec,
     IndexEntry,
     IslandEntry,
-    MAGIC,
-    MAJOR,
-    UNREACHABLE,
+    get_format,
 )
 
 
@@ -44,10 +42,9 @@ class Reader:
             file_size,
             reserved_bytes,
         ) = values
-        if magic != MAGIC:
-            raise InvalidFormatError("Unknown magic")
-        if major != MAJOR:
-            raise InvalidFormatError("Unsupported major version")
+        spec = get_format(magic, major)
+        if spec is None:
+            raise InvalidFormatError("Unknown or inconsistent format version")
         if header_size != HEADER_SIZE or flags or reserved or any(reserved_bytes):
             raise InvalidFormatError("Invalid header fields")
         if file_size != self._size or index_offset != HEADER_SIZE:
@@ -55,6 +52,7 @@ class Reader:
         if directory_offset != index_offset + center_count * INDEX.size:
             raise InvalidFormatError("Invalid directory offset")
 
+        self.format: FormatSpec = spec
         self.center_count = center_count
         self.index_offset = index_offset
         self.islands: dict[int, IslandEntry] = {}
@@ -66,7 +64,7 @@ class Reader:
             )
             if any(padding) or count * count > (1 << 63) - 1:
                 raise InvalidFormatError("Invalid island entry")
-            matrix_end = distance_offset + count * count * 4
+            matrix_end = distance_offset + count * count * spec.cell_size
             if distance_offset != expected_offset or matrix_end > self._size:
                 raise InvalidFormatError("Matrix offset outside file")
             self.islands[island_id] = IslandEntry(island_id, count, distance_offset)
@@ -113,13 +111,15 @@ class Reader:
             raise CrossIslandRouteError("Distances between islands are not computed")
         island = self.islands[source.island_id]
         position = source.local_index * island.center_count + target.local_index
-        distance = struct.unpack(
-            "<I",
-            self._read(island.distance_offset + position * 4, 4),
+        stored = self.format.distance_struct.unpack(
+            self._read(
+                island.distance_offset + position * self.format.cell_size,
+                self.format.cell_size,
+            )
         )[0]
-        if distance == UNREACHABLE:
+        if stored == self.format.unreachable:
             raise UnreachableRouteError("Distance is unavailable")
-        return Distance(distance)
+        return Distance(stored * self.format.distance_unit_meters)
 
     def get_route(self, origin: str, destination: str) -> Distance:
         """Compatibility alias for callers migrating from CEDIST01."""

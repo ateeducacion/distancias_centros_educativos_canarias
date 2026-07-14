@@ -10,6 +10,8 @@ export interface DistanceResult {
 
 export declare class DistanceMatrix {
   constructor(buffer: ArrayBuffer, centers?: readonly object[]);
+  readonly formatMajor: 2 | 3;
+  readonly centers: readonly object[];
   static load(options: LoadOptions): Promise<DistanceMatrix>;
   getDistance(origin: string, destination: string): DistanceResult;
   getRoute(origin: string, destination: string): DistanceResult;
