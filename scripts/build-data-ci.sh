@@ -24,7 +24,7 @@ trap cleanup 0 INT TERM
 bin/route-matrix --cache-dir "$CACHE_DIR" download-centers
 bin/route-matrix --cache-dir "$CACHE_DIR" download-osm
 
-rm -rf "$OSRM_PATH"
+rm -rf "$OUTPUT_DIR" "$OSRM_PATH"
 mkdir -p "$OSRM_PATH"
 cp "$CACHE_PATH/canary-islands.osm.pbf" "$OSRM_PATH/canary-islands.osm.pbf"
 
