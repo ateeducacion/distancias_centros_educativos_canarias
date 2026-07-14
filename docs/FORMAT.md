@@ -1,8 +1,6 @@
 # Formato CEDIST03
 
-CEDIST03 es un formato little-endian, determinista y sin compresión para consultar distancias mediante acceso aleatorio. Conserva la organización de CEDIST02 y cambia únicamente la codificación de las celdas de la matriz: de `uint32` en metros a `uint16` en decámetros.
-
-Las copias `.dat.zst` y `.dat.seekable.zst` son formatos de distribución. Los lectores incluidos trabajan con el `.dat` descomprimido; la variante seekable permite que herramientas compatibles recuperen rangos sin descomprimir todos los frames.
+CEDIST03 es un formato little-endian, determinista y sin compresión para consultar distancias mediante acceso aleatorio. Cada celda de la matriz usa un `uint16` que representa decámetros.
 
 ```text
 +--------------------+ 0
@@ -17,8 +15,6 @@ Las copias `.dat.zst` y `.dat.seekable.zst` son formatos de distribución. Los l
 ```
 
 ## Cabecera
-
-La estructura de la cabecera no cambia respecto a CEDIST02.
 
 | Offset | Size | Type | Field |
 |---:|---:|---|---|
@@ -96,23 +92,6 @@ offset = distance_offset + position * 2
 
 Una vez localizados ambos códigos, la lectura de la distancia es `O(1)`.
 
-## Compatibilidad con CEDIST02
-
-Los lectores oficiales detectan conjuntamente magic y major:
-
-| Formato | Magic | Major | Celda | Unidad | No disponible |
-|---|---|---:|---:|---:|---:|
-| CEDIST02 | `CEDIST02` | 2 | `uint32` | 1 metro | `0xFFFFFFFF` |
-| CEDIST03 | `CEDIST03` | 3 | `uint16` | 10 metros | `0xFFFF` |
-
-El escritor genera CEDIST03 por defecto. Durante la transición, el escritor Python puede producir un fixture CEDIST02 con `format_major=2`.
-
-## Zstandard seekable
-
-`canarias-distances.dat.seekable.zst` usa el formato Zstandard Seekable: varios frames independientes y una tabla de búsqueda final. Sigue siendo descomprimible por un decodificador Zstandard convencional, que ignora la tabla incluida en el frame skippable.
-
-Los readers del proyecto no consultan directamente el archivo comprimido. Deben recibir un `.dat` descomprimido. Esta decisión mantiene pequeños y simples los lectores; la variante seekable queda disponible para CDN, almacenamiento y consumidores especializados.
-
 ## Fixture canónico
 
 El vector hexadecimal inicial de CEDIST03 es:
@@ -121,11 +100,8 @@ El vector hexadecimal inicial de CEDIST03 es:
 43 45 44 49 53 54 30 33 03 00 00 00 40 00 00 00
 ```
 
-- `data/samples/sample.dat` es el fixture CEDIST03.
-- `data/samples/sample-v2.dat` conserva el fixture CEDIST02 de compatibilidad.
-
-Los lectores Python, PHP y JavaScript deben devolver `1200` metros para `10000001 → 10000002` en ambos archivos.
+`data/samples/sample.dat` es el único fixture canónico. Los lectores Python, PHP y JavaScript deben devolver `1200` metros para `10000001 → 10000002`.
 
 ## Versionado y validación
 
-Los cambios incompatibles incrementan `major`; las ampliaciones interpretables por lectores existentes incrementan `minor`. Los lectores rechazan magic y major incoherentes, campos reservados no nulos, truncamiento, directorios discontinuos, offsets fuera de rango y datos posteriores a la última matriz.
+Los cambios incompatibles incrementan `major`; las ampliaciones interpretables por lectores existentes incrementan `minor`. Los lectores rechazan archivos que no usen magic `CEDIST03` y major `3`, campos reservados no nulos, truncamiento, directorios discontinuos, offsets fuera de rango y datos posteriores a la última matriz.

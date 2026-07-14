@@ -1,4 +1,4 @@
-"""CEDIST02 distance reader and writer."""
+"""CEDIST03 distance reader and writer."""
 
 from .reader import Reader
 from .writer import write_binary

@@ -1,4 +1,5 @@
 """Administrative and distance-query CLI."""
+
 from __future__ import annotations
 
 import argparse
@@ -40,8 +41,6 @@ def parser() -> argparse.ArgumentParser:
     query.add_argument("destination")
     query.add_argument(
         "--data",
-        "--binary",
-        dest="data",
         type=Path,
         default=Path("data/samples/sample.dat"),
     )

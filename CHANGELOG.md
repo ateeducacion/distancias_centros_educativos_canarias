@@ -8,16 +8,14 @@
 - Publish data releases as `data-YYYYMMDD-HHMM` only when the matrix or location metadata changes.
 - Check the official centers CSV weekly and rebuild when its SHA-256 changes.
 - Decouple generated data versions from the Python and JavaScript package versions.
-- Replace CEDIST01 with the incompatible distance-only CEDIST02 format.
-- Remove duration generation, storage and API fields, reducing the uncompressed matrix to approximately half its former size.
-- Add CEDIST03 with `uint16` decameter cells, reducing the distance matrices by a further 50%.
-- Preserve CEDIST02 read compatibility in the Python, PHP and JavaScript readers.
-- Round generated distances to the nearest decameter, halves up, and reject values above 655,340 meters.
+- Store only road distances and remove duration generation, storage and API fields.
+- Use CEDIST03 with `uint16` decameter cells and reject values above 655,340 meters.
+- Support only CEDIST03 in the Python, PHP and JavaScript readers, CLI, REST API, browser demo and WordPress example.
+- Remove legacy format detection, writer options, API aliases and CEDIST02 fixtures.
+- Round generated distances to the nearest decameter, halves up.
 - Publish only the uncompressed `canarias-distances.dat` matrix artifact.
 - Record cell encoding, quantization, maximum representable distance and observed maximum distance in the manifest.
-- Add a CEDIST03 ADR, migration notes and cross-language CEDIST02/CEDIST03 conformance fixtures.
-- Report the detected CEDIST version through the PHP reader and optional REST API.
-- Update the Python, CLI and WordPress integrations to accept both CEDIST02 and CEDIST03.
+- Add a CEDIST03 ADR and cross-language CEDIST03 conformance tests.
 - Rename the primary artifact to `canarias-distances.dat` and provide distance-only readers for Python, PHP and JavaScript.
 - Move the automatic live demo to the documentation homepage.
 - Redesign the homepage around a local interactive map, origin and destination search, and a clearer distance result.
