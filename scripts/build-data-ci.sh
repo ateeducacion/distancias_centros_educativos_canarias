@@ -19,7 +19,7 @@ cleanup() {
     docker rm -f "$OSRM_CONTAINER" >/dev/null 2>&1 || true
 }
 
-trap cleanup EXIT INT TERM
+trap cleanup 0 INT TERM
 
 bin/route-matrix --cache-dir "$CACHE_DIR" download-centers
 bin/route-matrix --cache-dir "$CACHE_DIR" download-osm
