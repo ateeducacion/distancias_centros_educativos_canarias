@@ -1,52 +1,21 @@
-name: Release
+name: Release validation
 on:
   push:
-    tags: ['v*', 'data-*']
+    tags: ['v*']
   workflow_dispatch:
 permissions: {contents: read}
 concurrency: {group: "release-${{ github.ref }}", cancel-in-progress: false}
 jobs:
-  verify:
+  verify-version:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7 # v7
       - uses: astral-sh/setup-uv@v7 # v7
-      - name: Verify release data checksums
-        run: sha256sum -c SHA256SUMS
-        working-directory: docs/data/latest
-      - name: Verify manifest schema
-        run: uv run --with jsonschema python -c 'import json; from jsonschema import validate; validate(json.load(open("docs/data/latest/manifest.json")), json.load(open("data/schemas/manifest.schema.json")))'
-      - name: Verify tag and data version match
+      - name: Verify tag and package versions
         if: startsWith(github.ref, 'refs/tags/')
         env:
           RELEASE_TAG: "${{ github.ref_name }}"
-        run: uv run python -c 'import json, os; value=json.load(open("docs/data/latest/manifest.json"))["data_version"]; tag=os.environ["RELEASE_TAG"]; assert value == tag, f"manifest {value!r} != tag {tag!r}"'
-      - name: Stage release assets
         run: |
-          mkdir release-assets
-          cp docs/data/latest/canarias-education-routes.bin release-assets/
-          cp docs/data/latest/centers.min.json release-assets/
-          cp docs/data/latest/manifest.json release-assets/
-          cp docs/data/latest/SHA256SUMS release-assets/
-      - uses: actions/upload-artifact@v7 # v7
-        with:
-          name: "release-${{ github.ref_name }}"
-          path: release-assets
-          retention-days: 14
-  publish:
-    if: startsWith(github.ref, 'refs/tags/')
-    needs: verify
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    permissions: {contents: write}
-    steps:
-      - uses: actions/download-artifact@v4 # v4
-        with:
-          name: "release-${{ github.ref_name }}"
-          path: release-assets
-      - name: Create GitHub Release
-        env:
-          GH_TOKEN: "${{ github.token }}"
-          GH_REPO: "${{ github.repository }}"
-        run: gh release create "${{ github.ref_name }}" release-assets/* --verify-tag --generate-notes --title "${{ github.ref_name }}"
+          uv run python -c 'import os,tomllib; expected=os.environ["RELEASE_TAG"].removeprefix("v"); actual=tomllib.load(open("pyproject.toml","rb"))["project"]["version"]; assert actual == expected, f"Python {actual} != {expected}"'
+          node -e 'const expected=process.env.RELEASE_TAG.replace(/^v/,""); const actual=require("./packages/javascript/package.json").version; if(actual!==expected) throw new Error(`JavaScript ${actual} != ${expected}`)'

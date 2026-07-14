@@ -1,1 +1,1 @@
-{"center_code_pattern":"^[0-9]{8}$","format":{"magic":"CEDIST01","major":1,"minor":0},"overrides_enabled":false}
+{"center_code_pattern":"^[0-9]{8}$","format":{"magic":"CEDIST01","major":1,"minor":0},"overrides_enabled":true}

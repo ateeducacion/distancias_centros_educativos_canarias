@@ -10,7 +10,7 @@ REQUIRED={"Codigo","Denominacion","Direccion","Localidad","Municipio","Isla","Pr
 @dataclass(frozen=True)
 class ImportResult:
     centers:list[dict[str,object]]; errors:list[dict[str,object]]; warnings:list[dict[str,object]]; included:int; excluded:int; rejected:int
-def import_centers(path:Path,code_pattern:str=r"^[0-9]{8}$",include_types:set[str]|None=None,include_natures:set[str]|None=None)->ImportResult:
+def import_centers(path:Path,code_pattern:str=r"^[0-9]{8}$",include_types:set[str]|None=None,include_natures:set[str]|None=None,overrides:list[dict[str,object]]|None=None)->ImportResult:
     raw=path.read_bytes()
     try: text=raw.decode("utf-8-sig")
     except UnicodeDecodeError as exc: raise ValidationError(f"CSV is not valid UTF-8: {exc}") from exc
@@ -21,8 +21,14 @@ def import_centers(path:Path,code_pattern:str=r"^[0-9]{8}$",include_types:set[st
     headers=set(reader.fieldnames or [])
     if missing:=REQUIRED-headers: raise ValidationError(f"CSV schema changed; missing columns: {sorted(missing)}")
     centers=[];errors=[];warnings=[];seen=set();excluded=0
+    override_map={(str(item["center_code"]),str(item["field"])):item for item in (overrides or [])}
     for line,row in enumerate(reader,start=2):
         cleaned={key:(value.strip() if value is not None else "") for key,value in row.items()}; code=cleaned["Codigo"]
+        for csv_field in ("Longitud","Latitud"):
+            override=override_map.get((code,csv_field))
+            if override is not None:
+                if cleaned[csv_field] != str(override["old_value"]): raise ValidationError(f"Override old_value mismatch for {code} {csv_field}")
+                cleaned[csv_field]=str(override["new_value"]);warnings.append({"line":line,"code":code,"warning":"override_applied","field":csv_field})
         row_errors=[]
         if not code: row_errors.append("missing_code")
         elif not re.fullmatch(code_pattern,code): row_errors.append("invalid_code_format")

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.0.3 - 2026-07-14
+
+- Generate the first complete matrix from 1,306 official centers and a current Canary Islands OSM extract.
+- Publish the real CEDIST01 binary, Zstandard copy, minimized centers, reports, manifest and checksums.
+- Make Pages consume and verify the latest GitHub Release assets.
+- Add an auditable official-source override for the malformed CIFP Las Indias longitude.
+
 ## 0.0.2 - 2026-07-14
 
 - Publish the exact Pages data bundle as versioned GitHub Release assets.

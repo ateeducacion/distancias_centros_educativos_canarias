@@ -1,5 +1,11 @@
 name: Documentation
-on: {workflow_dispatch: {}, push: {branches: [main], paths: ['docs/**', 'zensical.toml']}}
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+  push:
+    branches: [main]
+    paths: ['docs/**', 'zensical.toml', '.github/workflows/docs.yml']
 permissions: {contents: read}
 concurrency: {group: pages, cancel-in-progress: true}
 jobs:
@@ -9,9 +15,17 @@ jobs:
     steps:
       - uses: actions/checkout@v7 # v7
       - uses: astral-sh/setup-uv@v7 # v7
-      - name: Verify Pages data bundle
-        run: sha256sum -c SHA256SUMS
-        working-directory: docs/data/latest
+      - name: Download latest released data bundle
+        env:
+          GH_TOKEN: "${{ github.token }}"
+          RELEASE_TAG: "${{ github.event.release.tag_name }}"
+        run: |
+          rm -rf docs/data/latest
+          mkdir -p docs/data/latest
+          tag="${RELEASE_TAG:-$(gh release view --json tagName --jq .tagName)}"
+          gh release download "$tag" --dir docs/data/latest
+          cd docs/data/latest
+          sha256sum -c SHA256SUMS
       - run: uvx zensical build --clean
       - uses: actions/upload-pages-artifact@v5 # v5
         with: {path: site}

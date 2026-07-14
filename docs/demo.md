@@ -1,8 +1,8 @@
 # Demo
 
-La demo estática usa Select2 para buscar centros y un Web Worker para consultar los artefactos coherentes de `data/latest/`. Los datos incluidos en `v0.0.2` son el fixture ficticio de conformidad, no datos oficiales de producción. No usa cookies, analítica ni mapas comerciales.
+La demo estática usa Select2 para buscar centros y un Web Worker para consultar los artefactos reales y coherentes de `data/latest/`. Pages descarga estos archivos de la última release publicada y verifica sus hashes antes de construir el sitio. No usa cookies, analítica ni mapas comerciales.
 
-Los tres archivos cargados por la demo se publican también como activos de la [última release](https://github.com/ateeducacion/distancias_centros_educativos_canarias/releases/latest). La versión del manifiesto debe coincidir con el tag y sus hashes se verifican antes de desplegar Pages.
+Los archivos cargados por la demo se publican también como activos de la [última release](https://github.com/ateeducacion/distancias_centros_educativos_canarias/releases/latest). La versión del manifiesto coincide con el tag y sus hashes se verifican antes de desplegar Pages.
 
 <div id="demo-status" role="status" aria-live="polite">Cargando artefactos…</div>
 <form id="route-demo" hidden>

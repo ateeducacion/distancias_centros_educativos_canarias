@@ -1,0 +1,10 @@
+{
+  "center_code": "38016672",
+  "field": "Longitud",
+  "old_value": "-16275",
+  "new_value": "-16.2750",
+  "reason": "The official CSV omits the decimal separator and produces an impossible longitude.",
+  "source": "https://www3.gobiernodecanarias.org/medusa/edublog/cifplasindias/localizacion-2/",
+  "created_at": "2026-07-14",
+  "expires_at": "2026-10-14"
+}
