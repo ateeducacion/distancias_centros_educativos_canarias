@@ -1,136 +1,194 @@
 // SPDX-License-Identifier: MIT
-const MAGIC = "CEDIST01",
-  HEADER = 64,
-  INDEX = 12,
-  DIRECTORY = 24,
-  UNREACHABLE = 0xffffffff;
+const MAGIC = "CEDIST02";
+const MAJOR = 2;
+const HEADER = 64;
+const INDEX = 12;
+const DIRECTORY = 16;
+const UNREACHABLE = 0xffffffff;
+
 export class InvalidFormatError extends Error {}
 export class UnknownCenterError extends Error {}
 export class CrossIslandRouteError extends Error {}
 export class UnreachableRouteError extends Error {}
+
 const ascii = (view, start, length) =>
   String.fromCharCode(
     ...new Uint8Array(view.buffer, view.byteOffset + start, length),
   );
-export class RouteMatrix {
+
+export class DistanceMatrix {
   constructor(buffer, centers = []) {
     this.buffer = buffer;
     this.view = new DataView(buffer);
     this.centers = centers;
     this.#parse();
   }
-  static async load({ binaryUrl, centersUrl }) {
-    const [binary, centers] = await Promise.all([
-      fetch(binaryUrl),
+
+  static async load({ dataUrl, binaryUrl, centersUrl }) {
+    const resolvedDataUrl = dataUrl ?? binaryUrl;
+    if (!resolvedDataUrl || !centersUrl) {
+      throw new TypeError("dataUrl and centersUrl are required");
+    }
+    const [data, centers] = await Promise.all([
+      fetch(resolvedDataUrl),
       fetch(centersUrl),
     ]);
-    if (!binary.ok || !centers.ok)
-      throw new Error("Unable to load route matrix artifacts");
-    return new RouteMatrix(await binary.arrayBuffer(), await centers.json());
+    if (!data.ok || !centers.ok) {
+      throw new Error("Unable to load distance matrix artifacts");
+    }
+    return new DistanceMatrix(await data.arrayBuffer(), await centers.json());
   }
-  #u16(o) {
-    this.#bounds(o, 2);
-    return this.view.getUint16(o, true);
+
+  #u16(offset) {
+    this.#bounds(offset, 2);
+    return this.view.getUint16(offset, true);
   }
-  #u32(o) {
-    this.#bounds(o, 4);
-    return this.view.getUint32(o, true);
+
+  #u32(offset) {
+    this.#bounds(offset, 4);
+    return this.view.getUint32(offset, true);
   }
-  #u64(o) {
-    this.#bounds(o, 8);
-    const n = this.view.getBigUint64(o, true);
-    if (n > BigInt(Number.MAX_SAFE_INTEGER))
+
+  #u64(offset) {
+    this.#bounds(offset, 8);
+    const value = this.view.getBigUint64(offset, true);
+    if (value > BigInt(Number.MAX_SAFE_INTEGER)) {
       throw new InvalidFormatError("Offset overflow");
-    return Number(n);
+    }
+    return Number(value);
   }
-  #bounds(o, n) {
-    if (!Number.isSafeInteger(o) || o < 0 || o > this.buffer.byteLength - n)
-      throw new InvalidFormatError("Truncated or out-of-range read");
-  }
-  #parse() {
-    if (this.buffer.byteLength < HEADER || ascii(this.view, 0, 8) !== MAGIC)
-      throw new InvalidFormatError("Unknown magic or truncated file");
-    if (this.#u16(8) > 1) throw new InvalidFormatError("Unsupported version");
-    if (this.#u32(12) !== 64 || this.#u32(16) !== 0 || this.#u16(22) !== 0)
-      throw new InvalidFormatError("Invalid header");
-    for (let i = 52; i < 64; i++)
-      if (this.view.getUint8(i) !== 0)
-        throw new InvalidFormatError("Reserved header bytes must be zero");
-    this.centerCount = this.#u32(24);
-    this.indexOffset = this.#u64(28);
-    const directory = this.#u64(36),
-      declared = this.#u64(44);
+
+  #bounds(offset, length) {
     if (
-      declared !== this.buffer.byteLength ||
-      this.indexOffset !== 64 ||
-      directory !== 64 + this.centerCount * INDEX
-    )
-      throw new InvalidFormatError("Invalid offsets");
-    this.islands = new Map();
-    const count = this.#u16(20);
-    for (let i = 0; i < count; i++) {
-      const o = directory + i * DIRECTORY,
-        id = this.view.getUint8(o),
-        n = this.#u32(o + 4),
-        distance = this.#u64(o + 8),
-        duration = this.#u64(o + 16);
-      if (
-        this.view.getUint8(o + 1) ||
-        this.view.getUint8(o + 2) ||
-        this.view.getUint8(o + 3) ||
-        duration !== distance + n * n * 4 ||
-        duration + n * n * 4 > declared
-      )
-        throw new InvalidFormatError("Invalid island directory");
-      this.islands.set(id, { count: n, distance, duration });
+      !Number.isSafeInteger(offset) ||
+      offset < 0 ||
+      offset > this.buffer.byteLength - length
+    ) {
+      throw new InvalidFormatError("Truncated or out-of-range read");
     }
   }
+
+  #parse() {
+    if (
+      this.buffer.byteLength < HEADER ||
+      ascii(this.view, 0, 8) !== MAGIC
+    ) {
+      throw new InvalidFormatError("Unknown magic or truncated file");
+    }
+    if (this.#u16(8) !== MAJOR) {
+      throw new InvalidFormatError("Unsupported version");
+    }
+    if (
+      this.#u32(12) !== HEADER ||
+      this.#u32(16) !== 0 ||
+      this.#u16(22) !== 0
+    ) {
+      throw new InvalidFormatError("Invalid header");
+    }
+    for (let index = 52; index < HEADER; index += 1) {
+      if (this.view.getUint8(index) !== 0) {
+        throw new InvalidFormatError("Reserved header bytes must be zero");
+      }
+    }
+
+    this.centerCount = this.#u32(24);
+    this.indexOffset = this.#u64(28);
+    const directoryOffset = this.#u64(36);
+    const declaredSize = this.#u64(44);
+    if (
+      declaredSize !== this.buffer.byteLength ||
+      this.indexOffset !== HEADER ||
+      directoryOffset !== HEADER + this.centerCount * INDEX
+    ) {
+      throw new InvalidFormatError("Invalid offsets");
+    }
+
+    this.islands = new Map();
+    const islandCount = this.#u16(20);
+    let expectedOffset = directoryOffset + islandCount * DIRECTORY;
+    for (let index = 0; index < islandCount; index += 1) {
+      const offset = directoryOffset + index * DIRECTORY;
+      const islandId = this.view.getUint8(offset);
+      const count = this.#u32(offset + 4);
+      const distanceOffset = this.#u64(offset + 8);
+      const matrixEnd = distanceOffset + count * count * 4;
+      if (
+        this.view.getUint8(offset + 1) ||
+        this.view.getUint8(offset + 2) ||
+        this.view.getUint8(offset + 3) ||
+        distanceOffset !== expectedOffset ||
+        matrixEnd > declaredSize
+      ) {
+        throw new InvalidFormatError("Invalid island directory");
+      }
+      this.islands.set(islandId, { count, distanceOffset });
+      expectedOffset = matrixEnd;
+    }
+    if (expectedOffset !== declaredSize) {
+      throw new InvalidFormatError("Unexpected trailing data");
+    }
+  }
+
   #code(code) {
-    if (typeof code !== "string" || !/^\d{8}$/.test(code))
-      throw new UnknownCenterError(`Invalid center code: ${code}`);
+    if (typeof code !== "string" || !/^\d{8}$/.test(code)) {
+      throw new UnknownCenterError(`Invalid location code: ${code}`);
+    }
     const value = Number(code);
-    if (value > 0xffffffff)
-      throw new UnknownCenterError("Center code exceeds uint32");
+    if (value > 0xffffffff) {
+      throw new UnknownCenterError("Location code exceeds uint32");
+    }
     return value;
   }
+
   find(code) {
     const target = this.#code(code);
-    let low = 0,
-      high = this.centerCount - 1;
+    let low = 0;
+    let high = this.centerCount - 1;
     while (low <= high) {
-      const mid = Math.floor((low + high) / 2),
-        o = this.indexOffset + mid * INDEX,
-        value = this.#u32(o);
+      const middle = Math.floor((low + high) / 2);
+      const offset = this.indexOffset + middle * INDEX;
+      const value = this.#u32(offset);
       if (value === target) {
         const entry = {
           code,
-          islandId: this.view.getUint8(o + 4),
-          localIndex: this.#u16(o + 6),
-          metadataIndex: this.#u32(o + 8),
+          islandId: this.view.getUint8(offset + 4),
+          localIndex: this.#u16(offset + 6),
+          metadataIndex: this.#u32(offset + 8),
         };
         const island = this.islands.get(entry.islandId);
-        if (!island || entry.localIndex >= island.count)
+        if (!island || entry.localIndex >= island.count) {
           throw new InvalidFormatError("Index/island mismatch");
+        }
         return entry;
       }
-      if (value < target) low = mid + 1;
-      else high = mid - 1;
+      if (value < target) low = middle + 1;
+      else high = middle - 1;
     }
-    throw new UnknownCenterError(`Unknown center: ${code}`);
+    throw new UnknownCenterError(`Unknown location: ${code}`);
   }
-  getRoute(origin, destination) {
-    const a = this.find(origin),
-      b = this.find(destination);
-    if (a.islandId !== b.islandId)
+
+  getDistance(origin, destination) {
+    const source = this.find(origin);
+    const target = this.find(destination);
+    if (source.islandId !== target.islandId) {
       throw new CrossIslandRouteError(
-        "Routes between islands are not computed",
+        "Distances between islands are not computed",
       );
-    const island = this.islands.get(a.islandId),
-      position = a.localIndex * island.count + b.localIndex,
-      distance = this.#u32(island.distance + position * 4),
-      duration = this.#u32(island.duration + position * 4);
-    if (distance === UNREACHABLE || duration === UNREACHABLE)
-      throw new UnreachableRouteError("Route is unavailable");
-    return { distanceMeters: distance, durationSeconds: duration };
+    }
+    const island = this.islands.get(source.islandId);
+    const position = source.localIndex * island.count + target.localIndex;
+    const distanceMeters = this.#u32(
+      island.distanceOffset + position * 4,
+    );
+    if (distanceMeters === UNREACHABLE) {
+      throw new UnreachableRouteError("Distance is unavailable");
+    }
+    return { distanceMeters };
+  }
+
+  getRoute(origin, destination) {
+    return this.getDistance(origin, destination);
   }
 }
+
+export const RouteMatrix = DistanceMatrix;
