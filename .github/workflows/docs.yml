@@ -50,8 +50,12 @@ jobs:
             rebuild="${MANUAL_REBUILD:-true}"
           elif [ "$EVENT_NAME" = "schedule" ]; then
             latest_tag="$(
-              gh api "repos/$GITHUB_REPOSITORY/releases?per_page=100" \
-                --jq 'map(select(.draft == false and .prerelease == false and (.tag_name | startswith("data-")))) | sort_by(.published_at) | reverse | .[0].tag_name // ""'
+              gh release list \
+                --exclude-drafts \
+                --exclude-pre-releases \
+                --limit 100 \
+                --json tagName,publishedAt \
+                --jq "$(cat scripts/latest-data-release.jq)"
             )"
 
             if [ -z "$latest_tag" ]; then
@@ -80,12 +84,12 @@ jobs:
             rebuild=true
           elif ! git diff --quiet "$BEFORE_SHA" "$GITHUB_SHA" -- \
             .github/workflows/docs.yml \
-            .github/workflows/release.yml \
             config \
             data/schemas/manifest.schema.json \
             pyproject.toml \
             scripts/build-data-ci.sh \
             scripts/build-production.py \
+            scripts/latest-data-release.jq \
             src/python \
             uv.lock; then
             rebuild=true
@@ -121,8 +125,12 @@ jobs:
           set -eu
 
           latest_tag="$(
-            gh api "repos/$GITHUB_REPOSITORY/releases?per_page=100" \
-              --jq 'map(select(.draft == false and .prerelease == false and (.tag_name | startswith("data-")))) | sort_by(.published_at) | reverse | .[0].tag_name // ""'
+            gh release list \
+              --exclude-drafts \
+              --exclude-pre-releases \
+              --limit 100 \
+              --json tagName,publishedAt \
+              --jq "$(cat scripts/latest-data-release.jq)"
           )"
           changed=true
 
@@ -155,6 +163,11 @@ jobs:
         run: |
           set -eu
 
+          (
+            cd dist
+            sha256sum -c SHA256SUMS
+          )
+
           centers="$(jq -r '.counts.centers' dist/manifest.json)"
           locations="$(jq -r '.counts.locations' dist/manifest.json)"
           centers_sha="$(jq -r '.centers_source.sha256' dist/manifest.json)"
@@ -177,31 +190,44 @@ jobs:
             --notes-file release-notes.md \
             --latest
 
-      - name: Stage latest released data
+      - name: Stage data for Pages
         env:
           GH_TOKEN: ${{ github.token }}
+          REBUILD_DATA: ${{ steps.plan.outputs.rebuild_data }}
+          DATA_CHANGED: ${{ steps.compare.outputs.changed }}
         run: |
           set -eu
-
-          latest_tag="$(
-            gh api "repos/$GITHUB_REPOSITORY/releases?per_page=100" \
-              --jq 'map(select(.draft == false and .prerelease == false and (.tag_name | startswith("data-")))) | sort_by(.published_at) | reverse | .[0].tag_name // ""'
-          )"
-
-          if [ -z "$latest_tag" ]; then
-            echo "No published data-* release is available" >&2
-            exit 1
-          fi
 
           rm -rf docs/data/latest
           mkdir -p docs/data/latest
 
-          gh release download "$latest_tag" \
-            --pattern canarias-distances.dat \
-            --pattern centers.min.json \
-            --pattern manifest.json \
-            --pattern SHA256SUMS \
-            --dir docs/data/latest
+          if [ "$REBUILD_DATA" = "true" ] && [ "$DATA_CHANGED" = "true" ]; then
+            cp dist/canarias-distances.dat docs/data/latest/
+            cp dist/centers.min.json docs/data/latest/
+            cp dist/manifest.json docs/data/latest/
+            cp dist/SHA256SUMS docs/data/latest/
+          else
+            latest_tag="$(
+              gh release list \
+                --exclude-drafts \
+                --exclude-pre-releases \
+                --limit 100 \
+                --json tagName,publishedAt \
+                --jq "$(cat scripts/latest-data-release.jq)"
+            )"
+
+            if [ -z "$latest_tag" ]; then
+              echo "No published data-* release is available" >&2
+              exit 1
+            fi
+
+            gh release download "$latest_tag" \
+              --pattern canarias-distances.dat \
+              --pattern centers.min.json \
+              --pattern manifest.json \
+              --pattern SHA256SUMS \
+              --dir docs/data/latest
+          fi
 
           cd docs/data/latest
           grep -E '  (canarias-distances\.dat|centers\.min\.json|manifest\.json)$' SHA256SUMS |
