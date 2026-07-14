@@ -35,6 +35,7 @@ def main() -> None:
     output = Path(os.environ.get("OUTPUT_DIR", ROOT / "dist"))
     osrm_url = os.environ.get("OSRM_URL", "http://127.0.0.1:5000")
     block_size = int(os.environ.get("BLOCK_SIZE", "50"))
+    data_version = os.environ.get("DATA_VERSION", "development")
     output.mkdir(parents=True, exist_ok=True)
     overrides = [load_json(path) for path in sorted((ROOT / "config/overrides").glob("*.json"))]
     result = import_centers(cache / "centers.csv", overrides=overrides)
@@ -115,7 +116,7 @@ def main() -> None:
         "schema_version": 1,
         "format": {"magic": "CEDIST01", "major": 1, "minor": 0, "endianness": "little"},
         "generated_at": source_epoch_iso(),
-        "data_version": "v0.0.3",
+        "data_version": data_version,
         "centers_source": {"dataset_url": "https://datos.canarias.es/catalogos/general/dataset/centros-educativos-de-canarias", "resource_url": centers_meta["url"], "etag": centers_meta["etag"], "last_modified": centers_meta["last_modified"], "size": centers_meta["size"], "sha256": centers_meta["sha256"]},
         "transport_nodes_source": {"path": "config/transport-nodes.json", "sha256": sha256(transport_nodes_path), "scope": transport_nodes_config["scope"], "sources": transport_nodes_config["sources"]},
         "osm_source": {"url": osm_meta["url"], "etag": osm_meta["etag"], "last_modified": osm_meta["last_modified"], "size": osm_meta["size"], "sha256": osm_meta["sha256"]},
