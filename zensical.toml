@@ -8,7 +8,24 @@ edit_uri = "edit/main/docs/"
 docs_dir = "docs"
 extra_css = ["stylesheets/extra.css"]
 extra_javascript = ["javascripts/demo.mjs"]
-nav = [{Inicio="index.md"},{Arquitectura="architecture.md"},{Fuentes="data-sources.md"},{Calidad="data-quality.md"},{Formato="binary-format.md"},{Generación="generation.md"},{Actualización="updating.md"},{PHP="php.md"},{JavaScript="javascript.md"},{CLI="cli.md"},{REST="rest-api.md"},{Demo="demo.md"},{Rendimiento="performance.md"},{Licencias="licensing.md"},{Seguridad="security.md"},{Limitaciones="limitations.md"}]
+nav = [
+  { "Inicio" = "index.md" },
+  { "Arquitectura" = "architecture.md" },
+  { "Fuentes" = "data-sources.md" },
+  { "Calidad" = "data-quality.md" },
+  { "Formato" = "binary-format.md" },
+  { "Generación" = "generation.md" },
+  { "Actualización" = "updating.md" },
+  { "PHP" = "php.md" },
+  { "JavaScript" = "javascript.md" },
+  { "CLI" = "cli.md" },
+  { "REST" = "rest-api.md" },
+  { "Demo" = "demo.md" },
+  { "Rendimiento" = "performance.md" },
+  { "Licencias" = "licensing.md" },
+  { "Seguridad" = "security.md" },
+  { "Limitaciones" = "limitations.md" },
+]
 [project.theme]
 language = "es"
 features = ["navigation.tabs","navigation.sections","search.highlight","content.code.copy","content.tabs.link"]
