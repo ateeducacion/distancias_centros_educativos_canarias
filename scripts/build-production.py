@@ -1,4 +1,4 @@
-"""Build production CEDIST02 distance artifacts from validated inputs and OSRM."""
+"""Build production CEDIST03 distance artifacts from validated inputs and OSRM."""
 from __future__ import annotations
 
 from concurrent.futures import ThreadPoolExecutor
@@ -12,6 +12,10 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src/python"))
 
+from canarias_route_matrix.binary.format import (  # noqa: E402
+    CURRENT_FORMAT,
+    MAX_DISTANCE_METERS,
+)
 from canarias_route_matrix.binary.writer import write_binary  # noqa: E402
 from canarias_route_matrix.csv_importer import import_centers, write_report  # noqa: E402
 from canarias_route_matrix.manifest import sha256, stable_json, write_checksums  # noqa: E402
@@ -41,6 +45,8 @@ def main() -> None:
     osrm_url = os.environ.get("OSRM_URL", "http://127.0.0.1:5000")
     block_size = int(os.environ.get("BLOCK_SIZE", "50"))
     data_version = os.environ.get("DATA_VERSION", "development")
+    zeekstd = os.environ.get("ZEEKSTD", "zeekstd")
+    seekable_frame_size = os.environ.get("SEEKABLE_FRAME_SIZE", "1M")
     output.mkdir(parents=True, exist_ok=True)
 
     overrides = [
@@ -95,6 +101,7 @@ def main() -> None:
 
     matrices: dict[int, list[list[int | None]]] = {}
     unreachable = 0
+    maximum_distance_meters = 0
     counts: dict[str, int] = {}
     island_ids = sorted({int(location["island_id"]) for location in locations})
     for island_id in island_ids:
@@ -152,23 +159,47 @@ def main() -> None:
             distances[index][index] = 0
         for row_index in range(location_count):
             for column_index in range(location_count):
-                if (
-                    row_index != column_index
-                    and distances[row_index][column_index] == 0
-                ):
-                    distances[row_index][column_index] = 1
+                value = distances[row_index][column_index]
+                if row_index != column_index and value == 0:
+                    value = 1
+                    distances[row_index][column_index] = value
+                if value is not None:
+                    maximum_distance_meters = max(maximum_distance_meters, value)
 
+        if maximum_distance_meters > MAX_DISTANCE_METERS:
+            raise RuntimeError(
+                f"Generated distance {maximum_distance_meters} m exceeds the "
+                f"CEDIST03 limit of {MAX_DISTANCE_METERS} m"
+            )
         unreachable += sum(value is None for row in distances for value in row)
         matrices[island_id] = distances
         counts[str(island_id)] = location_count
 
     data_file = output / "canarias-distances.dat"
     write_binary(data_file, locations, matrices)
+
     compressed_file = Path(str(data_file) + ".zst")
     subprocess.run(
         ["zstd", "-19", "--force", str(data_file), "-o", str(compressed_file)],
         check=True,
     )
+
+    seekable_file = output / "canarias-distances.dat.seekable.zst"
+    seekable_file.unlink(missing_ok=True)
+    with data_file.open("rb") as source:
+        subprocess.run(
+            [
+                zeekstd,
+                "compress",
+                "--frame-size",
+                seekable_frame_size,
+                "-o",
+                str(seekable_file),
+            ],
+            stdin=source,
+            check=True,
+        )
+
     stable_json(output / "centers.json", locations)
     stable_json(output / "centers.min.json", locations, minified=True)
 
@@ -184,6 +215,7 @@ def main() -> None:
     artifact_paths = [
         data_file,
         compressed_file,
+        seekable_file,
         output / "centers.json",
         output / "centers.min.json",
         output / "transport-nodes.json",
@@ -199,11 +231,17 @@ def main() -> None:
     manifest = {
         "schema_version": 1,
         "format": {
-            "magic": "CEDIST02",
-            "major": 2,
+            "magic": CURRENT_FORMAT.magic.decode("ascii"),
+            "major": CURRENT_FORMAT.major,
             "minor": 0,
             "endianness": "little",
             "metric": "road_distance_meters",
+            "storage_type": "uint16",
+            "cell_size_bytes": CURRENT_FORMAT.cell_size,
+            "distance_unit_meters": CURRENT_FORMAT.distance_unit_meters,
+            "unreachable_value": CURRENT_FORMAT.unreachable,
+            "maximum_distance_meters": MAX_DISTANCE_METERS,
+            "rounding": "nearest decameter, halves up",
         },
         "generated_at": source_epoch_iso(),
         "data_version": data_version,
@@ -240,7 +278,7 @@ def main() -> None:
             "profile_sha256": profile_sha,
             "annotations": ["distance"],
         },
-        "rounding": "nearest integer, halves up",
+        "rounding": "OSRM meters rounded to nearest decameter, halves up",
         "overrides": overrides,
         "counts": {
             "centers": len(education_centers),
@@ -249,6 +287,7 @@ def main() -> None:
             "ports": port_count,
             "directed_distances": directed_distances,
             "unreachable_distances": unreachable,
+            "maximum_distance_meters": maximum_distance_meters,
             "islands": counts,
             "included": result.included,
             "excluded": result.excluded,
