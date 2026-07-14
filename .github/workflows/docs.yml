@@ -1,42 +1,229 @@
-name: Documentation
+name: Publish
+
 on:
   workflow_dispatch:
+    inputs:
+      rebuild_data:
+        description: Rebuild data and publish a dated release if the result changed
+        required: true
+        default: true
+        type: boolean
+  schedule:
+    - cron: '17 4 * * 1'
   push:
     branches: [main]
-permissions: {contents: read}
-concurrency: {group: pages, cancel-in-progress: true}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 150
+    permissions:
+      contents: write
     steps:
-      - uses: actions/checkout@v7 # v7
+      - uses: actions/checkout@v7
         with:
           ref: main
-      - uses: astral-sh/setup-uv@v7 # v7
-      - name: Install data build dependencies
-        run: sudo apt-get update && sudo apt-get install -y zstd
-      - name: Build current main data bundle
-        run: DATA_VERSION="main-$(git rev-parse --short=12 HEAD)" sh scripts/build-data-ci.sh
-      - name: Stage current main data for Pages
+          fetch-depth: 0
+
+      - uses: astral-sh/setup-uv@v7
+
+      - name: Plan data rebuild
+        id: plan
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BEFORE_SHA: ${{ github.event.before }}
+          MANUAL_REBUILD: ${{ inputs.rebuild_data }}
+          GH_TOKEN: ${{ github.token }}
         run: |
-          cd dist
-          sha256sum -c SHA256SUMS
-          cd ..
+          set -eu
+
+          rebuild=false
+
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            rebuild="${MANUAL_REBUILD:-true}"
+          elif [ "$EVENT_NAME" = "schedule" ]; then
+            latest_tag="$(
+              gh api "repos/$GITHUB_REPOSITORY/releases?per_page=100" \
+                --jq 'map(select(.draft == false and .prerelease == false and (.tag_name | startswith("data-")))) | sort_by(.published_at) | reverse | .[0].tag_name // ""'
+            )"
+
+            if [ -z "$latest_tag" ]; then
+              rebuild=true
+            else
+              rm -rf previous-source .source-check
+              mkdir -p previous-source
+              gh release download "$latest_tag" \
+                --pattern manifest.json \
+                --dir previous-source
+
+              uv run python -m canarias_route_matrix.cli \
+                --cache-dir .source-check \
+                download-centers
+
+              current_sha="$(jq -r '.sha256' .source-check/centers.meta.json)"
+              previous_sha="$(jq -r '.centers_source.sha256 // ""' previous-source/manifest.json)"
+
+              if [ "$current_sha" != "$previous_sha" ]; then
+                rebuild=true
+              fi
+            fi
+          elif [ -z "${BEFORE_SHA:-}" ] ||
+            [ "$BEFORE_SHA" = "0000000000000000000000000000000000000000" ] ||
+            ! git cat-file -e "$BEFORE_SHA^{commit}" 2>/dev/null; then
+            rebuild=true
+          elif ! git diff --quiet "$BEFORE_SHA" "$GITHUB_SHA" -- \
+            .github/workflows/docs.yml \
+            .github/workflows/release.yml \
+            config \
+            data/schemas/manifest.schema.json \
+            pyproject.toml \
+            scripts/build-data-ci.sh \
+            scripts/build-production.py \
+            src/python \
+            uv.lock; then
+            rebuild=true
+          fi
+
+          echo "rebuild_data=$rebuild" >> "$GITHUB_OUTPUT"
+
+      - name: Install data build dependencies
+        if: steps.plan.outputs.rebuild_data == 'true'
+        run: sudo apt-get update && sudo apt-get install -y zstd
+
+      - name: Build current data
+        id: build-data
+        if: steps.plan.outputs.rebuild_data == 'true'
+        run: |
+          set -eu
+
+          version="data-$(date -u +%Y%m%d-%H%M)"
+          epoch="$(date -u +%s)"
+
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+          DATA_VERSION="$version" \
+          SOURCE_DATE_EPOCH="$epoch" \
+          sh scripts/build-data-ci.sh
+
+      - name: Compare with the latest data release
+        id: compare
+        if: steps.plan.outputs.rebuild_data == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+
+          latest_tag="$(
+            gh api "repos/$GITHUB_REPOSITORY/releases?per_page=100" \
+              --jq 'map(select(.draft == false and .prerelease == false and (.tag_name | startswith("data-")))) | sort_by(.published_at) | reverse | .[0].tag_name // ""'
+          )"
+          changed=true
+
+          if [ -n "$latest_tag" ]; then
+            rm -rf previous-data
+            mkdir -p previous-data
+
+            if gh release download "$latest_tag" \
+              --pattern manifest.json \
+              --dir previous-data; then
+              current_matrix="$(sha256sum dist/canarias-distances.dat | cut -d ' ' -f 1)"
+              current_centers="$(sha256sum dist/centers.min.json | cut -d ' ' -f 1)"
+              previous_matrix="$(jq -r '.artifacts["canarias-distances.dat"].sha256 // ""' previous-data/manifest.json)"
+              previous_centers="$(jq -r '.artifacts["centers.min.json"].sha256 // ""' previous-data/manifest.json)"
+
+              if [ "$current_matrix" = "$previous_matrix" ] &&
+                [ "$current_centers" = "$previous_centers" ]; then
+                changed=false
+              fi
+            fi
+          fi
+
+          echo "changed=$changed" >> "$GITHUB_OUTPUT"
+
+      - name: Publish dated data release
+        if: steps.plan.outputs.rebuild_data == 'true' && steps.compare.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DATA_VERSION: ${{ steps.build-data.outputs.version }}
+        run: |
+          set -eu
+
+          centers="$(jq -r '.counts.centers' dist/manifest.json)"
+          locations="$(jq -r '.counts.locations' dist/manifest.json)"
+          centers_sha="$(jq -r '.centers_source.sha256' dist/manifest.json)"
+          osm_sha="$(jq -r '.osm_source.sha256' dist/manifest.json)"
+
+          cat > release-notes.md <<EOF
+          Snapshot de datos de distancias por carretera de Canarias.
+
+          - Versión de datos: \`$DATA_VERSION\`
+          - Centros educativos: $centers
+          - Ubicaciones totales: $locations
+          - SHA-256 de la fuente de centros: \`$centers_sha\`
+          - SHA-256 de la fuente OSM: \`$osm_sha\`
+          - Commit generador: \`$GITHUB_SHA\`
+          EOF
+
+          gh release create "$DATA_VERSION" dist/* \
+            --target "$GITHUB_SHA" \
+            --title "$DATA_VERSION" \
+            --notes-file release-notes.md \
+            --latest
+
+      - name: Stage latest released data
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+
+          latest_tag="$(
+            gh api "repos/$GITHUB_REPOSITORY/releases?per_page=100" \
+              --jq 'map(select(.draft == false and .prerelease == false and (.tag_name | startswith("data-")))) | sort_by(.published_at) | reverse | .[0].tag_name // ""'
+          )"
+
+          if [ -z "$latest_tag" ]; then
+            echo "No published data-* release is available" >&2
+            exit 1
+          fi
+
           rm -rf docs/data/latest
           mkdir -p docs/data/latest
-          cp dist/canarias-distances.dat docs/data/latest/
-          cp dist/centers.min.json docs/data/latest/
-          cp dist/manifest.json docs/data/latest/
-      - run: uvx zensical build --clean
-      - uses: actions/upload-pages-artifact@v5 # v5
-        with: {path: site}
+
+          gh release download "$latest_tag" \
+            --pattern canarias-distances.dat \
+            --pattern centers.min.json \
+            --pattern manifest.json \
+            --pattern SHA256SUMS \
+            --dir docs/data/latest
+
+          cd docs/data/latest
+          grep -E '  (canarias-distances\.dat|centers\.min\.json|manifest\.json)$' SHA256SUMS |
+            sha256sum -c -
+
+      - name: Build documentation
+        run: uvx zensical build --clean
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: site
+
   deploy:
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    permissions: {pages: write, id-token: write}
-    environment: {name: github-pages, url: "${{ steps.deployment.outputs.page_url }}"}
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v5 # v5
+        uses: actions/deploy-pages@v5
