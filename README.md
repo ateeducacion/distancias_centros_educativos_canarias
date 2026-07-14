@@ -2,7 +2,7 @@
 
 Matriz abierta y versionada de distancias y tiempos por carretera entre centros educativos, aeropuertos y puertos principales de Canarias, generada con datos oficiales y OpenStreetMap.
 
-Estado: implementación inicial. Los artefactos de producción se generan fuera de Git; el repositorio incluye un fixture ficticio de conformidad.
+Estado: implementación inicial. GitHub Pages genera los artefactos de producción directamente desde `main`; el repositorio incluye también un fixture ficticio de conformidad.
 
 > La métrica es: «Distancia y duración correspondientes a la ruta para automóvil considerada más rápida por el perfil OSRM utilizado, sin tráfico en tiempo real». No representa la ruta más corta ni una predicción de tráfico real.
 
@@ -67,7 +67,11 @@ Los artefactos previstos son el binario, su copia Zstandard, dos JSON de ubicaci
 
 ## Actualización, documentación y demo
 
-`make download-centers validate-centers download-osm prepare-osrm build-data`. El sitio Zensical se sirve con `make docs-serve`; la demo estática consume una tríada coherente bajo `data/latest/`.
+Cada `push` a `main` descarga las fuentes actuales, prepara OSRM, reconstruye la matriz y despliega GitHub Pages con esos mismos artefactos. No se necesita crear un tag para ver cambios en la demo.
+
+Los tags `v*` crean snapshots opcionales en GitHub Releases. El workflow **Data release** también puede ejecutarse manualmente con un tag existente para reparar una publicación fallida sin mover ni recrear el tag.
+
+Localmente pueden usarse `make download-centers validate-centers download-osm prepare-osrm build-data`. El sitio Zensical se sirve con `make docs-serve`; la demo estática consume una tríada coherente bajo `data/latest/`.
 
 ## Licencias, atribución y límites
 

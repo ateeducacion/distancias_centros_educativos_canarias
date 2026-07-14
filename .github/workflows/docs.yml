@@ -1,31 +1,33 @@
 name: Documentation
 on:
   workflow_dispatch:
-  release:
-    types: [published]
   push:
     branches: [main]
-    paths: ['docs/**', 'zensical.toml', '.github/workflows/docs.yml']
 permissions: {contents: read}
 concurrency: {group: pages, cancel-in-progress: true}
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v7 # v7
+        with:
+          ref: main
       - uses: astral-sh/setup-uv@v7 # v7
-      - name: Download latest released data bundle
-        env:
-          GH_TOKEN: "${{ github.token }}"
-          RELEASE_TAG: "${{ github.event.release.tag_name }}"
+      - name: Install data build dependencies
+        run: sudo apt-get update && sudo apt-get install -y zstd
+      - name: Build current main data bundle
+        run: DATA_VERSION="main-$(git rev-parse --short=12 HEAD)" sh scripts/build-data-ci.sh
+      - name: Stage current main data for Pages
         run: |
+          cd dist
+          sha256sum -c SHA256SUMS
+          cd ..
           rm -rf docs/data/latest
           mkdir -p docs/data/latest
-          tag="${RELEASE_TAG:-$(gh release view --json tagName --jq .tagName)}"
-          gh release download "$tag" --dir docs/data/latest
-          cd docs/data/latest
-          sha256sum -c SHA256SUMS
+          cp dist/canarias-education-routes.bin docs/data/latest/
+          cp dist/centers.min.json docs/data/latest/
+          cp dist/manifest.json docs/data/latest/
       - run: uvx zensical build --clean
       - uses: actions/upload-pages-artifact@v5 # v5
         with: {path: site}
