@@ -2,7 +2,7 @@ openapi: 3.1.0
 info:
   title: Canarias Distance Matrix API
   version: 2.0.0
-  description: API opcional para consultar distancias CEDIST02 o CEDIST03 en metros.
+  description: API opcional para consultar distancias CEDIST03 en metros.
 paths:
   /v1/health:
     get:
@@ -34,28 +34,6 @@ paths:
     get:
       operationId: getDistance
       summary: Consultar una distancia en metros
-      parameters:
-        - $ref: '#/components/parameters/Origin'
-        - $ref: '#/components/parameters/Destination'
-      responses:
-        '200':
-          description: Distancia encontrada
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DistanceResponse'
-        '404':
-          $ref: '#/components/responses/UnknownLocation'
-        '422':
-          $ref: '#/components/responses/DistanceUnavailable'
-        '503':
-          $ref: '#/components/responses/ArtifactUnavailable'
-  /v1/routes/{origin}/{destination}:
-    get:
-      operationId: getRouteCompatibilityAlias
-      summary: Consultar una distancia mediante el alias histórico
-      description: Alias temporal de `/v1/distances/{origin}/{destination}`. No devuelve duración.
-      deprecated: true
       parameters:
         - $ref: '#/components/parameters/Origin'
         - $ref: '#/components/parameters/Destination'
@@ -136,7 +114,7 @@ components:
         distance_m:
           type: integer
           minimum: 0
-          description: Distancia por carretera en metros. CEDIST03 usa resolución de 10 metros; CEDIST02 conserva metros enteros.
+          description: Distancia por carretera en metros, con resolución de 10 metros.
     HealthResponse:
       type: object
       additionalProperties: false
@@ -155,9 +133,7 @@ components:
       properties:
         format:
           type: string
-          enum:
-            - CEDIST02
-            - CEDIST03
+          const: CEDIST03
         api_version:
           type: string
           const: v1
