@@ -2,7 +2,7 @@ const form = document.querySelector("#route-demo");
 
 if (form) {
   const status = document.querySelector("#demo-status");
-  const islandSelect = document.querySelector("#island");
+  const islandGroup = document.querySelector("#island-group");
   const originSelect = document.querySelector("#origin");
   const destinationSelect = document.querySelector("#destination");
   const swapButton = document.querySelector("#swap-centers");
@@ -11,6 +11,7 @@ if (form) {
   const resultKilometers = document.querySelector("#result-kilometers");
   const resultMeters = document.querySelector("#result-meters");
   const resultRoute = document.querySelector("#result-route");
+  const resultTimeValue = document.querySelector("#result-time-value");
   const copyButton = document.querySelector("#copy-result");
   const version = document.querySelector("#demo-version");
   const routeVisual = document.querySelector("#route-visual");
@@ -50,12 +51,22 @@ if (form) {
   let ready = false;
   let lastResult = "";
   let viewBoxAnimation = 0;
+  let selectedIslandId = "";
 
+  const AVERAGE_SPEED_KMH = 75;
   const option = (value, label) => new Option(label, value);
   const locationTypeLabels = {
     AIRPORT: "Aeropuerto",
     PORT: "Puerto",
   };
+
+  function formatDuration(minutes) {
+    if (minutes < 1) return "menos de 1 min";
+    if (minutes < 60) return `${minutes} min`;
+    const hours = Math.floor(minutes / 60);
+    const rest = minutes % 60;
+    return `${hours} h ${String(rest).padStart(2, "0")} min`;
+  }
 
   function locationLabel(location) {
     const type = locationTypeLabels[location.location_type];
@@ -135,7 +146,7 @@ if (form) {
   }
 
   function updateRouteVisual() {
-    const islandId = String(islandSelect.value);
+    const islandId = selectedIslandId;
     for (const shape of islandShapes) {
       shape.classList.toggle(
         "is-selected",
@@ -163,10 +174,7 @@ if (form) {
   }
 
   function currentViewBox() {
-    const values = routeVisual
-      .getAttribute("viewBox")
-      .split(/\s+/)
-      .map(Number);
+    const values = routeVisual.getAttribute("viewBox").split(/\s+/).map(Number);
     return values.length === 4 && values.every(Number.isFinite)
       ? values
       : archipelagoViewBox;
@@ -203,7 +211,7 @@ if (form) {
   }
 
   function querySelection() {
-    if (!ready || !islandSelect.value) {
+    if (!ready || !selectedIslandId) {
       setResultState("Selecciona una isla para empezar.");
       updateRouteVisual();
       updateUrl();
@@ -226,10 +234,21 @@ if (form) {
     updateUrl();
   }
 
-  function selectIsland(islandId, selectedOrigin = "", selectedDestination = "") {
+  function selectIsland(
+    islandId,
+    selectedOrigin = "",
+    selectedDestination = "",
+  ) {
     const normalizedIslandId = String(islandId);
+    selectedIslandId = normalizedIslandId;
     const islandLocations = locationsByIsland.get(normalizedIslandId) ?? [];
     const hasIsland = islandLocations.length > 0;
+
+    for (const pill of islandGroup.children) {
+      const isActive = pill.dataset.islandId === normalizedIslandId;
+      pill.classList.toggle("is-active", isActive);
+      pill.setAttribute("aria-pressed", String(isActive));
+    }
 
     populateLocationSelect(originSelect, islandLocations, selectedOrigin);
     populateLocationSelect(
@@ -245,7 +264,7 @@ if (form) {
     );
     animateViewBox(
       hasIsland
-        ? islandViewBoxes.get(normalizedIslandId) ?? archipelagoViewBox
+        ? (islandViewBoxes.get(normalizedIslandId) ?? archipelagoViewBox)
         : archipelagoViewBox,
     );
     updateRouteVisual();
@@ -253,10 +272,6 @@ if (form) {
   }
 
   function initializeSelect2() {
-    window.jQuery(islandSelect).select2({
-      placeholder: "Selecciona una isla",
-      width: "100%",
-    });
     const locationOptions = {
       allowClear: true,
       width: "100%",
@@ -273,11 +288,22 @@ if (form) {
       placeholder: "Buscar destino",
     });
 
-    window.jQuery(islandSelect).on("change", () => {
-      selectIsland(islandSelect.value);
-    });
     window.jQuery(originSelect).on("change", querySelection);
     window.jQuery(destinationSelect).on("change", querySelection);
+  }
+
+  function populateIslandPills(islands) {
+    islandGroup.replaceChildren();
+    for (const [id, name] of islands) {
+      const pill = document.createElement("button");
+      pill.type = "button";
+      pill.className = "island-pill";
+      pill.dataset.islandId = id;
+      pill.textContent = formatIsland(name);
+      pill.setAttribute("aria-pressed", "false");
+      pill.addEventListener("click", () => selectIsland(id));
+      islandGroup.append(pill);
+    }
   }
 
   function applyRequestedSelection() {
@@ -291,8 +317,6 @@ if (form) {
       return;
     }
 
-    islandSelect.value = String(requestedLocation.island_id);
-    window.jQuery(islandSelect).trigger("change.select2");
     selectIsland(
       requestedLocation.island_id,
       requestedOrigin ?? "",
@@ -322,10 +346,7 @@ if (form) {
         .sort((first, second) =>
           formatIsland(first[1]).localeCompare(formatIsland(second[1]), "es"),
         );
-      islandSelect.replaceChildren(option("", "Selecciona una isla"));
-      for (const [id, name] of islands) {
-        islandSelect.add(option(id, formatIsland(name)));
-      }
+      populateIslandPills(islands);
 
       populateLocationSelect(originSelect, []);
       populateLocationSelect(destinationSelect, []);
@@ -342,10 +363,14 @@ if (form) {
       const meters = new Intl.NumberFormat("es-ES").format(
         data.result.distanceMeters,
       );
-      lastResult = `${data.origin.name} → ${data.destination.name}: ${kilometers} km (${meters} m)`;
+      const minutes = Math.round(
+        (data.result.distanceMeters / 1000 / AVERAGE_SPEED_KMH) * 60,
+      );
+      lastResult = `${data.origin.name} → ${data.destination.name}: ${kilometers} km (${meters} m, ≈ ${formatDuration(minutes)} en coche)`;
       resultKilometers.textContent = `${kilometers} km`;
       resultMeters.textContent = `${meters} metros por carretera`;
       resultRoute.textContent = `${data.origin.name} → ${data.destination.name}`;
+      resultTimeValue.textContent = `≈ ${formatDuration(minutes)}`;
       resultState.hidden = true;
       resultValue.hidden = false;
       copyButton.hidden = false;

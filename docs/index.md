@@ -1,6 +1,11 @@
 <section class="distance-home">
   <header class="distance-home-header">
-    <h1>Distancias entre centros de Canarias</h1>
+    <p class="distance-eyebrow">
+      <span class="distance-eyebrow-dot" aria-hidden="true"></span>
+      <a href="https://www3.gobiernodecanarias.org/medusa/ecoescuela/ate/">Área de Tecnología Educativa</a>
+    </p>
+    <h1>Distancias entre centros de <em>Canarias</em>.</h1>
+    <p class="distance-subtitle">Elige una isla, un <strong>origen</strong> y un <strong>destino</strong>. Calculamos la distancia real por carretera y una estimación del tiempo en coche.</p>
   </header>
 
   <p id="demo-status" class="demo-status" role="status" aria-live="polite">
@@ -44,8 +49,8 @@
 
     <form id="route-demo" class="distance-demo" hidden>
       <div class="distance-island-field">
-        <label for="island">Isla</label>
-        <select id="island" name="island" required></select>
+        <span class="distance-field-label">Isla</span>
+        <div id="island-group" class="island-pills" role="group" aria-label="Selecciona una isla"></div>
       </div>
 
       <div class="distance-fields">
@@ -54,7 +59,7 @@
           <select id="origin" name="origin" disabled required></select>
         </div>
 
-        <button type="button" id="swap-centers" class="swap-button" disabled aria-label="Intercambiar origen y destino">⇄ Intercambiar</button>
+        <button type="button" id="swap-centers" class="swap-button" disabled title="Intercambiar origen y destino" aria-label="Intercambiar origen y destino">⇄</button>
 
         <div class="distance-field">
           <label for="destination">Destino</label>
@@ -65,9 +70,15 @@
       <output id="result" class="distance-result" aria-live="polite">
         <span id="result-state">Selecciona una isla para empezar.</span>
         <span id="result-value" hidden>
-          <strong id="result-kilometers"></strong>
-          <span id="result-meters"></span>
-          <span id="result-route"></span>
+          <span id="result-route" class="distance-result-route"></span>
+          <span class="distance-result-figure">
+            <strong id="result-kilometers"></strong>
+          </span>
+          <span id="result-meters" class="distance-result-meters"></span>
+          <span id="result-time" class="distance-result-time">
+            <span class="distance-result-time-icon" aria-hidden="true">&#9711;</span>
+            <span id="result-time-value"></span> en coche
+          </span>
         </span>
       </output>
 
@@ -77,8 +88,14 @@
     </form>
   </div>
 
+  <div class="distance-note" role="note">
+    <span class="distance-note-icon" aria-hidden="true">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"></path></svg>
+    </span>
+    <p class="distance-limit">Solo se calculan distancias dentro de una misma isla. La línea del fondo une los puntos seleccionados como referencia visual: no representa el trazado real de la carretera. El tiempo en coche es una estimación orientativa (75&nbsp;km/h de media).</p>
+  </div>
+
   <div class="distance-footer">
-    <p class="distance-limit">Solo se calculan distancias dentro de una misma isla. La línea del fondo une los puntos seleccionados como referencia visual: no representa el trazado de la carretera.</p>
     <nav class="distance-links" aria-label="Documentación y descargas">
       <a href="architecture/">Arquitectura</a>
       <a href="python/">Python</a>
@@ -86,8 +103,9 @@
       <a href="php/">PHP</a>
       <a href="wordpress/">WordPress</a>
       <a href="quick-start/">Uso rápido</a>
-      <a href="data/latest/canarias-distances.dat">Descargar datos</a>
+      <a href="data/latest/canarias-distances.dat">↓ Descargar datos</a>
       <a href="data/latest/manifest.json">Manifiesto</a>
+      <a href="https://github.com/ateeducacion/distancias_centros_educativos_canarias">GitHub</a>
     </nav>
     <p id="demo-version" class="distance-version"></p>
   </div>
