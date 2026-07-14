@@ -1,75 +1,100 @@
-<section class="distance-hero">
-  <p class="distance-eyebrow">Datos abiertos · Consulta local · Sin claves API</p>
-  <h1>Distancias por carretera en Canarias</h1>
-  <p class="distance-lead">Consulta al instante la distancia entre centros educativos, aeropuertos y puertos de una misma isla. El navegador descarga una matriz estática una sola vez y resuelve cada selección sin llamar a servicios externos.</p>
-  <div class="distance-hero-actions">
-    <a class="md-button md-button--primary" href="#consultar-distancia">Probar la demo</a>
-    <a class="md-button" href="javascript/">Usar desde JavaScript</a>
-    <a class="md-button" href="php/">Usar desde PHP</a>
+<section class="distance-home">
+  <header class="distance-home-header">
+    <p class="distance-eyebrow">Datos abiertos · Sin claves API · Consulta local</p>
+    <h1>Distancias por carretera entre centros educativos de Canarias</h1>
+    <p class="distance-lead">Selecciona dos centros, aeropuertos o puertos de una misma isla. La distancia se consulta directamente en tu navegador, sin Google Maps ni coste por petición.</p>
+  </header>
+
+  <div class="distance-app">
+    <section class="distance-map-panel" aria-labelledby="map-title">
+      <div class="distance-map-heading">
+        <div>
+          <h2 id="map-title">Mapa de ubicaciones</h2>
+          <p>Haz clic en un punto para elegir origen o destino.</p>
+        </div>
+        <div class="map-selection-mode" role="group" aria-label="Punto que se seleccionará en el mapa">
+          <button type="button" class="map-mode-button is-active" data-map-target="origin">Origen</button>
+          <button type="button" class="map-mode-button" data-map-target="destination">Destino</button>
+        </div>
+      </div>
+      <div id="locations-map" class="locations-map" aria-label="Mapa interactivo de centros educativos, aeropuertos y puertos"></div>
+      <p id="map-fallback" class="map-fallback" hidden>El mapa no está disponible, pero puedes buscar las ubicaciones en los campos de selección.</p>
+      <p class="map-attribution">Visualización local con Leaflet, sin teselas ni llamadas a servicios cartográficos.</p>
+    </section>
+
+    <section class="distance-controls-panel" aria-labelledby="calculator-title">
+      <h2 id="calculator-title">Calcula una distancia</h2>
+      <p id="demo-status" class="demo-status" role="status" aria-live="polite">
+        <span class="loading-dot" aria-hidden="true"></span>
+        Cargando la matriz de distancias…
+      </p>
+
+      <form id="route-demo" class="distance-demo" hidden>
+        <div class="distance-field">
+          <label for="origin">Origen</label>
+          <select id="origin" name="origin" required></select>
+        </div>
+
+        <button type="button" id="swap-centers" class="swap-button" aria-label="Intercambiar origen y destino">⇅ Intercambiar</button>
+
+        <div class="distance-field">
+          <label for="destination">Destino</label>
+          <select id="destination" name="destination" required></select>
+        </div>
+
+        <output id="result" class="distance-result" aria-live="polite">
+          <span id="result-state">Selecciona un origen y un destino.</span>
+          <span id="result-value" hidden>
+            <strong id="result-kilometers"></strong>
+            <span id="result-meters"></span>
+            <span id="result-route"></span>
+          </span>
+        </output>
+
+        <div class="distance-result-actions">
+          <button type="button" id="copy-result" hidden>Copiar resultado</button>
+        </div>
+      </form>
+
+      <p class="distance-limit">Distancias dirigidas: A→B puede diferir de B→A. Solo se admiten ubicaciones de una misma isla; no hay rutas marítimas ni aéreas.</p>
+      <p id="demo-version" class="distance-version"></p>
+    </section>
   </div>
 </section>
 
-<div class="distance-features">
-  <article>
-    <strong>Respuesta inmediata</strong>
-    <span>Búsqueda binaria del código y lectura directa de un entero de 32 bits.</span>
-  </article>
-  <article>
-    <strong>Sin coste por consulta</strong>
-    <span>Después de cargar el archivo no se realizan peticiones por cada origen y destino.</span>
-  </article>
-  <article>
-    <strong>Reproducible y auditable</strong>
-    <span>Datos oficiales, OpenStreetMap, OSRM fijado por versión y artefactos con SHA-256.</span>
-  </article>
-  <article>
-    <strong>Formato compacto</strong>
-    <span>CEDIST02 almacena solo distancias dirigidas y elimina la matriz duplicada de tiempos.</span>
-  </article>
-</div>
-
-## Consultar distancia {#consultar-distancia}
-
-<p id="demo-status" role="status" aria-live="polite">Cargando la matriz de distancias…</p>
-<form id="route-demo" class="distance-demo" hidden>
-  <label for="island">Isla</label>
-  <select id="island" name="island"></select>
-
-  <div class="distance-demo-grid">
-    <div>
-      <label for="origin">Origen</label>
-      <select id="origin" name="origin" required></select>
-    </div>
-    <div>
-      <label for="destination">Destino</label>
-      <select id="destination" name="destination" required></select>
-    </div>
+<section class="distance-secondary">
+  <div>
+    <p class="distance-eyebrow">Para qué sirve</p>
+    <h2>Una respuesta directa para planificación y análisis</h2>
   </div>
-
-  <div class="demo-actions">
-    <button type="button" id="swap-centers">Intercambiar origen y destino</button>
-    <button type="button" id="copy-result" hidden>Copiar resultado</button>
+  <div class="distance-use-cases">
+    <article>
+      <strong>Transporte escolar</strong>
+      <span>Compara kilómetros reales por carretera entre centros concretos.</span>
+    </article>
+    <article>
+      <strong>Actividades y excursiones</strong>
+      <span>Estima desplazamientos entre centros, puertos y aeropuertos.</span>
+    </article>
+    <article>
+      <strong>Accesibilidad territorial</strong>
+      <span>Incorpora distancias reproducibles a estudios y aplicaciones.</span>
+    </article>
   </div>
+</section>
 
-  <output id="result" aria-live="polite">Selecciona un origen y un destino.</output>
-</form>
-<p id="demo-version" class="distance-version"></p>
+<section class="distance-links">
+  <div>
+    <h2>Integración y datos</h2>
+    <p>Los artefactos son estáticos, versionados y auditables. Puedes descargarlos, alojarlos y consultarlos sin API key.</p>
+  </div>
+  <div class="distance-link-actions">
+    <a class="md-button md-button--primary" href="javascript/">JavaScript</a>
+    <a class="md-button" href="php/">PHP</a>
+    <a class="md-button" href="data/latest/canarias-distances.dat">Descargar matriz</a>
+    <a class="md-button" href="data/latest/centers.min.json">Descargar ubicaciones</a>
+    <a class="md-button" href="data/latest/manifest.json">Ver manifiesto</a>
+  </div>
+</section>
 
-La distancia aparece automáticamente al seleccionar ambos puntos. La consulta se hace dentro del navegador: no se envían los códigos seleccionados a Google Maps, OSRM ni a ninguna API remota.
-
-## Integración en una aplicación
-
-El conjunto publicado en GitHub Pages contiene:
-
-- `canarias-distances.dat`: índice y matrices de distancias CEDIST02.
-- `centers.min.json`: nombres, códigos, islas y metadatos mínimos de las ubicaciones.
-- `manifest.json`: versión, fuentes, hashes, formato y recuentos.
-
-JavaScript puede cargar directamente estos archivos desde GitHub Pages. PHP debe descargar el `.dat` y conservarlo localmente para aprovechar `fseek` y evitar transferir el archivo en cada petición.
-
-[Ver integración JavaScript](javascript.md){ .md-button .md-button--primary }
-[Ver integración PHP](php.md){ .md-button }
-
-## Qué representa la distancia
-
-Es la longitud en metros de la ruta para automóvil considerada más rápida por el perfil OSRM usado durante la generación, sin tráfico en tiempo real. La matriz es dirigida: la distancia de A a B puede ser diferente de la distancia de B a A. No se calculan trayectos entre islas ni recorridos marítimos o aéreos.
+<p class="distance-method-note">Datos generados con fuentes oficiales, OpenStreetMap y OSRM usando un perfil de automóvil sin tráfico en tiempo real. La distancia corresponde a la ruta considerada más rápida durante la generación, no necesariamente a la ruta geométricamente más corta.</p>

@@ -11,6 +11,7 @@
 - Remove duration generation, storage and API fields, reducing the uncompressed matrix to approximately half its former size.
 - Rename the primary artifact to `canarias-distances.dat` and provide distance-only readers for Python, PHP and JavaScript.
 - Move the automatic live demo to the documentation homepage.
+- Redesign the homepage around a local interactive map, origin and destination search, and a clearer distance result.
 - Expand the PHP, JavaScript, architecture and binary-format documentation.
 
 ## 0.0.3 - 2026-07-14
