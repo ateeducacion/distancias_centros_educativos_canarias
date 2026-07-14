@@ -10,24 +10,33 @@ use PHPUnit\Framework\TestCase;
 
 final class ReaderTest extends TestCase
 {
-    private const FIXTURE = __DIR__ . '/../../../data/samples/sample.dat';
-
-    public function testDirectedDistance(): void
+    /** @return list<string> */
+    private static function fixtures(): array
     {
-        $reader = new Reader(self::FIXTURE);
-        self::assertSame(
-            1200,
-            $reader->getDistance('10000001', '10000002')->distanceMeters
-        );
-        self::assertSame(
-            1100,
-            $reader->getDistance('10000002', '10000001')->distanceMeters
-        );
+        return [
+            __DIR__ . '/../../../data/samples/sample.dat',
+            __DIR__ . '/../../../data/samples/sample-v2.dat',
+        ];
+    }
+
+    public function testDirectedDistanceInCurrentAndLegacyFormats(): void
+    {
+        foreach (self::fixtures() as $fixture) {
+            $reader = new Reader($fixture);
+            self::assertSame(
+                1200,
+                $reader->getDistance('10000001', '10000002')->distanceMeters
+            );
+            self::assertSame(
+                1100,
+                $reader->getDistance('10000002', '10000001')->distanceMeters
+            );
+        }
     }
 
     public function testCrossIsland(): void
     {
         $this->expectException(CrossIslandRouteException::class);
-        (new Reader(self::FIXTURE))->getDistance('10000001', '20000004');
+        (new Reader(self::fixtures()[0]))->getDistance('10000001', '20000004');
     }
 }
