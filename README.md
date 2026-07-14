@@ -1,80 +1,100 @@
-# Distancias entre centros educativos de Canarias
+# Distancias por carretera en Canarias
 
-Matriz abierta y versionada de distancias y tiempos por carretera entre centros educativos, aeropuertos y puertos principales de Canarias, generada con datos oficiales y OpenStreetMap.
+Matriz abierta y versionada de distancias por carretera entre centros educativos, aeropuertos y puertos principales de Canarias. Las distancias se calculan con datos oficiales, OpenStreetMap y OSRM, y se publican como un archivo estático que puede consultarse sin llamadas a APIs comerciales.
 
-Estado: implementación inicial. GitHub Pages genera los artefactos de producción directamente desde `main`; el repositorio incluye también un fixture ficticio de conformidad.
+**Demo y documentación:** https://ateeducacion.github.io/distancias_centros_educativos_canarias/
 
-> La métrica es: «Distancia y duración correspondientes a la ruta para automóvil considerada más rápida por el perfil OSRM utilizado, sin tráfico en tiempo real». No representa la ruta más corta ni una predicción de tráfico real.
+## Características
 
-## Fuentes y privacidad
+- Consultas locales e inmediatas después de descargar el archivo.
+- Sin claves API, cuotas ni coste por origen-destino.
+- Matrices dirigidas separadas por isla.
+- Formato CEDIST02 little-endian con una sola distancia `uint32` por combinación.
+- Lectores para Python, PHP y JavaScript.
+- Centros educativos, aeropuertos y puertos con códigos numéricos estables.
+- Generación reproducible y artefactos verificados con SHA-256.
 
-Los centros proceden del [Portal de Datos Abiertos de Canarias](https://datos.canarias.es/) mediante resolución CKAN con fallback configurable. Los aeropuertos y los puertos principales se mantienen en `config/transport-nodes.json`, con referencias a Aena, Puertos Canarios y las autoridades portuarias estatales. Sus coordenadas de acceso por carretera se contrastan con OpenStreetMap. La red viaria procede de OpenStreetMap/Geofabrik.
+> La métrica es la distancia en metros de la ruta para automóvil considerada más rápida por el perfil OSRM utilizado, sin tráfico en tiempo real. No representa necesariamente la ruta geométricamente más corta.
 
-Por compatibilidad, `centers.json` conserva su nombre histórico, pero contiene todas las ubicaciones consultables. Solo conserva código, nombre, isla, municipio, localidad, dirección, código postal, coordenadas, naturaleza, tipo y metadatos mínimos de transporte; elimina teléfonos, correo, fax, fotos y campos no usados.
+## Uso rápido
 
-Los códigos sintéticos son numéricos y únicos: `98IINNNN` para aeropuertos y `99IINNNN` para puertos, donde `II` coincide con el identificador estable de la isla.
-
-## Inicio rápido
+Python CLI:
 
 ```sh
-make bootstrap
-make test
-bin/route-matrix --json query 10000001 10000002
+bin/route-matrix --json query 10000001 10000002 \
+  --data data/samples/sample.dat
 ```
 
 PHP:
 
 ```php
-$reader = new AteEducacion\CanariasRouteMatrix\Reader('/data/routes.bin', '/data/centers.json');
-$route = $reader->getRoute('35000011', '98030001');
+use AteEducacion\CanariasRouteMatrix\Reader;
+
+$reader = new Reader('/data/canarias-distances.dat');
+$result = $reader->getDistance('35000011', '98030001');
+echo $result->distanceMeters;
 ```
 
 JavaScript:
 
 ```js
-const matrix = await RouteMatrix.load({binaryUrl: './routes.bin', centersUrl: './centers.min.json'});
-console.log(matrix.getRoute('35000011', '98030001'));
+import { DistanceMatrix } from "./packages/javascript/src/index.js";
+
+const matrix = await DistanceMatrix.load({
+  dataUrl: "./canarias-distances.dat",
+  centersUrl: "./centers.min.json",
+});
+
+console.log(matrix.getDistance("35000011", "98030001").distanceMeters);
 ```
 
-REST: `GET /v1/routes/{origin}/{destination}`. Los códigos se intercambian siempre como cadenas.
+REST opcional: `GET /v1/distances/{origin}/{destination}`.
+
+## Artefactos
+
+Cada generación publica:
+
+- `canarias-distances.dat`: matriz CEDIST02 para acceso aleatorio.
+- `canarias-distances.dat.zst`: copia comprimida para distribución.
+- `centers.json` y `centers.min.json`: metadatos de ubicaciones.
+- `transport-nodes.json`: definición versionada de puertos y aeropuertos.
+- `manifest.json`: formato, fuentes, recuentos y hashes.
+- informes de validación y ajuste a la red viaria.
+- `SHA256SUMS`.
+
+Por compatibilidad histórica, los JSON conservan el nombre `centers`, aunque incluyen todas las ubicaciones consultables.
+
+## Códigos
+
+Los centros mantienen sus códigos oficiales de ocho cifras. Los nodos sintéticos usan rangos reservados:
+
+- `98IINNNN`: aeropuertos.
+- `99IINNNN`: puertos.
+- `II`: identificador estable de isla.
+- `NNNN`: secuencia estable dentro de la isla.
+
+Los códigos deben intercambiarse como cadenas, aunque se almacenen como `uint32` dentro del `.dat`.
+
+## Generación
+
+```sh
+make bootstrap
+make test
+sh scripts/build-data-ci.sh
+```
+
+Cada push a `main` reconstruye la matriz y despliega GitHub Pages. Los tags `v*` publican snapshots opcionales en GitHub Releases.
 
 ## Arquitectura
 
-```mermaid
-flowchart TD
-    A[CSV oficial de centros] --> C[Validación y normalización]
-    B[Puertos y aeropuertos versionados] --> C
-    D[OpenStreetMap Canarias] --> E[OSRM autohospedado]
-    C --> F[Ubicaciones agrupadas por isla]
-    E --> G[Cálculo por bloques]
-    F --> G
-    G --> H[Validación y auditoría]
-    H --> I[Binario CEDIST01]
-    H --> J[centers.json]
-    H --> K[manifest.json]
-    I --> L[Lector PHP]
-    I --> M[Lector JavaScript]
-    I --> N[CLI]
-    I --> O[API REST]
-    I --> P[Demo GitHub Pages]
-```
+La generación descarga y valida las fuentes, ajusta las coordenadas a la red de OSRM y calcula tablas de distancias por bloques. El consumidor busca los dos códigos en un índice ordenado y lee directamente cuatro bytes de la matriz correspondiente.
 
-Los artefactos previstos son el binario, su copia Zstandard, dos JSON de ubicaciones con nombres compatibles, la definición de nodos de transporte, manifiesto, informes y `SHA256SUMS`. Sus conteos se leen del manifiesto, nunca se mantienen a mano.
+CEDIST02 no almacena duración. Esto reduce casi a la mitad el binario sin comprimir respecto a CEDIST01 y evita presentar una estimación temporal sin tráfico como si fuera un tiempo de viaje actual.
 
-## Desarrollo y pruebas
+[Documentación de arquitectura](https://ateeducacion.github.io/distancias_centros_educativos_canarias/architecture/)
 
-`make help`, `make lint`, `make test`, `make test-conformance`, `make docs-build` y `make docker-build`. En macOS: `brew install uv composer shellcheck shfmt`; en Ubuntu se usan los paquetes equivalentes. Consulte `CONTRIBUTING.md`.
+## Licencias y límites
 
-## Actualización, documentación y demo
+Código MIT; documentación CC BY 4.0; fuentes y base derivada se detallan en `DATA_LICENSES.md`. © OpenStreetMap contributors.
 
-Cada `push` a `main` descarga las fuentes actuales, prepara OSRM, reconstruye la matriz y despliega GitHub Pages con esos mismos artefactos. No se necesita crear un tag para ver cambios en la demo.
-
-Los tags `v*` crean snapshots opcionales en GitHub Releases. El workflow **Data release** también puede ejecutarse manualmente con un tag existente para reparar una publicación fallida sin mover ni recrear el tag.
-
-Localmente pueden usarse `make download-centers validate-centers download-osm prepare-osrm build-data`. El sitio Zensical se sirve con `make docs-serve`; la demo estática consume una tríada coherente bajo `data/latest/`.
-
-## Licencias, atribución y límites
-
-Código MIT; documentación CC BY 4.0; fuentes y base derivada se tratan por separado en `DATA_LICENSES.md`. © OpenStreetMap contributors. Sin tráfico, incidencias, horarios ni restricciones temporales; solo automóvil; solo consultas dentro de una isla; coordenadas y red pueden quedar desactualizadas; una ruta no disponible no prueba que no exista acceso físico. Los puertos y aeropuertos son puntos de acceso por carretera: la matriz no representa trayectos marítimos o aéreos.
-
-Contribuciones: `CONTRIBUTING.md`. Seguridad: `SECURITY.md`.
+Solo se calculan distancias dentro de una misma isla y para las ubicaciones incluidas. No hay tráfico, obras, incidencias, horarios ni restricciones temporales. Los puertos y aeropuertos representan accesos por carretera, no trayectos marítimos o aéreos.
