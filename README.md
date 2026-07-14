@@ -1,6 +1,6 @@
 # Distancias entre centros educativos de Canarias
 
-Matriz abierta y versionada de distancias y tiempos por carretera entre centros educativos de Canarias, generada con datos oficiales y OpenStreetMap.
+Matriz abierta y versionada de distancias y tiempos por carretera entre centros educativos, aeropuertos y puertos principales de Canarias, generada con datos oficiales y OpenStreetMap.
 
 Estado: implementación inicial. Los artefactos de producción se generan fuera de Git; el repositorio incluye un fixture ficticio de conformidad.
 
@@ -8,7 +8,11 @@ Estado: implementación inicial. Los artefactos de producción se generan fuera 
 
 ## Fuentes y privacidad
 
-Los centros proceden del [Portal de Datos Abiertos de Canarias](https://datos.canarias.es/) mediante resolución CKAN con fallback configurable. La red viaria procede de OpenStreetMap/Geofabrik. `centers.json` solo conserva código, nombre, isla, municipio, localidad, dirección, código postal, coordenadas, naturaleza y tipo; elimina teléfonos, correo, fax, fotos y campos no usados.
+Los centros proceden del [Portal de Datos Abiertos de Canarias](https://datos.canarias.es/) mediante resolución CKAN con fallback configurable. Los aeropuertos y los puertos principales se mantienen en `config/transport-nodes.json`, con referencias a Aena, Puertos Canarios y las autoridades portuarias estatales. Sus coordenadas de acceso por carretera se contrastan con OpenStreetMap. La red viaria procede de OpenStreetMap/Geofabrik.
+
+Por compatibilidad, `centers.json` conserva su nombre histórico, pero contiene todas las ubicaciones consultables. Solo conserva código, nombre, isla, municipio, localidad, dirección, código postal, coordenadas, naturaleza, tipo y metadatos mínimos de transporte; elimina teléfonos, correo, fax, fotos y campos no usados.
+
+Los códigos sintéticos son numéricos y únicos: `98IINNNN` para aeropuertos y `99IINNNN` para puertos, donde `II` coincide con el identificador estable de la isla.
 
 ## Inicio rápido
 
@@ -22,14 +26,14 @@ PHP:
 
 ```php
 $reader = new AteEducacion\CanariasRouteMatrix\Reader('/data/routes.bin', '/data/centers.json');
-$route = $reader->getRoute('35000011', '35000033');
+$route = $reader->getRoute('35000011', '98030001');
 ```
 
 JavaScript:
 
 ```js
 const matrix = await RouteMatrix.load({binaryUrl: './routes.bin', centersUrl: './centers.min.json'});
-console.log(matrix.getRoute('35000011', '35000033'));
+console.log(matrix.getRoute('35000011', '98030001'));
 ```
 
 REST: `GET /v1/routes/{origin}/{destination}`. Los códigos se intercambian siempre como cadenas.
@@ -39,22 +43,23 @@ REST: `GET /v1/routes/{origin}/{destination}`. Los códigos se intercambian siem
 ```mermaid
 flowchart TD
     A[CSV oficial de centros] --> C[Validación y normalización]
-    B[OpenStreetMap Canarias] --> D[OSRM autohospedado]
-    C --> E[Centros agrupados por isla]
-    D --> F[Cálculo por bloques]
-    E --> F
-    F --> G[Validación y auditoría]
-    G --> H[Binario CEDIST01]
-    G --> I[centers.json]
-    G --> J[manifest.json]
-    H --> K[Lector PHP]
-    H --> L[Lector JavaScript]
-    H --> M[CLI]
-    H --> N[API REST]
-    H --> O[Demo GitHub Pages]
+    B[Puertos y aeropuertos versionados] --> C
+    D[OpenStreetMap Canarias] --> E[OSRM autohospedado]
+    C --> F[Ubicaciones agrupadas por isla]
+    E --> G[Cálculo por bloques]
+    F --> G
+    G --> H[Validación y auditoría]
+    H --> I[Binario CEDIST01]
+    H --> J[centers.json]
+    H --> K[manifest.json]
+    I --> L[Lector PHP]
+    I --> M[Lector JavaScript]
+    I --> N[CLI]
+    I --> O[API REST]
+    I --> P[Demo GitHub Pages]
 ```
 
-Los artefactos previstos son el binario, su copia Zstandard, dos JSON de centros, manifiesto, informes y `SHA256SUMS`. Sus conteos se leen del manifiesto, nunca se mantienen a mano.
+Los artefactos previstos son el binario, su copia Zstandard, dos JSON de ubicaciones con nombres compatibles, la definición de nodos de transporte, manifiesto, informes y `SHA256SUMS`. Sus conteos se leen del manifiesto, nunca se mantienen a mano.
 
 ## Desarrollo y pruebas
 
@@ -66,6 +71,6 @@ Los artefactos previstos son el binario, su copia Zstandard, dos JSON de centros
 
 ## Licencias, atribución y límites
 
-Código MIT; documentación CC BY 4.0; fuentes y base derivada se tratan por separado en `DATA_LICENSES.md`. © OpenStreetMap contributors. Sin tráfico, incidencias, horarios ni restricciones temporales; solo automóvil; solo consultas dentro de una isla; coordenadas y red pueden quedar desactualizadas; una ruta no disponible no prueba que no exista acceso físico.
+Código MIT; documentación CC BY 4.0; fuentes y base derivada se tratan por separado en `DATA_LICENSES.md`. © OpenStreetMap contributors. Sin tráfico, incidencias, horarios ni restricciones temporales; solo automóvil; solo consultas dentro de una isla; coordenadas y red pueden quedar desactualizadas; una ruta no disponible no prueba que no exista acceso físico. Los puertos y aeropuertos son puntos de acceso por carretera: la matriz no representa trayectos marítimos o aéreos.
 
 Contribuciones: `CONTRIBUTING.md`. Seguridad: `SECURITY.md`.
