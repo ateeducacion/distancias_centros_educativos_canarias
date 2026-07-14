@@ -17,6 +17,15 @@ if (form) {
   let lastResult = "";
 
   const option = (value, label) => new Option(label, value);
+  const locationTypeLabels = {
+    AIRPORT: "Aeropuerto",
+    PORT: "Puerto",
+  };
+  const locationLabel = (location) => {
+    const type = locationTypeLabels[location.location_type];
+    const prefix = type ? `[${type}] ` : "";
+    return `${prefix}${location.name} (${location.code})`;
+  };
 
   function populateCenters(islandId) {
     const filtered = centers.filter(
@@ -24,9 +33,9 @@ if (form) {
     );
     for (const select of [originSelect, destinationSelect]) {
       const selected = select.value;
-      select.replaceChildren(option("", "Selecciona un centro"));
+      select.replaceChildren(option("", "Selecciona una ubicación"));
       for (const center of filtered) {
-        select.add(option(center.code, `${center.name} (${center.code})`));
+        select.add(option(center.code, locationLabel(center)));
       }
       if (filtered.some((center) => center.code === selected)) {
         select.value = selected;
@@ -41,12 +50,12 @@ if (form) {
       width: "100%",
     });
     window.jQuery(originSelect).select2({
-      placeholder: "Buscar centro de origen",
+      placeholder: "Buscar origen",
       allowClear: true,
       width: "100%",
     });
     window.jQuery(destinationSelect).select2({
-      placeholder: "Buscar centro de destino",
+      placeholder: "Buscar destino",
       allowClear: true,
       width: "100%",
     });
