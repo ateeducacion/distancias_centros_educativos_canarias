@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: MIT
-const MAGIC = "CEDIST02";
-const MAJOR = 2;
+const MAGIC_V2 = "CEDIST02";
+const MAGIC_V3 = "CEDIST03";
 const HEADER = 64;
 const INDEX = 12;
 const DIRECTORY = 16;
-const UNREACHABLE = 0xffffffff;
 
 export class InvalidFormatError extends Error {}
 export class UnknownCenterError extends Error {}
@@ -69,15 +68,24 @@ export class DistanceMatrix {
   }
 
   #parse() {
-    if (
-      this.buffer.byteLength < HEADER ||
-      ascii(this.view, 0, 8) !== MAGIC
-    ) {
-      throw new InvalidFormatError("Unknown magic or truncated file");
+    if (this.buffer.byteLength < HEADER) {
+      throw new InvalidFormatError("Truncated file");
     }
-    if (this.#u16(8) !== MAJOR) {
-      throw new InvalidFormatError("Unsupported version");
+    const magic = ascii(this.view, 0, 8);
+    const major = this.#u16(8);
+    if (magic === MAGIC_V2 && major === 2) {
+      this.cellSize = 4;
+      this.distanceUnitMeters = 1;
+      this.unreachable = 0xffffffff;
+    } else if (magic === MAGIC_V3 && major === 3) {
+      this.cellSize = 2;
+      this.distanceUnitMeters = 10;
+      this.unreachable = 0xffff;
+    } else {
+      throw new InvalidFormatError("Unknown or inconsistent format version");
     }
+    this.formatMajor = major;
+
     if (
       this.#u32(12) !== HEADER ||
       this.#u32(16) !== 0 ||
@@ -111,7 +119,7 @@ export class DistanceMatrix {
       const islandId = this.view.getUint8(offset);
       const count = this.#u32(offset + 4);
       const distanceOffset = this.#u64(offset + 8);
-      const matrixEnd = distanceOffset + count * count * 4;
+      const matrixEnd = distanceOffset + count * count * this.cellSize;
       if (
         this.view.getUint8(offset + 1) ||
         this.view.getUint8(offset + 2) ||
@@ -177,13 +185,12 @@ export class DistanceMatrix {
     }
     const island = this.islands.get(source.islandId);
     const position = source.localIndex * island.count + target.localIndex;
-    const distanceMeters = this.#u32(
-      island.distanceOffset + position * 4,
-    );
-    if (distanceMeters === UNREACHABLE) {
+    const offset = island.distanceOffset + position * this.cellSize;
+    const stored = this.cellSize === 2 ? this.#u16(offset) : this.#u32(offset);
+    if (stored === this.unreachable) {
       throw new UnreachableRouteError("Distance is unavailable");
     }
-    return { distanceMeters };
+    return { distanceMeters: stored * this.distanceUnitMeters };
   }
 
   getRoute(origin, destination) {

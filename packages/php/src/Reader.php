@@ -13,13 +13,15 @@ final class Reader
 {
     private const INDEX_SIZE = 12;
     private const DIRECTORY_SIZE = 16;
-    private const UNREACHABLE = 0xFFFFFFFF;
 
     /** @var resource */
     private $handle;
     private int $size;
     private int $count;
     private int $indexOffset;
+    private int $distanceSize;
+    private int $distanceUnitMeters;
+    private int $unreachable;
 
     /** @var array<int, array{count: int, distance_offset: int}> */
     private array $islands = [];
@@ -39,12 +41,21 @@ final class Reader
         $this->handle = $handle;
 
         $header = $this->read(0, 64);
-        if (substr($header, 0, 8) !== 'CEDIST02') {
-            throw new InvalidFormatException('Unknown magic');
+        $magic = substr($header, 0, 8);
+        $major = $this->u16($header, 8);
+        if ($magic === 'CEDIST02' && $major === 2) {
+            $this->distanceSize = 4;
+            $this->distanceUnitMeters = 1;
+            $this->unreachable = 0xFFFFFFFF;
+        } elseif ($magic === 'CEDIST03' && $major === 3) {
+            $this->distanceSize = 2;
+            $this->distanceUnitMeters = 10;
+            $this->unreachable = 0xFFFF;
+        } else {
+            throw new InvalidFormatException('Unknown or inconsistent format version');
         }
         if (
-            $this->u16($header, 8) !== 2
-            || $this->u32($header, 12) !== 64
+            $this->u32($header, 12) !== 64
             || $this->u32($header, 16) !== 0
             || $this->u16($header, 22) !== 0
             || substr($header, 52, 12) !== str_repeat("\0", 12)
@@ -74,7 +85,8 @@ final class Reader
             $islandId = ord($entry[0]);
             $locationCount = $this->u32($entry, 4);
             $distanceOffset = $this->u64($entry, 8);
-            $matrixEnd = $distanceOffset + $locationCount * $locationCount * 4;
+            $matrixEnd = $distanceOffset
+                + $locationCount * $locationCount * $this->distanceSize;
             if (
                 substr($entry, 1, 3) !== "\0\0\0"
                 || $distanceOffset !== $expectedOffset
@@ -179,14 +191,17 @@ final class Reader
         }
         $island = $this->islands[$source['island_id']];
         $position = $source['local_index'] * $island['count'] + $target['local_index'];
-        $distance = $this->u32(
-            $this->read($island['distance_offset'] + $position * 4, 4),
-            0
+        $raw = $this->read(
+            $island['distance_offset'] + $position * $this->distanceSize,
+            $this->distanceSize
         );
-        if ($distance === self::UNREACHABLE) {
+        $stored = $this->distanceSize === 2
+            ? $this->u16($raw, 0)
+            : $this->u32($raw, 0);
+        if ($stored === $this->unreachable) {
             throw new UnreachableRouteException('Distance is unavailable');
         }
-        return new DistanceResult($distance);
+        return new DistanceResult($stored * $this->distanceUnitMeters);
     }
 
     public function getRoute(string $origin, string $destination): DistanceResult
