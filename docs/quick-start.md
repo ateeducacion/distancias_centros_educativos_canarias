@@ -1,8 +1,6 @@
 # Uso rápido
 
-La matriz se consulta localmente. Puedes probarla sin instalar nada en la web o descargar el archivo más reciente para consultarlo desde Python, Bash o PowerShell.
-
-Los artefactos actuales usan CEDIST03 y devuelven distancias con una resolución de 10 metros. Los readers mantienen compatibilidad con archivos CEDIST02.
+La matriz se consulta localmente. Puedes probarla sin instalar nada en la web o descargar el archivo CEDIST03 más reciente para consultarlo desde Python, Bash o PowerShell. Las distancias se devuelven en metros con una resolución de 10 metros.
 
 === "Web (sin instalar)"
 
