@@ -1,4 +1,4 @@
-"""CEDIST02 and CEDIST03 binary structures."""
+"""CEDIST03 binary structures."""
 
 from dataclasses import dataclass
 import struct
@@ -13,7 +13,7 @@ ISLAND = struct.Struct("<B3sIQ")
 
 @dataclass(frozen=True)
 class FormatSpec:
-    """Version-specific distance cell encoding."""
+    """CEDIST03 distance cell encoding."""
 
     magic: bytes
     major: int
@@ -23,15 +23,7 @@ class FormatSpec:
     distance_struct: struct.Struct
 
 
-CEDIST02 = FormatSpec(
-    magic=b"CEDIST02",
-    major=2,
-    cell_size=4,
-    distance_unit_meters=1,
-    unreachable=0xFFFFFFFF,
-    distance_struct=struct.Struct("<I"),
-)
-CEDIST03 = FormatSpec(
+CURRENT_FORMAT = FormatSpec(
     magic=b"CEDIST03",
     major=3,
     cell_size=2,
@@ -39,20 +31,12 @@ CEDIST03 = FormatSpec(
     unreachable=0xFFFF,
     distance_struct=struct.Struct("<H"),
 )
-FORMATS = {CEDIST02.major: CEDIST02, CEDIST03.major: CEDIST03}
-CURRENT_FORMAT = CEDIST03
 MAGIC = CURRENT_FORMAT.magic
 MAJOR = CURRENT_FORMAT.major
 MINOR = 0
-MAX_DISTANCE_METERS = (CEDIST03.unreachable - 1) * CEDIST03.distance_unit_meters
-
-
-def get_format(magic: bytes, major: int) -> FormatSpec | None:
-    """Return a supported format only when magic and major agree."""
-    candidate = FORMATS.get(major)
-    if candidate is None or candidate.magic != magic:
-        return None
-    return candidate
+MAX_DISTANCE_METERS = (
+    CURRENT_FORMAT.unreachable - 1
+) * CURRENT_FORMAT.distance_unit_meters
 
 
 @dataclass(frozen=True)
@@ -74,6 +58,3 @@ class IslandEntry:
 @dataclass(frozen=True)
 class Distance:
     distance_meters: int
-
-
-Route = Distance
