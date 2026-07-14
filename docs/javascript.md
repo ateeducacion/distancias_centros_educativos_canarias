@@ -25,7 +25,7 @@ Después de cargarlos, `getDistance()` no realiza ninguna petición de red. La c
 </script>
 ```
 
-La URL de GitHub Pages apunta siempre a los datos generados desde la rama `main`. Es adecuada para aplicaciones que quieran recibir las actualizaciones automáticamente.
+La URL de GitHub Pages apunta a la copia verificada de la última release `data-*`. Es adecuada para aplicaciones que quieran recibir automáticamente las nuevas versiones de datos.
 
 ## Cargar los datos una vez
 
@@ -50,7 +50,7 @@ export async function distanceBetween(origin, destination) {
 }
 ```
 
-Para una aplicación de producción con requisitos de reproducibilidad, copia los artefactos de una GitHub Release a tu propio alojamiento estático y fija también la versión del módulo JavaScript. Así una nueva generación de `main` no modifica los resultados desplegados.
+Para una aplicación de producción con requisitos de reproducibilidad, copia los artefactos de una release `data-*` concreta a tu propio alojamiento estático y fija también la versión del módulo JavaScript. Así una nueva release de datos o un cambio posterior en `main` no modifica el despliegue.
 
 ## Mostrar nombres y filtrar por isla
 

@@ -2,24 +2,177 @@ openapi: 3.1.0
 info:
   title: Canarias Distance Matrix API
   version: 2.0.0
+  description: API opcional para consultar distancias CEDIST02 en metros.
 paths:
   /v1/health:
     get:
+      operationId: getHealth
+      summary: Comprobar el servicio y el artefacto
       responses:
-        '200': {description: Healthy}
+        '200':
+          description: Servicio disponible
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '503':
+          $ref: '#/components/responses/ArtifactUnavailable'
+  /v1/version:
+    get:
+      operationId: getVersion
+      summary: Consultar las versiones de la API y del formato
+      responses:
+        '200':
+          description: Versiones actuales
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VersionResponse'
+        '503':
+          $ref: '#/components/responses/ArtifactUnavailable'
   /v1/distances/{origin}/{destination}:
     get:
+      operationId: getDistance
+      summary: Consultar una distancia en metros
       parameters:
-        - name: origin
-          in: path
-          required: true
-          schema: {type: string, pattern: '^[0-9]{8}$'}
-        - name: destination
-          in: path
-          required: true
-          schema: {type: string, pattern: '^[0-9]{8}$'}
+        - $ref: '#/components/parameters/Origin'
+        - $ref: '#/components/parameters/Destination'
       responses:
-        '200': {description: Distance in meters}
-        '404': {description: Unknown location}
-        '422': {description: Unsupported or unavailable distance}
-        '503': {description: Artifact unavailable}
+        '200':
+          description: Distancia encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DistanceResponse'
+        '404':
+          $ref: '#/components/responses/UnknownLocation'
+        '422':
+          $ref: '#/components/responses/DistanceUnavailable'
+        '503':
+          $ref: '#/components/responses/ArtifactUnavailable'
+  /v1/routes/{origin}/{destination}:
+    get:
+      operationId: getRouteCompatibilityAlias
+      summary: Consultar una distancia mediante el alias histórico
+      description: Alias temporal de `/v1/distances/{origin}/{destination}`. No devuelve duración.
+      deprecated: true
+      parameters:
+        - $ref: '#/components/parameters/Origin'
+        - $ref: '#/components/parameters/Destination'
+      responses:
+        '200':
+          description: Distancia encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DistanceResponse'
+        '404':
+          $ref: '#/components/responses/UnknownLocation'
+        '422':
+          $ref: '#/components/responses/DistanceUnavailable'
+        '503':
+          $ref: '#/components/responses/ArtifactUnavailable'
+components:
+  parameters:
+    Origin:
+      name: origin
+      in: path
+      required: true
+      description: Código de ocho cifras de la ubicación de origen.
+      schema:
+        $ref: '#/components/schemas/LocationCode'
+    Destination:
+      name: destination
+      in: path
+      required: true
+      description: Código de ocho cifras de la ubicación de destino.
+      schema:
+        $ref: '#/components/schemas/LocationCode'
+  responses:
+    UnknownLocation:
+      description: Alguno de los códigos no pertenece al artefacto
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    DistanceUnavailable:
+      description: Las ubicaciones pertenecen a islas distintas o la distancia no está disponible
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    ArtifactUnavailable:
+      description: El artefacto no puede abrirse o no es válido
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  schemas:
+    LocationCode:
+      type: string
+      pattern: '^[0-9]{8}$'
+      examples:
+        - '35000011'
+    LocationReference:
+      type: object
+      additionalProperties: false
+      required:
+        - code
+      properties:
+        code:
+          $ref: '#/components/schemas/LocationCode'
+    DistanceResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - origin
+        - destination
+        - distance_m
+      properties:
+        origin:
+          $ref: '#/components/schemas/LocationReference'
+        destination:
+          $ref: '#/components/schemas/LocationReference'
+        distance_m:
+          type: integer
+          minimum: 0
+          description: Distancia por carretera en metros.
+    HealthResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          const: ok
+    VersionResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - format
+        - api_version
+      properties:
+        format:
+          type: string
+          const: CEDIST02
+        api_version:
+          type: string
+          const: v1
+    ErrorResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          additionalProperties: false
+          required:
+            - code
+            - message
+          properties:
+            code:
+              type: string
+            message:
+              type: string
