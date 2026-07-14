@@ -82,8 +82,6 @@ Esto reduce aproximadamente un 50 % la parte dominante del `.dat`. El generador 
 Cada release de datos publica:
 
 - `canarias-distances.dat`: matriz CEDIST03 para acceso aleatorio.
-- `canarias-distances.dat.zst`: copia Zstandard convencional.
-- `canarias-distances.dat.seekable.zst`: copia Zstandard Seekable por frames.
 - `centers.json` y `centers.min.json`: metadatos de ubicaciones.
 - `transport-nodes.json`: definición versionada de puertos y aeropuertos.
 - `manifest.json`: formato, cuantización, fuentes, recuentos y hashes.
@@ -95,8 +93,6 @@ La última matriz publicada está disponible mediante una URL estable:
 ```text
 https://github.com/ateeducacion/distancias_centros_educativos_canarias/releases/latest/download/canarias-distances.dat
 ```
-
-Los readers incluidos consumen el `.dat` descomprimido. La variante seekable es principalmente de distribución y permite a consumidores especializados descomprimir solo los frames necesarios.
 
 Por compatibilidad histórica, los JSON conservan el nombre `centers`, aunque incluyen todas las ubicaciones consultables.
 
@@ -113,35 +109,13 @@ Los códigos deben intercambiarse como cadenas, aunque se almacenen como `uint32
 
 ## Generación y publicación
 
-Dependencias locales:
-
 ```sh
 make bootstrap
-cargo install zeekstd_cli --version 0.4.5 --locked
-```
-
-Generación completa:
-
-```sh
 make test
 sh scripts/build-data-ci.sh
 ```
 
-Generar únicamente la copia seekable a partir de un `.dat` existente:
-
-```sh
-make seekable-zstd
-```
-
-El comando subyacente es:
-
-```sh
-zeekstd compress --frame-size 1M \
-  -o dist/canarias-distances.dat.seekable.zst \
-  < dist/canarias-distances.dat
-```
-
-GitHub Pages siempre se construye desde el estado actual de `main`, pero consume los artefactos de la última release de datos. El workflow **Publish** instala `zstd` y `zeekstd`, reconstruye cuando cambian el generador, el formato o las fuentes y publica `data-YYYYMMDD-HHMM` únicamente cuando cambian la matriz o los metadatos.
+GitHub Pages siempre se construye desde el estado actual de `main`, pero consume los artefactos de la última release de datos. El workflow **Publish** reconstruye cuando cambian el generador, el formato o las fuentes y publica `data-YYYYMMDD-HHMM` únicamente cuando cambian la matriz o los metadatos.
 
 ## Arquitectura
 

@@ -6,7 +6,6 @@ from datetime import datetime, timezone
 import json
 import os
 from pathlib import Path
-import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -45,8 +44,6 @@ def main() -> None:
     osrm_url = os.environ.get("OSRM_URL", "http://127.0.0.1:5000")
     block_size = int(os.environ.get("BLOCK_SIZE", "50"))
     data_version = os.environ.get("DATA_VERSION", "development")
-    zeekstd = os.environ.get("ZEEKSTD", "zeekstd")
-    seekable_frame_size = os.environ.get("SEEKABLE_FRAME_SIZE", "1M")
     output.mkdir(parents=True, exist_ok=True)
 
     overrides = [
@@ -178,28 +175,6 @@ def main() -> None:
     data_file = output / "canarias-distances.dat"
     write_binary(data_file, locations, matrices)
 
-    compressed_file = Path(str(data_file) + ".zst")
-    subprocess.run(
-        ["zstd", "-19", "--force", str(data_file), "-o", str(compressed_file)],
-        check=True,
-    )
-
-    seekable_file = output / "canarias-distances.dat.seekable.zst"
-    seekable_file.unlink(missing_ok=True)
-    with data_file.open("rb") as source:
-        subprocess.run(
-            [
-                zeekstd,
-                "compress",
-                "--frame-size",
-                seekable_frame_size,
-                "-o",
-                str(seekable_file),
-            ],
-            stdin=source,
-            check=True,
-        )
-
     stable_json(output / "centers.json", locations)
     stable_json(output / "centers.min.json", locations, minified=True)
 
@@ -214,8 +189,6 @@ def main() -> None:
     )
     artifact_paths = [
         data_file,
-        compressed_file,
-        seekable_file,
         output / "centers.json",
         output / "centers.min.json",
         output / "transport-nodes.json",
