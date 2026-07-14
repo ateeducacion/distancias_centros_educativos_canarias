@@ -13,7 +13,7 @@ jobs:
     timeout-minutes: 360
     env: {CHECK_ONLY: "${{ inputs.check_only || 'true' }}", PUBLISH: "${{ inputs.publish || 'false' }}"}
     steps:
-      - uses: actions/checkout@v4 # v4
+      - uses: actions/checkout@v7 # v4
       - uses: astral-sh/setup-uv@v7 # v5
       - run: uv sync --all-extras
       - run: make download-centers validate-centers
