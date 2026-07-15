@@ -1,19 +1,13 @@
 [project]
 site_name = "Distancias por carretera en Canarias"
-site_url = "https://ateeducacion.github.io/distancias_centros_educativos_canarias/"
+site_url = "https://ateeducacion.github.io/distancias_centros_educativos_canarias/docs/"
 site_description = "Matriz estática de distancias entre centros educativos, aeropuertos y puertos"
 repo_url = "https://github.com/ateeducacion/distancias_centros_educativos_canarias"
 repo_name = "ateeducacion/distancias_centros_educativos_canarias"
 edit_uri = "edit/main/docs/"
 docs_dir = "docs"
 extra_css = [
-  "https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css",
   "stylesheets/extra.css",
-]
-extra_javascript = [
-  "https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js",
-  "https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js",
-  "javascripts/demo.mjs",
 ]
 nav = [
   { "Inicio" = "index.md" },

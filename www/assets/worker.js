@@ -97,7 +97,7 @@ self.addEventListener("message", async ({ data }) => {
           fetch(data.manifestUrl),
         ]);
       if (!dataResponse.ok || !locationsResponse.ok || !manifestResponse.ok) {
-        throw new Error("No se pudieron descargar los datos de la demo.");
+        throw new Error("No se pudieron descargar los datos.");
       }
       parse(await dataResponse.arrayBuffer());
       locations = await locationsResponse.json();

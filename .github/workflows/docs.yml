@@ -186,7 +186,7 @@ jobs:
             --notes-file release-notes.md \
             --latest
 
-      - name: Stage data for Pages
+      - name: Stage published data
         env:
           GH_TOKEN: ${{ github.token }}
           REBUILD_DATA: ${{ steps.plan.outputs.rebuild_data }}
@@ -194,14 +194,14 @@ jobs:
         run: |
           set -eu
 
-          rm -rf docs/data/latest
-          mkdir -p docs/data/latest
+          rm -rf staged-data
+          mkdir -p staged-data
 
           if [ "$REBUILD_DATA" = "true" ] && [ "$DATA_CHANGED" = "true" ]; then
-            cp dist/canarias-distances.dat docs/data/latest/
-            cp dist/centers.min.json docs/data/latest/
-            cp dist/manifest.json docs/data/latest/
-            cp dist/SHA256SUMS docs/data/latest/
+            cp dist/canarias-distances.dat staged-data/
+            cp dist/centers.min.json staged-data/
+            cp dist/manifest.json staged-data/
+            cp dist/SHA256SUMS staged-data/
           else
             latest_tag="$(
               gh release list \
@@ -222,26 +222,34 @@ jobs:
               --pattern centers.min.json \
               --pattern manifest.json \
               --pattern SHA256SUMS \
-              --dir docs/data/latest
+              --dir staged-data
           fi
 
-          cd docs/data/latest
+          cd staged-data
           grep -E '  (canarias-distances\.dat|centers\.min\.json|manifest\.json)$' SHA256SUMS |
             sha256sum -c -
 
       - name: Generate published data documentation
         run: |
           python3 scripts/generate-docs-from-manifest.py \
-            --manifest docs/data/latest/manifest.json \
+            --manifest staged-data/manifest.json \
             --islands config/islands.json \
             --output docs/generated
 
       - name: Build documentation
         run: uvx zensical build --clean
 
+      - name: Assemble Pages artifact
+        env:
+          WWW_DIR: www
+          SITE_DIR: site
+          DATA_DIR: staged-data
+          OUT_DIR: public
+        run: sh scripts/assemble-site.sh
+
       - uses: actions/upload-pages-artifact@v5
         with:
-          path: site
+          path: public
 
   deploy:
     needs: build

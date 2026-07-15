@@ -1,8 +1,31 @@
+/* Theme toggle -------------------------------------------------------------- */
+const root = document.documentElement;
+const themeToggle = document.querySelector("#theme-toggle");
+const storedTheme = window.localStorage.getItem("distance-theme");
+if (storedTheme) root.setAttribute("data-theme", storedTheme);
+
+function currentTheme() {
+  const explicit = root.getAttribute("data-theme");
+  if (explicit) return explicit;
+  return window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
+}
+
+if (themeToggle) {
+  themeToggle.addEventListener("click", () => {
+    const next = currentTheme() === "dark" ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    window.localStorage.setItem("distance-theme", next);
+  });
+}
+
+/* Calculator ---------------------------------------------------------------- */
 const form = document.querySelector("#route-demo");
 
 if (form) {
   const status = document.querySelector("#demo-status");
-  const islandSelect = document.querySelector("#island");
+  const islandGroup = document.querySelector("#island-group");
   const originSelect = document.querySelector("#origin");
   const destinationSelect = document.querySelector("#destination");
   const swapButton = document.querySelector("#swap-centers");
@@ -11,51 +34,37 @@ if (form) {
   const resultKilometers = document.querySelector("#result-kilometers");
   const resultMeters = document.querySelector("#result-meters");
   const resultRoute = document.querySelector("#result-route");
+  const resultTimeValue = document.querySelector("#result-time-value");
   const copyButton = document.querySelector("#copy-result");
   const version = document.querySelector("#demo-version");
-  const routeVisual = document.querySelector("#route-visual");
-  const islandShapes = [...document.querySelectorAll("[data-island-id]")];
+  const mapCard = document.querySelector("#route-map-card");
   const routeLine = document.querySelector("#route-line");
-  const originPoint = document.querySelector("#origin-point");
-  const destinationPoint = document.querySelector("#destination-point");
+  const pointGroup = document.querySelector("#route-points");
   const params = new URLSearchParams(window.location.search);
   const base = new URL("../data/latest/", import.meta.url);
-  const worker = new Worker(new URL("demo-worker.mjs", import.meta.url), {
+  const worker = new Worker(new URL("worker.js", import.meta.url), {
     type: "module",
   });
 
-  const archipelagoViewBox = [0, 0, 1000, 420];
-  const islandViewBoxes = new Map([
-    ["1", [0, 325, 105, 95]],
-    ["2", [700, 115, 210, 225]],
-    ["3", [445, 240, 160, 155]],
-    ["4", [150, 240, 115, 105]],
-    ["5", [25, 85, 115, 145]],
-    ["6", [840, 0, 150, 145]],
-    ["7", [235, 145, 220, 195]],
-  ]);
-  const longitudeMin = -18.25;
-  const longitudeSpan = 5.05;
-  const latitudeMax = 29.35;
-  const latitudeSpan = 1.8;
-  const visualWidth = 1000;
-  const visualHeight = 420;
-  const prefersReducedMotion = window.matchMedia(
-    "(prefers-reduced-motion: reduce)",
-  );
+  const AVERAGE_SPEED_KMH = 75;
+  const SVG_NS = "http://www.w3.org/2000/svg";
 
-  let locations = [];
-  let locationsByIsland = new Map();
   let locationByCode = new Map();
+  let locationsByIsland = new Map();
   let ready = false;
   let lastResult = "";
-  let viewBoxAnimation = 0;
+  let selectedIslandId = "";
 
   const option = (value, label) => new Option(label, value);
-  const locationTypeLabels = {
-    AIRPORT: "Aeropuerto",
-    PORT: "Puerto",
-  };
+  const locationTypeLabels = { AIRPORT: "Aeropuerto", PORT: "Puerto" };
+
+  function formatDuration(minutes) {
+    if (minutes < 1) return "menos de 1 min";
+    if (minutes < 60) return `${minutes} min`;
+    const hours = Math.floor(minutes / 60);
+    const rest = minutes % 60;
+    return `${hours} h ${String(rest).padStart(2, "0")} min`;
+  }
 
   function locationLabel(location) {
     const type = locationTypeLabels[location.location_type];
@@ -112,124 +121,99 @@ if (form) {
     window.jQuery(destinationSelect).trigger("change.select2");
   }
 
-  function projectLocation(location) {
-    return {
-      x:
-        ((Number(location.longitude) - longitudeMin) / longitudeSpan) *
-        visualWidth,
-      y:
-        ((latitudeMax - Number(location.latitude)) / latitudeSpan) *
-        visualHeight,
-    };
-  }
-
-  function setPoint(element, location) {
-    if (!location) {
-      element.hidden = true;
+  function renderMap() {
+    const islandLocations = locationsByIsland.get(selectedIslandId) ?? [];
+    pointGroup.replaceChildren();
+    if (islandLocations.length === 0) {
+      mapCard.hidden = true;
       return;
     }
-    const point = projectLocation(location);
-    element.setAttribute("cx", String(point.x));
-    element.setAttribute("cy", String(point.y));
-    element.hidden = false;
-  }
+    mapCard.hidden = false;
 
-  function updateRouteVisual() {
-    const islandId = String(islandSelect.value);
-    for (const shape of islandShapes) {
-      shape.classList.toggle(
-        "is-selected",
-        Boolean(islandId) && shape.dataset.islandId === islandId,
-      );
+    const lats = islandLocations.map((p) => Number(p.latitude));
+    const lngs = islandLocations.map((p) => Number(p.longitude));
+    const minLat = Math.min(...lats);
+    const maxLat = Math.max(...lats);
+    const minLng = Math.min(...lngs);
+    const maxLng = Math.max(...lngs);
+    const spanLat = maxLat - minLat || 1;
+    const spanLng = maxLng - minLng || 1;
+    const pad = 16;
+    const range = 100 - pad * 2;
+    const px = (lng) => pad + ((lng - minLng) / spanLng) * range;
+    const py = (lat) => pad + ((maxLat - lat) / spanLat) * range;
+
+    const originCode = originSelect.value;
+    const destinationCode = destinationSelect.value;
+
+    for (const location of islandLocations) {
+      const role =
+        location.code === originCode
+          ? "origin"
+          : location.code === destinationCode
+            ? "dest"
+            : "other";
+      const circle = document.createElementNS(SVG_NS, "circle");
+      circle.setAttribute("cx", px(Number(location.longitude)).toFixed(1));
+      circle.setAttribute("cy", py(Number(location.latitude)).toFixed(1));
+      circle.setAttribute("r", role === "other" ? "2" : "4.2");
+      circle.setAttribute("class", `route-dot route-dot--${role}`);
+      pointGroup.append(circle);
     }
 
-    const origin = locationByCode.get(originSelect.value);
-    const destination = locationByCode.get(destinationSelect.value);
-    setPoint(originPoint, origin);
-    setPoint(destinationPoint, destination);
-
-    if (!origin || !destination) {
+    const origin = locationByCode.get(originCode);
+    const destination = locationByCode.get(destinationCode);
+    if (origin && destination && originCode !== destinationCode) {
+      routeLine.setAttribute("x1", px(Number(origin.longitude)).toFixed(1));
+      routeLine.setAttribute("y1", py(Number(origin.latitude)).toFixed(1));
+      routeLine.setAttribute(
+        "x2",
+        px(Number(destination.longitude)).toFixed(1),
+      );
+      routeLine.setAttribute("y2", py(Number(destination.latitude)).toFixed(1));
+      routeLine.hidden = false;
+    } else {
       routeLine.hidden = true;
-      return;
     }
-
-    const originCoordinates = projectLocation(origin);
-    const destinationCoordinates = projectLocation(destination);
-    routeLine.setAttribute("x1", String(originCoordinates.x));
-    routeLine.setAttribute("y1", String(originCoordinates.y));
-    routeLine.setAttribute("x2", String(destinationCoordinates.x));
-    routeLine.setAttribute("y2", String(destinationCoordinates.y));
-    routeLine.hidden = false;
-  }
-
-  function currentViewBox() {
-    const values = routeVisual
-      .getAttribute("viewBox")
-      .split(/\s+/)
-      .map(Number);
-    return values.length === 4 && values.every(Number.isFinite)
-      ? values
-      : archipelagoViewBox;
-  }
-
-  function setViewBox(values) {
-    routeVisual.setAttribute("viewBox", values.join(" "));
-  }
-
-  function animateViewBox(target) {
-    window.cancelAnimationFrame(viewBoxAnimation);
-    const start = currentViewBox();
-    if (prefersReducedMotion.matches) {
-      setViewBox(target);
-      return;
-    }
-
-    const startedAt = performance.now();
-    const duration = 480;
-
-    function frame(now) {
-      const progress = Math.min(1, (now - startedAt) / duration);
-      const eased = 1 - (1 - progress) ** 3;
-      const values = start.map(
-        (value, index) => value + (target[index] - value) * eased,
-      );
-      setViewBox(values);
-      if (progress < 1) {
-        viewBoxAnimation = window.requestAnimationFrame(frame);
-      }
-    }
-
-    viewBoxAnimation = window.requestAnimationFrame(frame);
   }
 
   function querySelection() {
-    if (!ready || !islandSelect.value) {
+    if (!ready || !selectedIslandId) {
       setResultState("Selecciona una isla para empezar.");
-      updateRouteVisual();
+      renderMap();
       updateUrl();
       return;
     }
     if (!originSelect.value || !destinationSelect.value) {
       setResultState("Selecciona un origen y un destino.");
-      updateRouteVisual();
+      renderMap();
       updateUrl();
       return;
     }
-
     setResultState("Consultando la matriz local…");
     worker.postMessage({
       type: "query",
       origin: originSelect.value,
       destination: destinationSelect.value,
     });
-    updateRouteVisual();
+    renderMap();
     updateUrl();
   }
 
-  function selectIsland(islandId, selectedOrigin = "", selectedDestination = "") {
-    const normalizedIslandId = String(islandId);
-    const islandLocations = locationsByIsland.get(normalizedIslandId) ?? [];
+  function selectIsland(
+    islandId,
+    selectedOrigin = "",
+    selectedDestination = "",
+  ) {
+    selectedIslandId = String(islandId);
+    const islandLocations = locationsByIsland.get(selectedIslandId) ?? [];
     const hasIsland = islandLocations.length > 0;
+
+    for (const pill of islandGroup.children) {
+      const isActive = pill.dataset.islandId === selectedIslandId;
+      pill.classList.toggle("is-active", isActive);
+      pill.setAttribute("aria-pressed", String(isActive));
+    }
 
     populateLocationSelect(originSelect, islandLocations, selectedOrigin);
     populateLocationSelect(
@@ -243,26 +227,15 @@ if (form) {
         ? "Selecciona un origen y un destino."
         : "Selecciona una isla para empezar.",
     );
-    animateViewBox(
-      hasIsland
-        ? islandViewBoxes.get(normalizedIslandId) ?? archipelagoViewBox
-        : archipelagoViewBox,
-    );
-    updateRouteVisual();
+    renderMap();
     updateUrl();
   }
 
   function initializeSelect2() {
-    window.jQuery(islandSelect).select2({
-      placeholder: "Selecciona una isla",
-      width: "100%",
-    });
     const locationOptions = {
       allowClear: true,
       width: "100%",
-      language: {
-        noResults: () => "No se encontraron ubicaciones",
-      },
+      language: { noResults: () => "No se encontraron ubicaciones" },
     };
     window.jQuery(originSelect).select2({
       ...locationOptions,
@@ -272,12 +245,22 @@ if (form) {
       ...locationOptions,
       placeholder: "Buscar destino",
     });
-
-    window.jQuery(islandSelect).on("change", () => {
-      selectIsland(islandSelect.value);
-    });
     window.jQuery(originSelect).on("change", querySelection);
     window.jQuery(destinationSelect).on("change", querySelection);
+  }
+
+  function populateIslandPills(islands) {
+    islandGroup.replaceChildren();
+    for (const [id, name] of islands) {
+      const pill = document.createElement("button");
+      pill.type = "button";
+      pill.className = "pill";
+      pill.dataset.islandId = id;
+      pill.textContent = formatIsland(name);
+      pill.setAttribute("aria-pressed", "false");
+      pill.addEventListener("click", () => selectIsland(id));
+      islandGroup.append(pill);
+    }
   }
 
   function applyRequestedSelection() {
@@ -290,9 +273,6 @@ if (form) {
       selectIsland("");
       return;
     }
-
-    islandSelect.value = String(requestedLocation.island_id);
-    window.jQuery(islandSelect).trigger("change.select2");
     selectIsland(
       requestedLocation.island_id,
       requestedOrigin ?? "",
@@ -303,7 +283,7 @@ if (form) {
 
   worker.addEventListener("message", ({ data }) => {
     if (data.type === "ready") {
-      locations = data.locations.sort((first, second) =>
+      const locations = data.locations.sort((first, second) =>
         locationLabel(first).localeCompare(locationLabel(second), "es"),
       );
       locationByCode = new Map(
@@ -322,18 +302,14 @@ if (form) {
         .sort((first, second) =>
           formatIsland(first[1]).localeCompare(formatIsland(second[1]), "es"),
         );
-      islandSelect.replaceChildren(option("", "Selecciona una isla"));
-      for (const [id, name] of islands) {
-        islandSelect.add(option(id, formatIsland(name)));
-      }
-
+      populateIslandPills(islands);
       populateLocationSelect(originSelect, []);
       populateLocationSelect(destinationSelect, []);
       initializeSelect2();
       ready = true;
       status.hidden = true;
       form.hidden = false;
-      version.textContent = `Datos: ${data.dataVersion}`;
+      if (version) version.textContent = `Datos: ${data.dataVersion}`;
       applyRequestedSelection();
     } else if (data.type === "distance") {
       const kilometers = new Intl.NumberFormat("es-ES", {
@@ -342,21 +318,25 @@ if (form) {
       const meters = new Intl.NumberFormat("es-ES").format(
         data.result.distanceMeters,
       );
-      lastResult = `${data.origin.name} → ${data.destination.name}: ${kilometers} km (${meters} m)`;
-      resultKilometers.textContent = `${kilometers} km`;
+      const minutes = Math.round(
+        (data.result.distanceMeters / 1000 / AVERAGE_SPEED_KMH) * 60,
+      );
+      lastResult = `${data.origin.name} → ${data.destination.name}: ${kilometers} km (${meters} m, ≈ ${formatDuration(minutes)} en coche)`;
+      resultKilometers.textContent = kilometers;
       resultMeters.textContent = `${meters} metros por carretera`;
-      resultRoute.textContent = `${data.origin.name} → ${data.destination.name}`;
+      resultRoute.textContent = `${data.origin.name}  →  ${data.destination.name}`;
+      resultTimeValue.textContent = `≈ ${formatDuration(minutes)}`;
       resultState.hidden = true;
       resultValue.hidden = false;
       copyButton.hidden = false;
-      updateRouteVisual();
+      renderMap();
     } else if (data.type === "error") {
       setResultState(data.message);
     }
   });
 
   worker.addEventListener("error", () => {
-    status.textContent = "No se pudieron cargar los datos de la demo.";
+    status.textContent = "No se pudieron cargar los datos.";
     status.hidden = false;
     setResultState("La calculadora no está disponible en este momento.");
   });
