@@ -12,3 +12,6 @@ coverage/
 *.osm.pbf
 *.osrm*
 .DS_Store
+
+# Preview data staged locally for the standalone landing
+www/data/
