@@ -70,7 +70,7 @@ def generate_current_version(manifest: dict[str, Any]) -> str:
             f"- SHA-256 de `canarias-distances.dat`: {matrix_sha256}",
             f"- SHA-256 de `centers.min.json`: {centers_sha256}",
             "",
-            "[Descargar el manifiesto publicado](../data/latest/manifest.json)",
+            "[Descargar el manifiesto publicado](https://ateeducacion.github.io/distancias_centros_educativos_canarias/data/latest/manifest.json)",
             "",
         ]
     )
@@ -113,7 +113,7 @@ def generate_coverage(
     lines.extend(
         [
             "",
-            "[Descargar el manifiesto publicado](../data/latest/manifest.json)",
+            "[Descargar el manifiesto publicado](https://ateeducacion.github.io/distancias_centros_educativos_canarias/data/latest/manifest.json)",
             "",
         ]
     )
