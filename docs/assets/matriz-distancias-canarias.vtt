@@ -1,0 +1,52 @@
+WEBVTT
+
+00:00.350 --> 00:13.593
+¿Por qué este sistema es mejor que consultar Google Maps cada vez? La
+respuesta está en donde está el coste de cálculo. Por eso se combina
+precálculo, búsqueda binaria y acceso directo a una matriz.
+
+00:14.393 --> 00:33.501
+En una integración tradicional, cada origen y destino genera una
+petición externa. Hay latencia de red, una clave que proteger, cuotas
+que controlar y facturación por cada elemento de la matriz. Si miles de
+usuarios preguntan lo mismo, se paga y se espera miles de veces.
+
+00:34.301 --> 00:51.951
+Este proyecto cambia el momento del cálculo. Una vez por versión, toma
+los centros oficiales, los puertos y aeropuertos, los ajusta a la red de
+OpenStreetMap y usa O S R M para calcular todas las distancias por
+carretera dentro de cada isla.
+
+00:52.751 --> 01:06.626
+Después publica un archivo binario optimizado con extension punto dat. Los
+códigos de los centros están ordenados. Para localizar origen y destino
+se usa búsqueda binaria, con coste logarítmico.
+
+01:07.426 --> 01:23.229
+Con sus posiciones, el sistema calcula un desplazamiento dentro de la
+matriz y lee solo dos bytes. Esa lectura es de tiempo constante. No
+busca caminos, no abre una base de datos y no llama a ningún proveedor
+externo.
+
+01:24.029 --> 01:40.100
+El resultado es inmediato, funciona sin conexión tras descargar el
+archivo, no necesita credenciales y no tiene coste por consulta. La
+misma versión produce siempre el mismo resultado y puede conservarse
+para auditorías.
+
+01:40.900 --> 01:57.629
+Google Maps sigue siendo mejor cuando necesitamos direcciones
+arbitrarias, tráfico, obras, incidencias o restricciones actuales. La
+matriz local no ofrece esos datos y solo cubre las ubicaciones
+publicadas dentro de la misma isla.
+
+01:58.429 --> 02:17.844
+Para comparar centros educativos de Canarias, el problema es cerrado y
+repetitivo. Precalcular una vez y consultar localmente es más rápido,
+barato, reproducible y controlable. No es un árbol binario: es una
+matriz precalculada con búsqueda binaria y acceso directo.
+
+02:18.644 --> 02:31.000
+Arquitectura: repositorio de ATE Educación. Facturación y cuotas:
+documentación oficial de Google Maps Platform, consultada en julio de
+dos mil veintiséis.

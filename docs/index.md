@@ -10,6 +10,27 @@ Python, JavaScript o PHP sin depender de servicios externos.
   <a class="md-button" href="https://ateeducacion.github.io/distancias_centros_educativos_canarias/data/latest/canarias-distances.dat">Descargar datos</a>
 </p>
 
+<a id="video"></a>
+
+## Cómo funciona · Vídeo
+
+Una explicación de poco más de dos minutos sobre por qué esta matriz
+precalculada resulta más rápida, barata y reproducible que consultar un
+servicio externo en cada comparación.
+
+<video controls preload="metadata" playsinline style="width:100%;max-width:720px;border-radius:8px">
+  <source src="assets/matriz-distancias-canarias.mp4" type="video/mp4" />
+  <track kind="subtitles" src="assets/matriz-distancias-canarias.vtt" srclang="es" label="Español" default />
+  Tu navegador no puede reproducir el vídeo.
+  <a href="assets/matriz-distancias-canarias.mp4">Descarga el archivo MP4</a>.
+</video>
+
+**Descargas:**
+[vídeo (MP4)](assets/matriz-distancias-canarias.mp4) ·
+[subtítulos (SRT)](assets/matriz-distancias-canarias.srt) ·
+[subtítulos (VTT)](assets/matriz-distancias-canarias.vtt) ·
+[narración (SSML)](assets/narracion-distancias-canarias.ssml)
+
 ## Por dónde empezar
 
 - [Uso rápido](quick-start.md) — calcula tu primera distancia en unos minutos.

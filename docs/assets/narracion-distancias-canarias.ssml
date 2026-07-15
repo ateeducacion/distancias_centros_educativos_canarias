@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<speak version="1.1"
+       xmlns="http://www.w3.org/2001/10/synthesis"
+       xml:lang="es-ES">
+  <prosody rate="88%">
+    <p>
+      <s>¿Por qué este sistema puede ser mejor que consultar Google Maps cada vez?</s>
+      <break time="350ms"/>
+      <s>La respuesta no está en un árbol binario.</s>
+      <break time="250ms"/>
+      <s>Está en combinar precálculo, búsqueda binaria y acceso directo a una matriz.</s>
+    </p>
+
+    <break time="750ms"/>
+
+    <p>
+      <s>En una integración tradicional, cada pareja de origen y destino genera una petición a un servicio externo.</s>
+      <break time="300ms"/>
+      <s>Eso implica latencia de red, una clave que proteger, cuotas que controlar y, normalmente, un coste asociado a cada consulta.</s>
+      <break time="350ms"/>
+      <s>Cuando miles de personas preguntan por las mismas distancias, el sistema repite miles de veces un cálculo muy parecido.</s>
+    </p>
+
+    <break time="750ms"/>
+
+    <p>
+      <s>Este proyecto desplaza ese trabajo a otro momento.</s>
+      <break time="300ms"/>
+      <s>Una vez por cada versión de los datos, toma los centros educativos oficiales, los puertos y los aeropuertos.</s>
+      <break time="250ms"/>
+      <s>Ajusta sus coordenadas a la red viaria de Open Street Map y utiliza o ese erre eme para calcular las distancias por carretera dentro de cada isla.</s>
+    </p>
+
+    <break time="750ms"/>
+
+    <p>
+      <s>Después publica un archivo estático llamado cedist cero tres.</s>
+      <break time="300ms"/>
+      <s>Los códigos de las ubicaciones se guardan ordenados.</s>
+      <break time="250ms"/>
+      <s>Para localizar el origen y el destino, el lector utiliza una búsqueda binaria, cuyo coste crece de forma logarítmica.</s>
+    </p>
+
+    <break time="750ms"/>
+
+    <p>
+      <s>Cuando ya conoce ambas posiciones, calcula el desplazamiento exacto dentro de la matriz y lee únicamente dos bytes.</s>
+      <break time="300ms"/>
+      <s>Esa lectura se realiza en tiempo constante.</s>
+      <break time="250ms"/>
+      <s>No necesita buscar caminos, abrir una base de datos ni llamar a ningún proveedor externo.</s>
+    </p>
+
+    <break time="750ms"/>
+
+    <p>
+      <s>El resultado llega de forma inmediata.</s>
+      <break time="250ms"/>
+      <s>Tras descargar el archivo, las consultas pueden funcionar sin conexión, sin credenciales y sin coste por petición.</s>
+      <break time="300ms"/>
+      <s>La misma versión de los datos produce siempre el mismo resultado, lo que facilita la reproducción de cálculos y las auditorías.</s>
+    </p>
+
+    <break time="750ms"/>
+
+    <p>
+      <s>Eso no significa que Google Maps sea una mala opción.</s>
+      <break time="300ms"/>
+      <s>Es más adecuado cuando necesitamos direcciones arbitrarias, tráfico, obras, incidencias o restricciones actualizadas.</s>
+      <break time="300ms"/>
+      <s>La matriz local no ofrece esa información y solo cubre las ubicaciones publicadas dentro de una misma isla.</s>
+    </p>
+
+    <break time="750ms"/>
+
+    <p>
+      <s>Pero, para comparar repetidamente centros educativos de Canarias, el problema es cerrado y conocido.</s>
+      <break time="350ms"/>
+      <s>En ese contexto, calcular una vez y consultar localmente resulta más rápido, más barato, reproducible y controlable.</s>
+      <break time="450ms"/>
+      <s>Y conviene decirlo con precisión:</s>
+      <break time="250ms"/>
+      <s>no es un árbol binario.</s>
+      <break time="250ms"/>
+      <s>Es una matriz precalculada, con búsqueda binaria y acceso directo.</s>
+    </p>
+  </prosody>
+</speak>
