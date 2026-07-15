@@ -1,4 +1,4 @@
-# Lector PHP CEDIST03
+# Lector PHP CEDIST04
 
 Compatible con PHP 8.2 o superior y sin extensiones no estándar. Abre `canarias-distances.dat`, localiza los códigos mediante búsqueda binaria y lee únicamente dos bytes por consulta.
 

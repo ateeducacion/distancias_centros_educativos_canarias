@@ -1,5 +1,5 @@
-const MAGIC = "CEDIST03";
-const MAJOR = 3;
+const MAGIC = "CEDIST04";
+const MAJOR = 4;
 const CELL_SIZE = 2;
 const DISTANCE_UNIT_METERS = 10;
 const UNREACHABLE = 0xffff;
@@ -25,9 +25,9 @@ function parse(buffer) {
   if (buffer.byteLength < 64) throw new Error("Archivo de distancias truncado");
   const magic = String.fromCharCode(...new Uint8Array(buffer, 0, 8));
   if (magic !== MAGIC || u16(8) !== MAJOR) {
-    throw new Error("El archivo no usa el formato CEDIST03");
+    throw new Error("El archivo no usa el formato CEDIST04");
   }
-  if (u32(12) !== 64) throw new Error("Cabecera CEDIST03 no válida");
+  if (u32(12) !== 64) throw new Error("Cabecera CEDIST04 no válida");
   locationCount = u32(24);
   indexOffset = u64(28);
   const directoryOffset = u64(36);
@@ -79,12 +79,26 @@ function distance(originCode, destinationCode) {
     throw new Error("No se calculan distancias entre islas diferentes.");
   }
   const island = islands.get(origin.islandId);
-  const position = origin.localIndex * island.count + destination.localIndex;
-  const stored = u16(island.distanceOffset + position * CELL_SIZE);
+  const count = island.count;
+  const position = origin.localIndex * count + destination.localIndex;
+  // Distribución por planos de byte: bytes bajos y luego bytes altos.
+  const low = view.getUint8(island.distanceOffset + position);
+  const high = view.getUint8(island.distanceOffset + count * count + position);
+  const stored = low | (high << 8);
   if (stored === UNREACHABLE) {
     throw new Error("La distancia no está disponible.");
   }
   return { distanceMeters: stored * DISTANCE_UNIT_METERS };
+}
+
+// El artefacto de distancias se publica comprimido con gzip; se descomprime en
+// el navegador con DecompressionStream (nativo, sin dependencias).
+async function fetchMatrix(response) {
+  if (!response.body) {
+    return response.arrayBuffer();
+  }
+  const stream = response.body.pipeThrough(new DecompressionStream("gzip"));
+  return new Response(stream).arrayBuffer();
 }
 
 self.addEventListener("message", async ({ data }) => {
@@ -99,7 +113,7 @@ self.addEventListener("message", async ({ data }) => {
       if (!dataResponse.ok || !locationsResponse.ok || !manifestResponse.ok) {
         throw new Error("No se pudieron descargar los datos.");
       }
-      parse(await dataResponse.arrayBuffer());
+      parse(await fetchMatrix(dataResponse));
       locations = await locationsResponse.json();
       const manifest = await manifestResponse.json();
       self.postMessage({

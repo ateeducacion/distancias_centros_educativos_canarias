@@ -1,6 +1,6 @@
 # Usar la matriz desde PHP
 
-El lector PHP abre un archivo CEDIST03 local y usa `fseek()`/`fread()` para leer únicamente la celda solicitada. Cada distancia ocupa dos bytes y se devuelve en metros con una resolución de 10 metros. No se carga la matriz completa en memoria ni se hacen llamadas externas durante cada consulta.
+El lector PHP abre un archivo CEDIST04 local y usa `fseek()`/`fread()` para leer únicamente la celda solicitada. Cada distancia ocupa dos bytes y se devuelve en metros con una resolución de 10 metros. No se carga la matriz completa en memoria ni se hacen llamadas externas durante cada consulta.
 
 ## Instalar el lector
 

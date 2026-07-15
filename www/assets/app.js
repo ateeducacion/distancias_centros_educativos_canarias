@@ -349,7 +349,7 @@ if (form) {
 
   worker.postMessage({
     type: "load",
-    dataUrl: new URL("canarias-distances.dat", base).href,
+    dataUrl: new URL("canarias-distances.dat.gz", base).href,
     locationsUrl: new URL("centers.min.json", base).href,
     manifestUrl: new URL("manifest.json", base).href,
   });

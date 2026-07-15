@@ -14,4 +14,4 @@ test "$python_out" = "$expected"
 test "$node_out" = "$expected"
 test "$php_out" = '{"distance_m":1200}'
 
-echo 'Cross-language CEDIST03 conformance passed'
+echo 'Cross-language CEDIST04 conformance passed'

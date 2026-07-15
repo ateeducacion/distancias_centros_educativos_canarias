@@ -199,6 +199,7 @@ jobs:
 
           if [ "$REBUILD_DATA" = "true" ] && [ "$DATA_CHANGED" = "true" ]; then
             cp dist/canarias-distances.dat staged-data/
+            cp dist/canarias-distances.dat.gz staged-data/
             cp dist/centers.min.json staged-data/
             cp dist/manifest.json staged-data/
             cp dist/SHA256SUMS staged-data/
@@ -219,6 +220,7 @@ jobs:
 
             gh release download "$latest_tag" \
               --pattern canarias-distances.dat \
+              --pattern canarias-distances.dat.gz \
               --pattern centers.min.json \
               --pattern manifest.json \
               --pattern SHA256SUMS \
@@ -226,7 +228,7 @@ jobs:
           fi
 
           cd staged-data
-          grep -E '  (canarias-distances\.dat|centers\.min\.json|manifest\.json)$' SHA256SUMS |
+          grep -E '  (canarias-distances\.dat|canarias-distances\.dat\.gz|centers\.min\.json|manifest\.json)$' SHA256SUMS |
             sha256sum -c -
 
       - name: Generate published data documentation

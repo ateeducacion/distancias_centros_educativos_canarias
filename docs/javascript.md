@@ -2,7 +2,7 @@
 
 La integración web descarga dos archivos estáticos una sola vez:
 
-- `canarias-distances.dat`, con el índice y las distancias CEDIST03.
+- `canarias-distances.dat`, con el índice y las distancias CEDIST04.
 - `centers.min.json`, con los nombres y códigos de las ubicaciones.
 
 Después de cargarlos, `getDistance()` no realiza peticiones de red. La consulta usa una búsqueda binaria del código y una lectura directa `uint16` mediante `DataView`. El valor almacenado se multiplica por 10 para devolver `distanceMeters`.

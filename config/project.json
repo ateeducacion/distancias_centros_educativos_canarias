@@ -1,1 +1,1 @@
-{"center_code_pattern":"^[0-9]{8}$","format":{"magic":"CEDIST03","major":3,"minor":0,"metric":"road_distance_meters","storage_type":"uint16","distance_unit_meters":10},"overrides_enabled":true}
+{"center_code_pattern":"^[0-9]{8}$","format":{"magic":"CEDIST04","major":4,"minor":0,"metric":"road_distance_meters","storage_type":"uint16","distance_unit_meters":10},"overrides_enabled":true}

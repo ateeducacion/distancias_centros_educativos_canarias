@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
-const MAGIC = "CEDIST03";
-const MAJOR = 3;
+const MAGIC = "CEDIST04";
+const MAJOR = 4;
 const HEADER = 64;
 const INDEX = 12;
 const DIRECTORY = 16;
@@ -40,6 +40,11 @@ export class DistanceMatrix {
     return new DistanceMatrix(await data.arrayBuffer(), await centers.json());
   }
 
+  #u8(offset) {
+    this.#bounds(offset, 1);
+    return this.view.getUint8(offset);
+  }
+
   #u16(offset) {
     this.#bounds(offset, 2);
     return this.view.getUint16(offset, true);
@@ -74,7 +79,7 @@ export class DistanceMatrix {
       throw new InvalidFormatError("Truncated file");
     }
     if (ascii(this.view, 0, 8) !== MAGIC || this.#u16(8) !== MAJOR) {
-      throw new InvalidFormatError("Expected CEDIST03 format");
+      throw new InvalidFormatError("Expected CEDIST04 format");
     }
 
     if (
@@ -175,8 +180,12 @@ export class DistanceMatrix {
       );
     }
     const island = this.islands.get(source.islandId);
-    const position = source.localIndex * island.count + target.localIndex;
-    const stored = this.#u16(island.distanceOffset + position * CELL_SIZE);
+    const count = island.count;
+    const position = source.localIndex * count + target.localIndex;
+    // Byte-plane layout: low bytes then high bytes within the island block.
+    const low = this.#u8(island.distanceOffset + position);
+    const high = this.#u8(island.distanceOffset + count * count + position);
+    const stored = low | (high << 8);
     if (stored === UNREACHABLE) {
       throw new UnreachableRouteError("Distance is unavailable");
     }

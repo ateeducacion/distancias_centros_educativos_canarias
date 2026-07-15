@@ -1,6 +1,6 @@
 # Arquitectura
 
-El sistema separa una fase de generación costosa y poco frecuente de una fase de consulta sencilla. OSRM calcula las distancias cuando se publica una nueva versión; las aplicaciones consumidoras solo descargan un archivo estático CEDIST03 y leen un entero.
+El sistema separa una fase de generación costosa y poco frecuente de una fase de consulta sencilla. OSRM calcula las distancias cuando se publica una nueva versión; las aplicaciones consumidoras solo descargan un archivo estático CEDIST04 y leen un entero.
 
 ```mermaid
 flowchart LR
@@ -10,7 +10,7 @@ flowchart LR
     C --> F[Ajuste a la red viaria]
     E --> F
     F --> G[Tablas de distancias por bloques e isla]
-    G --> H[CEDIST03 .dat]
+    G --> H[CEDIST04 .dat]
     C --> I[centers.min.json]
     H --> J[GitHub Pages y Releases]
     I --> J
@@ -27,7 +27,7 @@ flowchart LR
 5. Las ubicaciones se agrupan por isla.
 6. OSRM calcula tablas dirigidas por bloques con un perfil de automóvil cuyo peso es la distancia, y devuelve la anotación `distance`.
 7. Se calcula la máxima distancia y se comprueba que no supera 655.340 metros.
-8. Los metros de OSRM se redondean a decámetros y se escriben en CEDIST03.
+8. Los metros de OSRM se redondean a decámetros y se escriben en CEDIST04.
 9. Se generan el manifiesto, los informes y los hashes SHA-256.
 
 El trabajo intensivo sucede en esta fase. La generación se ejecuta una vez por versión de datos, no una vez por usuario o consulta.

@@ -1,6 +1,6 @@
 # Usar la matriz desde WordPress
 
-Esta integración usa un único snippet PHP y un archivo CEDIST03 local. No incluye detección de formatos antiguos ni lógica de migración.
+Esta integración usa un único snippet PHP y un archivo CEDIST04 local. No incluye detección de formatos antiguos ni lógica de migración.
 
 ## Preparar el archivo
 
@@ -23,7 +23,7 @@ define(
 );
 
 /**
- * Return the local CEDIST03 data path.
+ * Return the local CEDIST04 data path.
  *
  * @return string|WP_Error
  */
@@ -153,7 +153,7 @@ function ate_canarias_find_location( $handle, $index_offset, $count, $islands, $
 }
 
 /**
- * Return a road distance in meters from the CEDIST03 matrix.
+ * Return a road distance in meters from the CEDIST04 matrix.
  *
  * @param string $origin      Origin code.
  * @param string $destination Destination code.
@@ -184,8 +184,8 @@ function ate_canarias_distance_meters( $origin, $destination ) {
             return $header;
         }
 
-        if ( 'CEDIST03' !== substr( $header, 0, 8 ) || 3 !== ate_canarias_u16( $header, 8 ) ) {
-            return new WP_Error( 'invalid_format', 'El archivo no usa el formato CEDIST03.' );
+        if ( 'CEDIST04' !== substr( $header, 0, 8 ) || 4 !== ate_canarias_u16( $header, 8 ) ) {
+            return new WP_Error( 'invalid_format', 'El archivo no usa el formato CEDIST04.' );
         }
         if (
             64 !== ate_canarias_u32( $header, 12 )
@@ -193,7 +193,7 @@ function ate_canarias_distance_meters( $origin, $destination ) {
             || 0 !== ate_canarias_u16( $header, 22 )
             || str_repeat( "\0", 12 ) !== substr( $header, 52, 12 )
         ) {
-            return new WP_Error( 'invalid_header', 'La cabecera CEDIST03 no es válida.' );
+            return new WP_Error( 'invalid_header', 'La cabecera CEDIST04 no es válida.' );
         }
 
         $island_count     = ate_canarias_u16( $header, 20 );
@@ -210,7 +210,7 @@ function ate_canarias_distance_meters( $origin, $destination ) {
             || 64 !== $index_offset
             || $directory_offset !== 64 + ( $location_count * 12 )
         ) {
-            return new WP_Error( 'invalid_offsets', 'Los offsets CEDIST03 no son válidos.' );
+            return new WP_Error( 'invalid_offsets', 'Los offsets CEDIST04 no son válidos.' );
         }
 
         $islands         = array();
@@ -276,17 +276,23 @@ function ate_canarias_distance_meters( $origin, $destination ) {
         }
 
         $island   = $islands[ $source['island_id'] ];
-        $position = ( $source['local_index'] * $island['count'] ) + $target['local_index'];
-        $raw      = ate_canarias_read_bytes(
+        $count    = $island['count'];
+        $position = ( $source['local_index'] * $count ) + $target['local_index'];
+        // Distribución por planos de byte: bytes bajos y luego bytes altos.
+        $low = ate_canarias_read_bytes( $handle, $island['distance_offset'] + $position, 1 );
+        if ( is_wp_error( $low ) ) {
+            return $low;
+        }
+        $high = ate_canarias_read_bytes(
             $handle,
-            $island['distance_offset'] + ( $position * 2 ),
-            2
+            $island['distance_offset'] + ( $count * $count ) + $position,
+            1
         );
-        if ( is_wp_error( $raw ) ) {
-            return $raw;
+        if ( is_wp_error( $high ) ) {
+            return $high;
         }
 
-        $stored = ate_canarias_u16( $raw );
+        $stored = ord( $low ) | ( ord( $high ) << 8 );
         if ( 0xFFFF === $stored ) {
             return new WP_Error( 'unreachable', 'La distancia no está disponible.' );
         }

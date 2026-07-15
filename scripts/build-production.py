@@ -1,8 +1,9 @@
-"""Build production CEDIST03 distance artifacts from validated inputs and OSRM."""
+"""Build production CEDIST04 distance artifacts from validated inputs and OSRM."""
 from __future__ import annotations
 
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
+import gzip
 import json
 import os
 from pathlib import Path
@@ -168,7 +169,7 @@ def main() -> None:
         if maximum_distance_meters > MAX_DISTANCE_METERS:
             raise RuntimeError(
                 f"Generated distance {maximum_distance_meters} m exceeds the "
-                f"CEDIST03 limit of {MAX_DISTANCE_METERS} m"
+                f"CEDIST04 limit of {MAX_DISTANCE_METERS} m"
             )
         unreachable += sum(value is None for row in distances for value in row)
         matrices[island_id] = distances
@@ -176,6 +177,15 @@ def main() -> None:
 
     data_file = output / "canarias-distances.dat"
     write_binary(data_file, locations, matrices)
+
+    # CEDIST04 keeps the on-disk matrix random-access but its byte planes make
+    # it compressible. Publish a deterministic gzip copy so the browser (and any
+    # bandwidth-sensitive consumer) downloads far fewer bytes and decompresses it
+    # natively; local readers keep using the uncompressed .dat.
+    data_gzip = output / "canarias-distances.dat.gz"
+    data_gzip.write_bytes(
+        gzip.compress(data_file.read_bytes(), compresslevel=9, mtime=0)
+    )
 
     stable_json(output / "centers.json", locations)
     stable_json(output / "centers.min.json", locations, minified=True)
@@ -187,6 +197,7 @@ def main() -> None:
 
     artifact_paths = [
         data_file,
+        data_gzip,
         output / "centers.json",
         output / "centers.min.json",
         output / "transport-nodes.json",

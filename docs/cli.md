@@ -1,6 +1,6 @@
 # CLI
 
-`bin/route-matrix --json query ORIGEN DESTINO --data RUTA` consulta un archivo CEDIST03 precomputado. Las opciones globales, como `--json`, se escriben antes del subcomando. La consulta es local y no llama a OSRM.
+`bin/route-matrix --json query ORIGEN DESTINO --data RUTA` consulta un archivo CEDIST04 precomputado. Las opciones globales, como `--json`, se escriben antes del subcomando. La consulta es local y no llama a OSRM.
 
 ```sh
 bin/route-matrix --json query 10000001 10000002 \
