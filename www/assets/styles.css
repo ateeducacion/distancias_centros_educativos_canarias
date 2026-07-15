@@ -139,9 +139,13 @@ a {
 
 .brand-logo {
   width: auto;
-  height: 26px;
-  color: var(--accent);
+  height: 30px;
   flex: 0 0 auto;
+  border-radius: 6px;
+}
+
+.brand span {
+  white-space: nowrap;
 }
 
 .btn .octocat {
@@ -530,27 +534,6 @@ h1 em {
   font-size: 13px;
 }
 
-.copy-btn {
-  align-self: flex-start;
-  margin-top: 18px;
-  padding: 7px 12px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--card);
-  color: var(--fg);
-  font: inherit;
-  font-size: 13px;
-  cursor: pointer;
-}
-
-.copy-btn:hover {
-  border-color: var(--accent);
-}
-
-.copy-btn[hidden] {
-  display: none;
-}
-
 .map-card {
   position: relative;
   padding: 14px;
@@ -663,6 +646,73 @@ h1 em {
   flex: 0 0 auto;
   margin-top: 1px;
   color: var(--warn);
+}
+
+/* Promo --------------------------------------------------------------------- */
+.promo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px 28px;
+  margin-top: 22px;
+  padding: 22px 26px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.promo-features {
+  flex: 1 1 420px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px 26px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.promo-features li {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.promo-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--fg);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.promo-title::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.promo-desc {
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+
+.promo-link {
+  flex: 0 0 auto;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.promo-link:hover {
+  text-decoration: underline;
 }
 
 /* Footer -------------------------------------------------------------------- */
@@ -789,5 +839,9 @@ h1 em {
 
   .map-card {
     max-width: 320px;
+  }
+
+  .promo-features {
+    grid-template-columns: 1fr;
   }
 }

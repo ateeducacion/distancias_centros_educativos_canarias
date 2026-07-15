@@ -25,27 +25,16 @@
       <a
         class="brand"
         href="./"
-        aria-label="Distancias por carretera en Canarias · Área de Tecnología Educativa"
+        aria-label="Distancias entre centros educativos de Canarias · Área de Tecnología Educativa"
       >
-        <svg
+        <img
           class="brand-logo"
-          viewBox="0 0 132 104"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="11"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          role="img"
-          aria-label="ATE"
-        >
-          <circle cx="28" cy="64" r="16" />
-          <line x1="44" y1="48" x2="44" y2="80" />
-          <line x1="70" y1="10" x2="70" y2="82" />
-          <line x1="55" y1="28" x2="85" y2="28" />
-          <circle cx="104" cy="64" r="16" />
-          <line x1="88" y1="64" x2="120" y2="64" />
-        </svg>
-        <span>Distancias por carretera · Canarias</span>
+          src="assets/ate-logo.png"
+          alt="Área de Tecnología Educativa"
+          width="545"
+          height="563"
+        />
+        <span>Distancias entre centros educativos de Canarias</span>
       </a>
       <div class="header-actions">
         <button
@@ -103,15 +92,9 @@
     </header>
 
     <main class="page">
-      <p class="eyebrow">
-        <span class="eyebrow-dot" aria-hidden="true"></span>
-        <a href="https://www3.gobiernodecanarias.org/medusa/ecoescuela/ate/"
-          >Área de Tecnología Educativa</a
-        >
-      </p>
-      <h1>Distancias entre<br />centros de <em>Canarias</em>.</h1>
+      <h1>Distancias entre centros educativos de <em>Canarias</em>.</h1>
       <p class="lead">
-        Elige una isla, un <strong>origen</strong> y un
+        Elige una isla y un <strong>centro de origen</strong> y de
         <strong>destino</strong>. Calculamos la distancia estimada por carretera
         y el tiempo aproximado en coche.
       </p>
@@ -175,9 +158,6 @@
                   <span class="drivetime-ico" aria-hidden="true">◷</span>
                   <span id="result-time-value"></span> en coche
                 </span>
-                <button type="button" id="copy-result" class="copy-btn" hidden>
-                  Copiar resultado
-                </button>
               </span>
             </output>
 
@@ -217,6 +197,32 @@
           datos.
         </p>
       </div>
+
+      <section class="promo" aria-label="Características">
+        <ul class="promo-features">
+          <li>
+            <span class="promo-title">Inmediato</span>
+            <span class="promo-desc"
+              >Sin llamadas a la API, se resuelve en el navegador</span
+            >
+          </li>
+          <li>
+            <span class="promo-title">Precalculado</span>
+            <span class="promo-desc"
+              >Todas las distancias por carretera ya computadas</span
+            >
+          </li>
+          <li>
+            <span class="promo-title">Ultraeficiente</span>
+            <span class="promo-desc"
+              >Un único archivo binario compacto (CEDIST03)</span
+            >
+          </li>
+        </ul>
+        <a class="promo-link" href="docs/architecture/"
+          >Cómo funciona · Arquitectura →</a
+        >
+      </section>
     </main>
 
     <footer class="site-footer">

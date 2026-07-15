@@ -35,7 +35,6 @@ if (form) {
   const resultMeters = document.querySelector("#result-meters");
   const resultRoute = document.querySelector("#result-route");
   const resultTimeValue = document.querySelector("#result-time-value");
-  const copyButton = document.querySelector("#copy-result");
   const version = document.querySelector("#demo-version");
   const mapCard = document.querySelector("#route-map-card");
   const routeLine = document.querySelector("#route-line");
@@ -52,7 +51,6 @@ if (form) {
   let locationByCode = new Map();
   let locationsByIsland = new Map();
   let ready = false;
-  let lastResult = "";
   let selectedIslandId = "";
 
   const option = (value, label) => new Option(label, value);
@@ -83,7 +81,6 @@ if (form) {
     resultState.textContent = message;
     resultState.hidden = false;
     resultValue.hidden = true;
-    copyButton.hidden = true;
   }
 
   function updateUrl() {
@@ -321,14 +318,12 @@ if (form) {
       const minutes = Math.round(
         (data.result.distanceMeters / 1000 / AVERAGE_SPEED_KMH) * 60,
       );
-      lastResult = `${data.origin.name} → ${data.destination.name}: ${kilometers} km (${meters} m, ≈ ${formatDuration(minutes)} en coche)`;
       resultKilometers.textContent = kilometers;
       resultMeters.textContent = `${meters} metros por carretera`;
       resultRoute.textContent = `${data.origin.name}  →  ${data.destination.name}`;
       resultTimeValue.textContent = `≈ ${formatDuration(minutes)}`;
       resultState.hidden = true;
       resultValue.hidden = false;
-      copyButton.hidden = false;
       renderMap();
     } else if (data.type === "error") {
       setResultState(data.message);
@@ -350,14 +345,6 @@ if (form) {
     window.jQuery(originSelect).trigger("change.select2");
     window.jQuery(destinationSelect).trigger("change.select2");
     querySelection();
-  });
-
-  copyButton.addEventListener("click", async () => {
-    await navigator.clipboard.writeText(lastResult);
-    copyButton.textContent = "Copiado";
-    window.setTimeout(() => {
-      copyButton.textContent = "Copiar resultado";
-    }, 1500);
   });
 
   worker.postMessage({
