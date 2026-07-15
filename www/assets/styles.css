@@ -137,17 +137,15 @@ a {
   text-decoration: none;
 }
 
-.brand-flag {
-  width: 14px;
-  height: 10px;
-  border-radius: 1px;
-  border: 1px solid var(--border);
-  background: linear-gradient(
-    to right,
-    #fff 0 33.33%,
-    #0072ce 33.33% 66.66%,
-    #f0ab00 66.66% 100%
-  );
+.brand-logo {
+  width: auto;
+  height: 26px;
+  color: var(--accent);
+  flex: 0 0 auto;
+}
+
+.btn .octocat {
+  margin-inline-end: -2px;
 }
 
 .header-actions {
