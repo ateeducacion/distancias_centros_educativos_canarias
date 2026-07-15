@@ -9,13 +9,14 @@
 - Check the official centers CSV weekly and rebuild when its SHA-256 changes.
 - Decouple generated data versions from the Python and JavaScript package versions.
 - Store only road distances and remove duration generation, storage and API fields.
-- Use CEDIST03 with `uint16` decameter cells and reject values above 655,340 meters.
-- Support only CEDIST03 in the Python, PHP and JavaScript readers, CLI, REST API, browser demo and WordPress example.
+- Use CEDIST04 with `uint16` decameter cells stored as byte planes (all low bytes then all high bytes per island) and reject values above 655,340 meters.
+- Order each island's local indices by a nearest-neighbour tour so the matrix compresses without changing any distance.
+- Support only CEDIST04 in the Python, PHP and JavaScript readers, CLI, REST API, browser demo and WordPress example.
 - Remove legacy format detection, writer options, API aliases and CEDIST02 fixtures.
 - Round generated distances to the nearest decameter, halves up.
-- Publish only the uncompressed `canarias-distances.dat` matrix artifact.
+- Publish the random-access `canarias-distances.dat` plus a deterministic `canarias-distances.dat.gz`; the browser downloads and decompresses the gzip natively (~988 KB zstd of CEDIST03 → ~536 KB zstd / ~641 KB gzip with CEDIST04).
 - Record cell encoding, quantization, maximum representable distance and observed maximum distance in the manifest.
-- Add a CEDIST03 ADR and cross-language CEDIST03 conformance tests.
+- Add CEDIST03 and CEDIST04 ADRs and cross-language CEDIST04 conformance tests.
 - Rename the primary artifact to `canarias-distances.dat` and provide distance-only readers for Python, PHP and JavaScript.
 - Move the automatic live demo to the documentation homepage.
 - Redesign the homepage around a local interactive map, origin and destination search, and a clearer distance result.

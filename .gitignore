@@ -17,3 +17,4 @@ coverage/
 www/data/
 public/
 .preview-data/
+.phpunit.result.cache

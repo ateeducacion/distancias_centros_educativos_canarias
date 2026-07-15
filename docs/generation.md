@@ -11,7 +11,7 @@ La generación convierte fuentes abiertas en un archivo estático de distancias.
 5. Iniciar `osrm-routed --algorithm mld`.
 6. Ajustar cada coordenada mediante `nearest`.
 7. Solicitar tablas por bloques con la anotación `distance`.
-8. Comprobar que ninguna distancia supera el máximo CEDIST03 de 655.340 metros.
+8. Comprobar que ninguna distancia supera el máximo CEDIST04 de 655.340 metros.
 9. Redondear a decámetros y escribir las matrices dirigidas en `canarias-distances.dat`.
 10. Generar JSON, informes, manifiesto y hashes.
 
@@ -31,9 +31,9 @@ make build-data
 
 ## Artefacto binario
 
-La generación publica `canarias-distances.dat` como matriz CEDIST03. El archivo permite acceso aleatorio directo y es el que consumen los readers Python, PHP y JavaScript.
+La generación publica `canarias-distances.dat` como matriz CEDIST04. El archivo permite acceso aleatorio directo y es el que consumen los readers Python, PHP y JavaScript.
 
-No se generan copias comprimidas. CEDIST03 ya reduce la parte dominante de la matriz a dos bytes por celda, y mantener un único artefacto evita dependencias y pasos adicionales de publicación y consumo.
+No se generan copias comprimidas. CEDIST04 ya reduce la parte dominante de la matriz a dos bytes por celda, y mantener un único artefacto evita dependencias y pasos adicionales de publicación y consumo.
 
 ## Publicación automática
 
@@ -53,7 +53,7 @@ data-YYYYMMDD-HHMM
 
 ## Métrica y cuantización
 
-OSRM devuelve metros. CEDIST03 aplica esta conversión antes de escribir cada celda:
+OSRM devuelve metros. CEDIST04 aplica esta conversión antes de escribir cada celda:
 
 ```text
 stored = max(1, (distance_meters + 5) // 10)
@@ -68,7 +68,7 @@ El redondeo es al decámetro más próximo, con mitades hacia arriba. El manifie
 - máximo representable;
 - máxima distancia observada en la generación.
 
-CEDIST03 no solicita ni almacena duraciones.
+CEDIST04 no solicita ni almacena duraciones.
 
 ## Trazabilidad
 

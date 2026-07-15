@@ -21,7 +21,7 @@ const matrix = new DistanceMatrix(
 );
 
 describe("DistanceMatrix", () => {
-  it("reads CEDIST03 directed distances", () => {
+  it("reads CEDIST04 directed distances", () => {
     expect(matrix.getDistance("10000001", "10000002").distanceMeters).toBe(
       1200,
     );

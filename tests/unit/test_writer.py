@@ -12,18 +12,18 @@ CENTERS = [
 ]
 
 
-def test_cedist03_writer_round_trip_and_quantization(tmp_path: Path) -> None:
+def test_cedist04_writer_round_trip_and_quantization(tmp_path: Path) -> None:
     path = tmp_path / "distances.dat"
     write_binary(path, CENTERS, {3: [[0, 1234], [1235, 0]]})
 
-    assert path.read_bytes()[:8] == b"CEDIST03"
+    assert path.read_bytes()[:8] == b"CEDIST04"
     assert path.stat().st_size == 64 + 2 * 12 + 16 + 2 * 2 * 2
     with Reader(path) as reader:
         assert reader.get_distance("10000001", "10000002").distance_meters == 1230
         assert reader.get_distance("10000002", "10000001").distance_meters == 1240
 
 
-def test_cedist03_maximum_distance_is_enforced(tmp_path: Path) -> None:
+def test_cedist04_maximum_distance_is_enforced(tmp_path: Path) -> None:
     path = tmp_path / "distances.dat"
     write_binary(path, CENTERS, {3: [[0, MAX_DISTANCE_METERS], [10, 0]]})
     with Reader(path) as reader:
@@ -32,7 +32,7 @@ def test_cedist03_maximum_distance_is_enforced(tmp_path: Path) -> None:
             == MAX_DISTANCE_METERS
         )
 
-    with pytest.raises(ValueError, match="exceeds the CEDIST03 maximum"):
+    with pytest.raises(ValueError, match="exceeds the CEDIST04 maximum"):
         write_binary(
             path,
             CENTERS,

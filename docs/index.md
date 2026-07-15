@@ -2,7 +2,7 @@
 
 Matriz estática de distancias por carretera entre centros educativos,
 aeropuertos y puertos de Canarias. Los datos se publican como un artefacto
-binario compacto (**CEDIST03**) que puedes consultar desde el navegador,
+binario compacto (**CEDIST04**) que puedes consultar desde el navegador,
 Python, JavaScript o PHP sin depender de servicios externos.
 
 <p>
@@ -14,7 +14,7 @@ Python, JavaScript o PHP sin depender de servicios externos.
 
 - [Uso rápido](quick-start.md) — calcula tu primera distancia en unos minutos.
 - [Arquitectura](architecture.md) — cómo se generan y publican los datos.
-- [Formato CEDIST03](binary-format.md) — estructura del artefacto binario.
+- [Formato CEDIST04](binary-format.md) — estructura del artefacto binario.
 - [Fuentes de datos](data-sources.md) y [calidad](data-quality.md).
 
 ## Lectores por lenguaje

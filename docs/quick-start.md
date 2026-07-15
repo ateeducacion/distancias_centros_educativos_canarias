@@ -1,6 +1,6 @@
 # Uso rápido
 
-La matriz se consulta localmente. Puedes probarla sin instalar nada en la web o descargar el archivo CEDIST03 más reciente para consultarlo desde Python, Bash o PowerShell. Las distancias se devuelven en metros con una resolución de 10 metros.
+La matriz se consulta localmente. Puedes probarla sin instalar nada en la web o descargar el archivo CEDIST04 más reciente para consultarlo desde Python, Bash o PowerShell. Las distancias se devuelven en metros con una resolución de 10 metros.
 
 === "Web (sin instalar)"
 

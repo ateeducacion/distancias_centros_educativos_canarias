@@ -1,4 +1,4 @@
-"""Defensive random-access CEDIST03 reader."""
+"""Defensive random-access CEDIST04 reader."""
 
 from __future__ import annotations
 
@@ -43,7 +43,7 @@ class Reader:
             reserved_bytes,
         ) = values
         if magic != CURRENT_FORMAT.magic or major != CURRENT_FORMAT.major:
-            raise InvalidFormatError("Expected CEDIST03 format")
+            raise InvalidFormatError("Expected CEDIST04 format")
         if header_size != HEADER_SIZE or flags or reserved or any(reserved_bytes):
             raise InvalidFormatError("Invalid header fields")
         if file_size != self._size or index_offset != HEADER_SIZE:
@@ -108,13 +108,12 @@ class Reader:
         if source.island_id != target.island_id:
             raise CrossIslandRouteError("Distances between islands are not computed")
         island = self.islands[source.island_id]
-        position = source.local_index * island.center_count + target.local_index
-        stored = CURRENT_FORMAT.distance_struct.unpack(
-            self._read(
-                island.distance_offset + position * CURRENT_FORMAT.cell_size,
-                CURRENT_FORMAT.cell_size,
-            )
-        )[0]
+        count = island.center_count
+        position = source.local_index * count + target.local_index
+        # Byte-plane layout: low bytes then high bytes within the island block.
+        low = self._read(island.distance_offset + position, 1)[0]
+        high = self._read(island.distance_offset + count * count + position, 1)[0]
+        stored = low | (high << 8)
         if stored == CURRENT_FORMAT.unreachable:
             raise UnreachableRouteError("Distance is unavailable")
         return Distance(stored * CURRENT_FORMAT.distance_unit_meters)

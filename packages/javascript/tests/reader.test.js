@@ -14,7 +14,7 @@ const matrix = new DistanceMatrix(
   bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength),
 );
 
-describe("CEDIST03", () => {
+describe("CEDIST04", () => {
   it("reads directed distances", () => {
     expect(matrix.getDistance("10000001", "10000002").distanceMeters).toBe(
       1200,

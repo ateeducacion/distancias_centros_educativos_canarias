@@ -67,6 +67,7 @@ site-build: docs-build ## Assemble the Pages artifact (landing + docs) into publ
 site-preview: ## Build and serve the full site locally with sample data
 	rm -rf .preview-data && mkdir -p .preview-data
 	cp data/samples/sample.dat .preview-data/canarias-distances.dat
+	gzip -9 -c data/samples/sample.dat > .preview-data/canarias-distances.dat.gz
 	cp data/samples/sample-centers.json .preview-data/centers.min.json
 	cp data/samples/sample-manifest.json .preview-data/manifest.json
 	$(MAKE) site-build DATA_DIR=.preview-data
