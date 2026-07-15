@@ -1,4 +1,4 @@
-# Lector JavaScript CEDIST03
+# Lector JavaScript CEDIST04
 
 Paquete ESM para navegador, Web Worker y Node.js. Los códigos públicos siempre se reciben como cadenas y cada consulta devuelve únicamente `distanceMeters`.
 

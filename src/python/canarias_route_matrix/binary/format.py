@@ -1,4 +1,17 @@
-"""CEDIST03 binary structures."""
+"""CEDIST04 binary structures.
+
+CEDIST04 keeps every CEDIST03 header/index/directory field and offset, and the
+same per-island block size (``count * count * cell_size`` bytes). The only
+change is the *layout inside each island block*: instead of interleaved
+little-endian ``uint16`` cells, the block stores a byte plane of all low bytes
+(``count * count`` of them, row-major) followed by a byte plane of all high
+bytes. Splitting the noisy low byte from the structured high byte is what makes
+the matrix compress (generic zstd/gzip cannot compress the interleaved form).
+
+Cell ``(i, j)`` at ``pos = i * count + j`` decodes as
+``low[pos] | (high[pos] << 8)`` where ``high`` starts ``count * count`` bytes
+after ``low``. Random access stays O(1) (two 1-byte reads).
+"""
 
 from dataclasses import dataclass
 import struct
@@ -13,7 +26,7 @@ ISLAND = struct.Struct("<B3sIQ")
 
 @dataclass(frozen=True)
 class FormatSpec:
-    """CEDIST03 distance cell encoding."""
+    """CEDIST04 distance cell encoding."""
 
     magic: bytes
     major: int
@@ -24,8 +37,8 @@ class FormatSpec:
 
 
 CURRENT_FORMAT = FormatSpec(
-    magic=b"CEDIST03",
-    major=3,
+    magic=b"CEDIST04",
+    major=4,
     cell_size=2,
     distance_unit_meters=10,
     unreachable=0xFFFF,

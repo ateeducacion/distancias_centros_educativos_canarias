@@ -1,7 +1,7 @@
 {
   "artifacts": {
     "sample.dat": {
-      "sha256": "471d1d9d457a5626d3a8de0dbfadcaa5a20bd828a41dfa2a3c5f0bbb148b0a43",
+      "sha256": "9e886918a55e9f444d89ebf046fc088dfffc4adf472e95426e3fa5cb191f8e06",
       "size": 164
     }
   },
@@ -15,13 +15,13 @@
     "maximum_distance_meters": 2500,
     "unreachable_distances": 1
   },
-  "data_version": "fixture-3",
+  "data_version": "fixture-4",
   "format": {
     "cell_size_bytes": 2,
     "distance_unit_meters": 10,
     "endianness": "little",
-    "magic": "CEDIST03",
-    "major": 3,
+    "magic": "CEDIST04",
+    "major": 4,
     "maximum_distance_meters": 655340,
     "metric": "road_distance_meters",
     "minor": 0,

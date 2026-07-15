@@ -11,8 +11,8 @@ use AteEducacion\CanariasRouteMatrix\Exception\UnreachableRouteException;
 
 final class Reader
 {
-    private const MAGIC = 'CEDIST03';
-    private const MAJOR = 3;
+    private const MAGIC = 'CEDIST04';
+    private const MAJOR = 4;
     private const HEADER_SIZE = 64;
     private const INDEX_SIZE = 12;
     private const DIRECTORY_SIZE = 16;
@@ -43,7 +43,7 @@ final class Reader
             substr($header, 0, 8) !== self::MAGIC
             || $this->u16($header, 8) !== self::MAJOR
         ) {
-            throw new InvalidFormatException('Expected CEDIST03 format');
+            throw new InvalidFormatException('Expected CEDIST04 format');
         }
         if (
             $this->u32($header, 12) !== self::HEADER_SIZE
@@ -182,14 +182,15 @@ final class Reader
             );
         }
         $island = $this->islands[$source['island_id']];
-        $position = $source['local_index'] * $island['count'] + $target['local_index'];
-        $stored = $this->u16(
-            $this->read(
-                $island['distance_offset'] + $position * self::DISTANCE_SIZE,
-                self::DISTANCE_SIZE
-            ),
-            0
-        );
+        $count = $island['count'];
+        $position = $source['local_index'] * $count + $target['local_index'];
+        // Byte-plane layout: low bytes then high bytes within the island block.
+        $low = ord($this->read($island['distance_offset'] + $position, 1));
+        $high = ord($this->read(
+            $island['distance_offset'] + $count * $count + $position,
+            1
+        ));
+        $stored = $low | ($high << 8);
         if ($stored === self::UNREACHABLE) {
             throw new UnreachableRouteException('Distance is unavailable');
         }

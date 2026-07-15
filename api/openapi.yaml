@@ -2,7 +2,7 @@ openapi: 3.1.0
 info:
   title: Canarias Distance Matrix API
   version: 2.0.0
-  description: API opcional para consultar distancias CEDIST03 en metros.
+  description: API opcional para consultar distancias CEDIST04 en metros.
 paths:
   /v1/health:
     get:
@@ -133,7 +133,7 @@ components:
       properties:
         format:
           type: string
-          const: CEDIST03
+          const: CEDIST04
         api_version:
           type: string
           const: v1

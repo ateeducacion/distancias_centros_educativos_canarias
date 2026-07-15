@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "canarias-route-matrix"
 version = "0.0.3"
-description = "Static CEDIST03 road distance matrix for Canary Islands locations"
+description = "Static CEDIST04 road distance matrix for Canary Islands locations"
 requires-python = ">=3.11"
 license = {text = "MIT"}
 dependencies = ["httpx>=0.27,<1", "jsonschema>=4.23,<5"]
