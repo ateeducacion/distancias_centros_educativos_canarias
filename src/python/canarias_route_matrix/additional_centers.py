@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
-import json
+import csv
 from pathlib import Path
 import re
-from typing import Any
 
 from .errors import ValidationError
 from .islands import normalize_island
@@ -20,22 +19,22 @@ _REQUIRED_FIELDS = {
     "postal_code",
     "nature",
     "center_type",
+    "host_center_code",
+    "longitude",
+    "latitude",
 }
-_COORDINATE_FIELDS = {"longitude", "latitude"}
 
 
-def _validated_entry(entry: object, index: int) -> dict[str, Any]:
-    if not isinstance(entry, dict):
-        raise ValidationError(f"Additional center #{index} must be an object")
+def _validated_entry(entry: dict[str, str], line: int) -> dict[str, str]:
+    has_host = bool(entry["host_center_code"])
+    has_longitude = bool(entry["longitude"])
+    has_latitude = bool(entry["latitude"])
+    has_coordinates = has_longitude and has_latitude
 
-    missing = sorted(_REQUIRED_FIELDS - entry.keys())
-    if missing:
+    if has_longitude != has_latitude:
         raise ValidationError(
-            f"Additional center #{index} is missing fields: {', '.join(missing)}"
+            f"Additional center on line {line} must define both longitude and latitude"
         )
-
-    has_host = bool(str(entry.get("host_center_code", "")).strip())
-    has_coordinates = _COORDINATE_FIELDS <= entry.keys()
     if has_host == has_coordinates:
         raise ValidationError(
             f"Additional center {entry['code']} must define either "
@@ -52,24 +51,30 @@ def load_additional_centers(
 ) -> list[dict[str, object]]:
     """Load additional centers and resolve shared coordinates by center code."""
     try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
+        text = path.read_text(encoding="utf-8-sig")
+    except OSError as exc:
         raise ValidationError(f"Cannot read additional centers from {path}: {exc}") from exc
 
-    if payload.get("schema_version") != 1:
-        raise ValidationError("Unsupported additional-centers schema_version")
-
-    raw_entries = payload.get("centers")
-    if not isinstance(raw_entries, list):
-        raise ValidationError("additional-centers.json must contain a centers array")
+    reader = csv.DictReader(text.splitlines())
+    headers = set(reader.fieldnames or [])
+    if missing := _REQUIRED_FIELDS - headers:
+        raise ValidationError(
+            f"Additional centers schema changed; missing columns: {sorted(missing)}"
+        )
 
     code_re = re.compile(code_pattern)
     known = {str(center["code"]): center for center in official_centers}
-    pending: dict[str, dict[str, Any]] = {}
+    pending: dict[str, dict[str, str]] = {}
 
-    for index, raw_entry in enumerate(raw_entries, start=1):
-        entry = _validated_entry(raw_entry, index)
-        code = str(entry["code"]).strip()
+    for line, row in enumerate(reader, start=2):
+        entry = _validated_entry(
+            {
+                key: value.strip() if value is not None else ""
+                for key, value in row.items()
+            },
+            line,
+        )
+        code = entry["code"]
         if not code_re.fullmatch(code):
             raise ValidationError(f"Invalid additional center code: {code!r}")
         if code in known or code in pending:
@@ -80,8 +85,8 @@ def load_additional_centers(
     while pending:
         resolved_in_pass = 0
         for code, entry in list(pending.items()):
-            island_id, island_name = normalize_island(str(entry["island"]))
-            host_code = str(entry.get("host_center_code", "")).strip()
+            island_id, island_name = normalize_island(entry["island"])
+            host_code = entry["host_center_code"]
             if host_code:
                 host = known.get(host_code)
                 if host is None:
@@ -94,25 +99,30 @@ def load_additional_centers(
                 longitude = float(host["longitude"])
                 latitude = float(host["latitude"])
             else:
-                longitude = float(entry["longitude"])
-                latitude = float(entry["latitude"])
+                try:
+                    longitude = float(entry["longitude"])
+                    latitude = float(entry["latitude"])
+                except ValueError as exc:
+                    raise ValidationError(
+                        f"Additional center {code} has invalid coordinates"
+                    ) from exc
 
-            if not -18.5 <= longitude <= -13.0 or not 27.5 <= latitude <= 29.5:
+            if not -19 <= longitude <= -13 or not 27 <= latitude <= 30:
                 raise ValidationError(
                     f"Additional center {code} has coordinates outside Canarias"
                 )
 
             center: dict[str, object] = {
                 "code": code,
-                "name": str(entry["name"]).strip(),
-                "address": str(entry["address"]).strip(),
-                "locality": str(entry["locality"]).strip(),
-                "postal_code": str(entry["postal_code"]).strip(),
-                "municipality": str(entry["municipality"]).strip(),
+                "name": entry["name"],
+                "address": entry["address"],
+                "locality": entry["locality"],
+                "postal_code": entry["postal_code"],
+                "municipality": entry["municipality"],
                 "island": island_name,
                 "island_id": island_id,
-                "nature": str(entry["nature"]).strip(),
-                "center_type": str(entry["center_type"]).strip(),
+                "nature": entry["nature"],
+                "center_type": entry["center_type"],
                 "longitude": longitude,
                 "latitude": latitude,
             }
@@ -123,7 +133,7 @@ def load_additional_centers(
 
         if not resolved_in_pass:
             unresolved = ", ".join(
-                f"{code}->{entry.get('host_center_code')}"
+                f"{code}->{entry['host_center_code']}"
                 for code, entry in sorted(pending.items())
             )
             raise ValidationError(
