@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "scope": "Non-teaching educational services omitted as standalone rows from the official centers CSV",
+  "coordinate_policy": "Entries with host_center_code reuse the exact coordinates of the host. Standalone coordinates are manually maintained from the official postal address.",
+  "sources": [
+    {
+      "name": "Centros del Profesorado",
+      "url": "https://www.gobiernodecanarias.org/educacion/web/centros/centros-profesorado/donde-estamos/index.html"
+    },
+    {
+      "name": "EOEP de zona",
+      "url": "https://www.gobiernodecanarias.org/educacion/web/servicios/eoep/eoep_zona/"
+    },
+    {
+      "name": "CER 2025-2026",
+      "url": "https://sede.gobiernodecanarias.org/boc/boc-a-2025-153-2822.pdf"
+    },
+    {
+      "name": "Centros educativos de Canarias",
+      "url": "https://datos.canarias.es/catalogos/general/dataset/centros-educativos-de-canarias"
+    }
+  ]
+}
