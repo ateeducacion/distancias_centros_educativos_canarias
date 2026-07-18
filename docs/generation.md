@@ -15,18 +15,25 @@ La descarga consulta primero `package_show` en CKAN y selecciona el recurso CSV 
 
 La configuración se mantiene en `config/sources.json`. El manifiesto de cada release registra la URL final, el tamaño, los metadatos HTTP y el SHA-256 del fichero descargado.
 
+### Servicios no docentes y exclusiones
+
+Tras el CSV canónico se incorporan las filas de `config/additional-centers.csv` (CEP, EOEP y CER), resolviendo coordenadas propias o las del centro anfitrión (`host_center_code`). Detalle y política: [Fuentes](data-sources.md).
+
+**No** se importan UAPA ni AAPA (aulas satélite o penitenciarias de la red de adultos). Decisión: [ADR 0003](decisions/0003-exclude-uapa.md).
+
 ## Proceso
 
 1. Descargar y validar el CSV oficial de centros.
-2. Incorporar los puertos y aeropuertos versionados.
-3. Descargar el extracto de OpenStreetMap de Canarias.
-4. Preparar OSRM con MLD y el perfil `car-shortest-distance` mediante `osrm-extract`, `osrm-partition` y `osrm-customize`.
-5. Iniciar `osrm-routed --algorithm mld`.
-6. Ajustar cada coordenada mediante `nearest`.
-7. Solicitar tablas por bloques con la anotación `distance`; OSRM selecciona previamente cada ruta minimizando el peso `distance`.
-8. Comprobar que ninguna distancia supera el máximo CEDIST04 de 655.340 metros.
-9. Redondear a decámetros y escribir las matrices dirigidas en `canarias-distances.dat`.
-10. Generar JSON, informes, manifiesto y hashes.
+2. Incorporar los servicios no docentes de `config/additional-centers.csv` (CEP, EOEP, CER).
+3. Incorporar los puertos y aeropuertos versionados.
+4. Descargar el extracto de OpenStreetMap de Canarias.
+5. Preparar OSRM con MLD mediante `osrm-extract`, `osrm-partition` y `osrm-customize`.
+6. Iniciar `osrm-routed --algorithm mld`.
+7. Ajustar cada coordenada mediante `nearest`.
+8. Solicitar tablas por bloques con la anotación `distance`; OSRM selecciona previamente cada ruta minimizando el peso `distance`.
+9. Comprobar que ninguna distancia supera el máximo CEDIST04 de 655.340 metros.
+10. Redondear a decámetros y escribir las matrices dirigidas en `canarias-distances.dat`.
+11. Generar JSON, informes, manifiesto y hashes.
 
 El proceso completo puede ejecutarse con `scripts/build-data-ci.sh`, indicando `DATA_VERSION` cuando se quiera asignar una versión concreta:
 
