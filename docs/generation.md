@@ -2,6 +2,19 @@
 
 La generación convierte fuentes abiertas en un archivo estático de distancias. Es la parte costosa del sistema y no se ejecuta para cada despliegue de la documentación.
 
+## Fuente de centros educativos
+
+La fuente canónica es el conjunto **Centros educativos de Canarias** del catálogo general de Canarias Datos Abiertos:
+
+- Identificador CKAN: `centros-educativos-de-canarias`.
+- Recurso principal: `centros.csv`.
+- Resource ID: `b5e08adf-841b-4ba5-a599-4339e772d792`.
+- URL de respaldo: `https://datos.canarias.es/catalogos/general/dataset/f6b15811-014b-46f7-a858-fe48b062ed05/resource/b5e08adf-841b-4ba5-a599-4339e772d792/download/centros.csv`.
+
+La descarga consulta primero `package_show` en CKAN y selecciona el recurso CSV activo llamado `centros.csv`. Si la consulta al catálogo falla, utiliza la URL de respaldo del mismo recurso. No se utiliza como fuente el CSV histórico de SITCAN (`https://opendata.sitcan.es/upload/educacion/centros.csv`).
+
+La configuración se mantiene en `config/sources.json`. El manifiesto de cada release registra la URL final, el tamaño, los metadatos HTTP y el SHA-256 del fichero descargado.
+
 ## Proceso
 
 1. Descargar y validar el CSV oficial de centros.
