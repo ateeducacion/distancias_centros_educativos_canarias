@@ -36,7 +36,8 @@ servicio externo en cada comparación.
 - [Uso rápido](quick-start.md) — calcula tu primera distancia en unos minutos.
 - [Arquitectura](architecture.md) — cómo se generan y publican los datos.
 - [Formato CEDIST04](binary-format.md) — estructura del artefacto binario.
-- [Fuentes de datos](data-sources.md) y [calidad](data-quality.md).
+- [Fuentes de datos](data-sources.md) (incluye CEP/EOEP/CER y la exclusión de UAPA) y [calidad](data-quality.md).
+- [ADR 0003: no incorporar UAPA](decisions/0003-exclude-uapa.md).
 
 ## Lectores por lenguaje
 
