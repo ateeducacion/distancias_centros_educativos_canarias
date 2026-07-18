@@ -5,6 +5,7 @@ El sistema separa una fase de generación costosa y poco frecuente de una fase d
 ```mermaid
 flowchart LR
     A[CSV oficial de centros] --> C[Validación y normalización]
+    B1[CEP / EOEP / CER adicionales] --> C
     B[Puertos y aeropuertos versionados] --> C
     D[OpenStreetMap Canarias] --> E[OSRM MLD]
     C --> F[Ajuste a la red viaria]
@@ -21,7 +22,7 @@ flowchart LR
 ## Fase de generación
 
 1. Se resuelve y descarga el CSV oficial de centros educativos.
-2. Se incorporan los puertos y aeropuertos definidos y versionados en el repositorio.
+2. Se incorporan los servicios no docentes curados (CEP, EOEP, CER) y los puertos y aeropuertos versionados en el repositorio. No se añaden UAPA ni AAPA ([ADR 0003](decisions/0003-exclude-uapa.md)).
 3. Se validan códigos, coordenadas, islas, duplicados y campos permitidos.
 4. Cada coordenada se ajusta al punto accesible más cercano de la red viaria de OSRM.
 5. Las ubicaciones se agrupan por isla.
@@ -76,7 +77,7 @@ Los nombres y otros campos descriptivos permanecen en `centers.min.json`. El `.d
 
 ## Límites del enfoque
 
-- solo ubicaciones publicadas en el conjunto de datos;
+- solo ubicaciones del CSV canónico más adicionales versionados (CEP/EOEP/CER, puertos, aeropuertos); no UAPA/AAPA;
 - solo distancias dentro de la misma isla;
 - perfil de automóvil y red disponibles en la fecha de generación;
 - precisión de 10 metros;

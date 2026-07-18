@@ -15,6 +15,7 @@ nav = [
     { "Visión general" = "architecture.md" },
     { "Formato CEDIST04" = "binary-format.md" },
     { "Fuentes" = "data-sources.md" },
+    { "ADR: sin UAPA" = "decisions/0003-exclude-uapa.md" },
     { "Calidad" = "data-quality.md" },
     { "Versión publicada" = "generated/current-version.md" },
     { "Cobertura publicada" = "generated/coverage.md" },
