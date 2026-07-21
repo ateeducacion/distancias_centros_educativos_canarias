@@ -87,9 +87,14 @@ def run(args: argparse.Namespace) -> int:
         print(json.dumps(metadata.as_dict(), sort_keys=True))
         return 0
     if args.command == "validate-centers":
+        overrides = [
+            json.loads(override_path.read_text(encoding="utf-8"))
+            for override_path in sorted((args.config / "overrides").glob("*.json"))
+        ]
         result = import_centers(
             args.cache_dir / "centers.csv",
             settings.code_pattern,
+            overrides=overrides,
         )
         args.output_dir.mkdir(parents=True, exist_ok=True)
         write_report(
