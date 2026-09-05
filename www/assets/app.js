@@ -1,3 +1,5 @@
+import { ISLAND_OUTLINES } from "./islands.js";
+
 /* Theme toggle -------------------------------------------------------------- */
 const root = document.documentElement;
 const themeToggle = document.querySelector("#theme-toggle");
@@ -37,8 +39,8 @@ if (form) {
   const resultTimeValue = document.querySelector("#result-time-value");
   const version = document.querySelector("#demo-version");
   const mapCard = document.querySelector("#route-map-card");
-  const routeLine = document.querySelector("#route-line");
   const pointGroup = document.querySelector("#route-points");
+  const islandOutline = document.querySelector("#island-outline");
   const params = new URLSearchParams(window.location.search);
   const base = new URL("../data/latest/", import.meta.url);
   const worker = new Worker(new URL("worker.js", import.meta.url), {
@@ -127,18 +129,42 @@ if (form) {
     }
     mapCard.hidden = false;
 
-    const lats = islandLocations.map((p) => Number(p.latitude));
-    const lngs = islandLocations.map((p) => Number(p.longitude));
-    const minLat = Math.min(...lats);
-    const maxLat = Math.max(...lats);
-    const minLng = Math.min(...lngs);
-    const maxLng = Math.max(...lngs);
-    const spanLat = maxLat - minLat || 1;
-    const spanLng = maxLng - minLng || 1;
-    const pad = 16;
-    const range = 100 - pad * 2;
-    const px = (lng) => pad + ((lng - minLng) / spanLng) * range;
-    const py = (lat) => pad + ((maxLat - lat) / spanLat) * range;
+    // El contorno manda sobre el encuadre; sin él, la caja de los centros.
+    const rings = ISLAND_OUTLINES[islandLocations[0].island];
+    const frame = rings
+      ? rings.flat()
+      : islandLocations.map((p) => [Number(p.longitude), Number(p.latitude)]);
+    const minLng = Math.min(...frame.map((p) => p[0]));
+    const maxLng = Math.max(...frame.map((p) => p[0]));
+    const minLat = Math.min(...frame.map((p) => p[1]));
+    const maxLat = Math.max(...frame.map((p) => p[1]));
+    // Un grado de longitud encoge con el coseno de la latitud: sin esto las
+    // islas salen estiradas a lo ancho.
+    const shrink = Math.cos((((minLat + maxLat) / 2) * Math.PI) / 180);
+    const width = (maxLng - minLng) * shrink;
+    const height = maxLat - minLat;
+    const pad = 8;
+    const scale = (100 - pad * 2) / Math.max(width, height, 1e-9);
+    const px = (lng) =>
+      (100 - width * scale) / 2 + (lng - minLng) * shrink * scale;
+    const py = (lat) => (100 - height * scale) / 2 + (maxLat - lat) * scale;
+
+    // Sin contorno, "d" vacío: `hidden` no existe como propiedad en SVG.
+    islandOutline.setAttribute(
+      "d",
+      (rings ?? [])
+        .map(
+          (ring) =>
+            "M" +
+            ring
+              .map(
+                ([lng, lat]) => `${px(lng).toFixed(1)} ${py(lat).toFixed(1)}`,
+              )
+              .join("L") +
+            "Z",
+        )
+        .join(""),
+    );
 
     const originCode = originSelect.value;
     const destinationCode = destinationSelect.value;
@@ -156,21 +182,6 @@ if (form) {
       circle.setAttribute("r", role === "other" ? "2" : "4.2");
       circle.setAttribute("class", `route-dot route-dot--${role}`);
       pointGroup.append(circle);
-    }
-
-    const origin = locationByCode.get(originCode);
-    const destination = locationByCode.get(destinationCode);
-    if (origin && destination && originCode !== destinationCode) {
-      routeLine.setAttribute("x1", px(Number(origin.longitude)).toFixed(1));
-      routeLine.setAttribute("y1", py(Number(origin.latitude)).toFixed(1));
-      routeLine.setAttribute(
-        "x2",
-        px(Number(destination.longitude)).toFixed(1),
-      );
-      routeLine.setAttribute("y2", py(Number(destination.latitude)).toFixed(1));
-      routeLine.hidden = false;
-    } else {
-      routeLine.hidden = true;
     }
   }
 
