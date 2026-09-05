@@ -562,6 +562,14 @@ h1 em {
   aspect-ratio: 1 / 1;
 }
 
+.island-outline {
+  fill: var(--muted);
+  fill-opacity: 0.1;
+  stroke: var(--border);
+  stroke-width: 0.6;
+  stroke-linejoin: round;
+}
+
 .route-dot--other {
   fill: var(--muted);
   opacity: 0.35;
