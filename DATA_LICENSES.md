@@ -5,4 +5,5 @@
 - Coordenadas de acceso de puertos y aeropuertos: contrastadas con OpenStreetMap y sujetas a su licencia.
 - OpenStreetMap: ODbL 1.0, © OpenStreetMap contributors, [atribución](https://www.openstreetmap.org/copyright).
 - La matriz deriva de OpenStreetMap. Su redistribución pública y obligaciones conforme a ODbL deben revisarse jurídicamente; este documento no constituye asesoramiento legal.
+- Contornos de las islas (`www/assets/islands.js`): derivados de [Natural Earth](https://www.naturalearthdata.com/) 1:10m, dominio público.
 - Documentación propia: CC BY 4.0.
