@@ -30,7 +30,7 @@ Tras el CSV canónico se incorporan las filas de `config/additional-centers.csv`
 5. Preparar OSRM con MLD mediante `osrm-extract`, `osrm-partition` y `osrm-customize`.
 6. Iniciar `osrm-routed --algorithm mld`.
 7. Ajustar cada coordenada mediante `nearest`.
-8. Solicitar tablas por bloques con la anotación `distance`.
+8. Solicitar tablas por bloques con la anotación `distance`; OSRM selecciona previamente cada ruta minimizando el peso `distance`.
 9. Comprobar que ninguna distancia supera el máximo CEDIST04 de 655.340 metros.
 10. Redondear a decámetros y escribir las matrices dirigidas en `canarias-distances.dat`.
 11. Generar JSON, informes, manifiesto y hashes.
@@ -73,7 +73,7 @@ data-YYYYMMDD-HHMM
 
 ## Métrica y cuantización
 
-OSRM devuelve metros. CEDIST04 aplica esta conversión antes de escribir cada celda:
+OSRM selecciona el camino accesible de menor distancia y devuelve metros. No calcula la línea recta ni acredita el itinerario realmente recorrido. CEDIST04 aplica esta conversión antes de escribir cada celda:
 
 ```text
 stored = max(1, (distance_meters + 5) // 10)
@@ -92,4 +92,4 @@ CEDIST04 no solicita ni almacena duraciones.
 
 ## Trazabilidad
 
-El manifiesto registra las fuentes, sus hashes y metadatos HTTP, la imagen y digest de OSRM, el perfil, los overrides aplicados, la versión de datos y el SHA-256 de cada artefacto. Cada release fechada conserva los artefactos generados y apunta al commit de `main` utilizado.
+El manifiesto registra las fuentes, sus hashes y metadatos HTTP, la imagen y digest de OSRM, el perfil, su peso `distance`, los overrides aplicados, la versión de datos y el SHA-256 de cada artefacto. Cada release fechada conserva los artefactos generados y apunta al commit de `main` utilizado.
