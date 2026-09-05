@@ -37,7 +37,6 @@ if (form) {
   const resultTimeValue = document.querySelector("#result-time-value");
   const version = document.querySelector("#demo-version");
   const mapCard = document.querySelector("#route-map-card");
-  const routeLine = document.querySelector("#route-line");
   const pointGroup = document.querySelector("#route-points");
   const params = new URLSearchParams(window.location.search);
   const base = new URL("../data/latest/", import.meta.url);
@@ -156,21 +155,6 @@ if (form) {
       circle.setAttribute("r", role === "other" ? "2" : "4.2");
       circle.setAttribute("class", `route-dot route-dot--${role}`);
       pointGroup.append(circle);
-    }
-
-    const origin = locationByCode.get(originCode);
-    const destination = locationByCode.get(destinationCode);
-    if (origin && destination && originCode !== destinationCode) {
-      routeLine.setAttribute("x1", px(Number(origin.longitude)).toFixed(1));
-      routeLine.setAttribute("y1", py(Number(origin.latitude)).toFixed(1));
-      routeLine.setAttribute(
-        "x2",
-        px(Number(destination.longitude)).toFixed(1),
-      );
-      routeLine.setAttribute("y2", py(Number(destination.latitude)).toFixed(1));
-      routeLine.hidden = false;
-    } else {
-      routeLine.hidden = true;
     }
   }
 
