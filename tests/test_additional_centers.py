@@ -128,8 +128,8 @@ def test_duplicate_official_code_is_rejected(tmp_path: Path) -> None:
         load_additional_centers(config, [official_center()])
 
 
-def test_production_csv_includes_ate_offices() -> None:
-    """The versioned additional-centers file must load the two ATE/Medusa seats."""
+def test_production_csv_includes_ate_and_consejeria_seats() -> None:
+    """The versioned additional-centers file must load ATE and Consejería seats."""
     path = Path("config/additional-centers.csv")
     with path.open(encoding="utf-8-sig", newline="") as file:
         rows = list(csv.DictReader(file))
@@ -137,6 +137,8 @@ def test_production_csv_includes_ate_offices() -> None:
     codes = {row["code"].strip() for row in rows}
     assert "35700081" in codes
     assert "38700195" in codes
+    assert "38700012" in codes
+    assert "35704317" in codes
 
     additional_codes = codes
     official: list[dict[str, object]] = []
@@ -173,3 +175,13 @@ def test_production_csv_includes_ate_offices() -> None:
     assert by_code["38700195"]["postal_code"] == "38320"
     assert by_code["38700195"]["longitude"] == -16.3064789651204
     assert by_code["38700195"]["latitude"] == 28.4741412375899
+    assert by_code["38700012"]["name"] == "CONSEJERÍA DE EDUCACIÓN (TENERIFE)"
+    assert by_code["38700012"]["center_type"] == "CONSEJERIA"
+    assert by_code["38700012"]["address"] == "AVDA. BUENOS AIRES, 3-5. EDIFICIO TRES DE MAYO"
+    assert by_code["38700012"]["longitude"] == -16.2518
+    assert by_code["38700012"]["latitude"] == 28.4607
+    assert by_code["35704317"]["name"] == "CONSEJERÍA DE EDUCACIÓN (LAS PALMAS)"
+    assert by_code["35704317"]["center_type"] == "CONSEJERIA"
+    assert by_code["35704317"]["address"] == "C/ GRANADERA CANARIA, 2. EDIFICIO GRANADERA CANARIA"
+    assert by_code["35704317"]["longitude"] == -15.4129
+    assert by_code["35704317"]["latitude"] == 28.0965

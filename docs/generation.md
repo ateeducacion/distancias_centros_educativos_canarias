@@ -17,14 +17,14 @@ La configuración se mantiene en `config/sources.json`. El manifiesto de cada re
 
 ### Servicios no docentes y exclusiones
 
-Tras el CSV canónico se incorporan las filas de `config/additional-centers.csv` (CEP, EOEP, CER y ATE), resolviendo coordenadas propias o las del centro anfitrión (`host_center_code`). Detalle y política: [Fuentes](data-sources.md).
+Tras el CSV canónico se incorporan las filas de `config/additional-centers.csv` (CEP, EOEP, CER, ATE y CONSEJERIA), resolviendo coordenadas propias o las del centro anfitrión (`host_center_code`). Detalle y política: [Fuentes](data-sources.md).
 
 **No** se importan UAPA ni AAPA (aulas satélite o penitenciarias de la red de adultos). Decisión: [ADR 0003](decisions/0003-exclude-uapa.md).
 
 ## Proceso
 
 1. Descargar y validar el CSV oficial de centros.
-2. Incorporar los servicios no docentes de `config/additional-centers.csv` (CEP, EOEP, CER, ATE).
+2. Incorporar los servicios no docentes de `config/additional-centers.csv` (CEP, EOEP, CER, ATE, CONSEJERIA).
 3. Incorporar los puertos y aeropuertos versionados.
 4. Descargar el extracto de OpenStreetMap de Canarias.
 5. Preparar OSRM con MLD mediante `osrm-extract`, `osrm-partition` y `osrm-customize`.

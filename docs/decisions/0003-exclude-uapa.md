@@ -28,11 +28,11 @@ La web de la Consejería de Educación describe la red de adultos como **CEPA se
 |--------|--------------------------------|
 | CSV canónico **Centros educativos de Canarias** (`centros-educativos-de-canarias`, datos de mayo de 2026) | **No** (el directorio se centra en centros docentes; casi no aparecen filas `DesEtapaCentro=UAPA`) |
 | Snapshot opendata de 2025 (recorte histórico con el mismo tipo de catálogo ampliado) | **Sí** (~162 filas `TipoCentro=No Docente`, ligadas a un CEPA vía `CentroCepaAlQuePertenece`; la mayoría con latitud/longitud) |
-| `config/additional-centers.csv` de este repositorio | **No** — solo CEP, EOEP, CER y ATE |
+| `config/additional-centers.csv` de este repositorio | **No** — solo CEP, EOEP, CER, ATE y CONSEJERIA |
 
 Las filas UAPA del snapshot 2025 reutilizan el correo del CEPA sede y no son centros docentes independientes.
 
-Este repositorio ya reintroduce, de forma **curada**, servicios no docentes omitidos del CSV canónico (CEP, EOEP, CER, ATE) mediante `config/additional-centers.csv`. Las UAPA plantean un caso distinto: existen en la organización educativa, pero **no** se publican de forma estable en el recurso CKAN que alimenta la matriz, y su red puede variar de un curso a otro.
+Este repositorio ya reintroduce, de forma **curada**, servicios no docentes omitidos del CSV canónico (CEP, EOEP, CER, ATE, CONSEJERIA) mediante `config/additional-centers.csv`. Las UAPA plantean un caso distinto: existen en la organización educativa, pero **no** se publican de forma estable en el recurso CKAN que alimenta la matriz, y su red puede variar de un curso a otro.
 
 ## Decisión
 
@@ -44,14 +44,14 @@ Este repositorio ya reintroduce, de forma **curada**, servicios no docentes omit
 
 La cobertura de educación de personas adultas en la matriz se limita a los **CEPA sede** (y, en su caso, CEAD u otros tipos) que figuren en el CSV canónico de centros educativos.
 
-Si en el futuro se necesitara proximidad a aulas UAPA concretas, se revisaría esta decisión y solo se reintroduciría una lista **curada y versionada**, con política de coordenadas análoga a la de CEP/EOEP/CER/ATE y con una fuente oficial mantenida (no un snapshot opendata abandonado).
+Si en el futuro se necesitara proximidad a aulas UAPA concretas, se revisaría esta decisión y solo se reintroduciría una lista **curada y versionada**, con política de coordenadas análoga a la de CEP/EOEP/CER/ATE/CONSEJERIA y con una fuente oficial mantenida (no un snapshot opendata abandonado).
 
 ## Motivación
 
 1. **Fuente canónica.** El dataset CKAN actual no mantiene las UAPA como filas del directorio. Congelar un snapshot 2025 las haría datos de segunda clase sin trazabilidad CKAN.
 2. **Volatilidad.** La propia norma prevé altas, bajas y cambios de localización por curso (art. 5.5). Una matriz estática versionada no es el mejor sitio para una red tan dinámica sin proceso de curación.
 3. **Dependencia del CEPA.** La UAPA no es un centro de gestión independiente: depende del CEPA sede (correo, organización, oferta). Para la mayoría de usos de distancias entre centros basta el código del CEPA.
-4. **Precedente selectivo.** CEP, EOEP, CER y ATE se reintroducen porque hay listas oficiales estables y un caso de uso claro en la red de servicios educativos. Las UAPA no cumplen hoy ese criterio de mantenimiento.
+4. **Precedente selectivo.** CEP, EOEP, CER, ATE y CONSEJERIA se reintroducen porque hay listas oficiales estables y un caso de uso claro en la red de servicios educativos. Las UAPA no cumplen hoy ese criterio de mantenimiento.
 5. **Riesgo de confusión.** Importar ~160 aulas satélite hincharía la matriz y el buscador sin mejorar, en general, las distancias entre centros docentes.
 
 ## Consecuencias
