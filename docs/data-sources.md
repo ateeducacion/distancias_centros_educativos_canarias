@@ -8,7 +8,7 @@ El recurso se resuelve mediante `package_show` de CKAN, verificando nombre, form
 
 No se utiliza como fuente el CSV histórico de SITCAN ni recortes opendata distintos del dataset canónico.
 
-## Servicios no docentes adicionales (CEP, EOEP, CER)
+## Servicios no docentes adicionales (CEP, EOEP, CER, ATE)
 
 El CSV canónico omite como filas independientes varios **servicios educativos no docentes** que sí tienen código de centro y uso operativo (asesoramiento, formación del profesorado, recursos). Este repositorio los reintroduce de forma **curada y versionada** en:
 
@@ -24,6 +24,7 @@ Tipos incluidos hoy (recuento del CSV versionado en el repositorio):
 | **CEP** | Centros del Profesorado |
 | **EOEP** | Equipos de Orientación Educativa y Psicopedagógica de zona |
 | **CER** | Colectivos de Escuelas Rurales (listado oficial del curso referenciado en las fuentes) |
+| **ATE** | Oficinas del Área de Tecnología Educativa (Oficina Medusa) |
 
 ### Política de coordenadas
 

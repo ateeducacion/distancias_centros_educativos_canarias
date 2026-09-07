@@ -2,7 +2,8 @@
 
 ## Unreleased
 
-- Document the exclusion of UAPA/AAPA from the distance matrix (ADR 0003) and describe curated CEP/EOEP/CER additional centers in the data-sources, generation, architecture and limitations pages.
+- Add the Área de Tecnología Educativa (Oficina Medusa) seats in Gran Canaria (`35700081`) and La Laguna (`38700195`) to the curated additional centers.
+- Document the exclusion of UAPA/AAPA from the distance matrix (ADR 0003) and describe curated CEP/EOEP/CER/ATE additional centers in the data-sources, generation, architecture and limitations pages.
 - Add eight public airports and fifteen principal ports as numeric routable locations.
 - Reserve `98IINNNN` for airports and `99IINNNN` for ports, with stable island digits.
 - Build GitHub Pages from `main` with the latest published data snapshot.
