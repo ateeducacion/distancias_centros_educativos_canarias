@@ -169,5 +169,6 @@ def test_production_csv_includes_ate_offices() -> None:
     assert by_code["35700081"]["latitude"] == 28.1006
     assert by_code["38700195"]["name"] == "OFICINA MEDUSA LA LAGUNA"
     assert by_code["38700195"]["center_type"] == "ATE"
+    assert by_code["38700195"]["address"] == "C/ SATURNO, S/N. TRASERA DEL IES DOMINGO PÉREZ MINIK"
     assert by_code["38700195"]["longitude"] == -16.3064789651204
     assert by_code["38700195"]["latitude"] == 28.4741412375899
