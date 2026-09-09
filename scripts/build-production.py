@@ -60,6 +60,8 @@ def main() -> None:
         key=lambda center: str(center["code"]),
     )
     transport_nodes_path = ROOT / "config/transport-nodes.json"
+    routing_config = load_json(ROOT / "config/routing.json")
+    profile_path = ROOT / str(routing_config["profile_path"])
     transport_nodes = load_transport_nodes(transport_nodes_path)
     locations = merge_locations(education_centers, transport_nodes)
     write_report(
@@ -193,10 +195,6 @@ def main() -> None:
     transport_nodes_config = load_json(transport_nodes_path)
     stable_json(output / "transport-nodes.json", transport_nodes_config)
 
-    profile_sha = "cb3df0546318665609606b746a1297f3d65ca3c2ff825f8a6f3c57247d86a2d3"
-    docker_digest = (
-        "sha256:855614a38f464b0558a2ad6eaa7cb8c139f39887da9b38b485ce453c6e6e6124"
-    )
     artifact_paths = [
         data_file,
         data_gzip,
@@ -254,12 +252,14 @@ def main() -> None:
             "sha256": osm_meta["sha256"],
         },
         "routing": {
-            "engine": "OSRM",
-            "version": "5.27.1",
-            "docker_digest": docker_digest,
-            "algorithm": "MLD",
-            "profile": "car-fastest",
-            "profile_sha256": profile_sha,
+            "engine": routing_config["engine"],
+            "version": routing_config["version"],
+            "docker_digest": routing_config["docker_digest"],
+            "algorithm": routing_config["algorithm"],
+            "profile": routing_config["profile"],
+            "profile_sha256": sha256(profile_path),
+            "profile_base": routing_config["profile_base"],
+            "weight_name": routing_config["weight_name"],
             "annotations": ["distance"],
         },
         "rounding": "OSRM meters rounded to nearest decameter, halves up",

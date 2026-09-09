@@ -15,7 +15,7 @@ Matriz abierta y versionada de distancias por carretera entre centros educativos
 - Centros educativos, aeropuertos y puertos con códigos numéricos estables.
 - Generación reproducible y artefactos verificados con SHA-256.
 
-> La métrica es la distancia de la ruta para automóvil considerada más rápida por el perfil OSRM utilizado, sin tráfico en tiempo real. Los resultados tienen una resolución de 10 metros.
+> La métrica es la distancia mínima por carretera calculada con el perfil de automóvil de OSRM, sin tráfico en tiempo real. Respeta accesos, restricciones y sentidos de la red publicada. Los resultados tienen una resolución de 10 metros y no certifican el kilometraje efectivamente recorrido.
 
 ## Uso rápido
 
@@ -62,7 +62,7 @@ decoded_meters = stored * 10
 
 `0` se reserva a la diagonal y `0xFFFF` representa una distancia no disponible. La máxima distancia representable es 655.340 metros. El generador aborta si una distancia supera ese límite.
 
-La especificación completa está en [`docs/FORMAT.md`](docs/FORMAT.md) y la decisión de diseño en [`docs/decisions/0001-cedist03-decameters.md`](docs/decisions/0001-cedist03-decameters.md).
+La especificación completa está en [`docs/FORMAT.md`](docs/FORMAT.md). Las decisiones de diseño se documentan en [`docs/decisions/`](docs/decisions/), incluida la elección de [distancia mínima por carretera](docs/decisions/0002-shortest-road-distance.md).
 
 ## Artefactos
 
