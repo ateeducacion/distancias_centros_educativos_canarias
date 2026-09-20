@@ -1,48 +1,150 @@
 """Conditional, atomic and verifiable source downloads."""
+
 from __future__ import annotations
-from dataclasses import dataclass,asdict
+
+from dataclasses import asdict, dataclass
+import hashlib
+import json
+import os
 from pathlib import Path
-import hashlib,json,os,tempfile,time
-from urllib.request import Request,urlopen
-from urllib.error import URLError
-from .errors import SourceResolutionError
+import tempfile
+import time
+from urllib.request import Request, urlopen
+
+from .errors import ValidationError
+
 
 @dataclass(frozen=True)
 class DownloadMetadata:
-    url:str; etag:str|None; last_modified:str|None; size:int; sha256:str; downloaded_at:str
-    def as_dict(self)->dict[str,object]: return asdict(self)
+    """Metadata captured for one downloaded source."""
 
-def resolve_centers_resource(api_url:str,dataset_id:str,fallback_url:str,timeout:float=30)->str:
-    try:
-        with urlopen(f"{api_url.rstrip('/')}/package_show?id={dataset_id}",timeout=timeout) as response: payload=json.load(response)
-        if not payload.get("success"): raise SourceResolutionError("CKAN package_show was unsuccessful")
-        matches=[r for r in payload["result"].get("resources",[]) if r.get("state","active")=="active" and str(r.get("name","")).casefold()=="centros.csv" and str(r.get("format","")).casefold()=="csv"]
-        if len(matches)>1: raise SourceResolutionError("Several active centros.csv resources are ambiguous")
-        if len(matches)==1 and matches[0].get("url"): return str(matches[0]["url"])
-    except SourceResolutionError: raise
-    except (OSError,ValueError,KeyError,URLError): pass
-    if not fallback_url: raise SourceResolutionError("CKAN resolution failed and no fallback URL is configured")
-    return fallback_url
+    url: str
+    etag: str | None
+    last_modified: str | None
+    size: int
+    sha256: str
+    downloaded_at: str
 
-def download(url:str,destination:Path,metadata_path:Path,timeout:float=60,retries:int=3,force:bool=False)->DownloadMetadata:
-    headers={"User-Agent":"canarias-route-matrix/0.1"}
+    def as_dict(self) -> dict[str, object]:
+        """Return JSON-serializable metadata."""
+        return asdict(self)
+
+
+def manifest_sha256(payload: dict[str, object], key: str) -> str:
+    """Return the expected SHA-256 for one catalogue artefact."""
+    if payload.get("schema_version") != 1:
+        raise ValidationError("Unsupported centres manifest schema")
+    files = payload.get("files")
+    if not isinstance(files, dict):
+        raise ValidationError("Centres manifest has no files section")
+    entry = files.get(key)
+    if not isinstance(entry, dict):
+        raise ValidationError(f"Centres manifest has no entry for {key}")
+    digest = entry.get("sha256")
+    if not isinstance(digest, str) or len(digest) != 64:
+        raise ValidationError(f"Centres manifest has an invalid SHA-256 for {key}")
+    return digest.lower()
+
+
+def fetch_manifest_sha256(url: str, key: str, timeout: float = 30) -> str:
+    """Fetch the catalogue manifest and return the expected artefact hash."""
+    request = Request(url, headers={"User-Agent": "canarias-route-matrix/0.1"})
+    with urlopen(request, timeout=timeout) as response:
+        payload = json.load(response)
+    if not isinstance(payload, dict):
+        raise ValidationError("Centres manifest is not a JSON object")
+    return manifest_sha256(payload, key)
+
+
+def download(
+    url: str,
+    destination: Path,
+    metadata_path: Path,
+    timeout: float = 60,
+    retries: int = 3,
+    force: bool = False,
+) -> DownloadMetadata:
+    """Download one source atomically and persist transport metadata."""
+    headers = {"User-Agent": "canarias-route-matrix/0.1"}
     if metadata_path.exists() and not force:
-        old=json.loads(metadata_path.read_text(encoding="utf-8"));
-        if old.get("etag"): headers["If-None-Match"]=old["etag"]
-        elif old.get("last_modified"): headers["If-Modified-Since"]=old["last_modified"]
-    destination.parent.mkdir(parents=True,exist_ok=True); metadata_path.parent.mkdir(parents=True,exist_ok=True)
+        old = json.loads(metadata_path.read_text(encoding="utf-8"))
+        if old.get("etag"):
+            headers["If-None-Match"] = old["etag"]
+        elif old.get("last_modified"):
+            headers["If-Modified-Since"] = old["last_modified"]
+
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    metadata_path.parent.mkdir(parents=True, exist_ok=True)
+
     for attempt in range(retries):
-        fd,tmp=tempfile.mkstemp(prefix=f".{destination.name}.",dir=destination.parent)
+        fd, temp_path = tempfile.mkstemp(
+            prefix=f".{destination.name}.",
+            dir=destination.parent,
+        )
         try:
-            digest=hashlib.sha256(); size=0
-            with urlopen(Request(url,headers=headers),timeout=timeout) as response,os.fdopen(fd,"wb") as stream:
-                while chunk:=response.read(1024*1024): stream.write(chunk);digest.update(chunk);size+=len(chunk)
-                stream.flush();os.fsync(stream.fileno()); final=response.geturl(); etag=response.headers.get("ETag"); modified=response.headers.get("Last-Modified")
-            meta=DownloadMetadata(final,etag,modified,size,digest.hexdigest(),time.strftime("%Y-%m-%dT%H:%M:%SZ",time.gmtime()))
-            os.replace(tmp,destination); metadata_path.write_text(json.dumps(meta.as_dict(),sort_keys=True,indent=2)+"\n",encoding="utf-8"); return meta
+            digest = hashlib.sha256()
+            size = 0
+            with (
+                urlopen(Request(url, headers=headers), timeout=timeout) as response,
+                os.fdopen(fd, "wb") as stream,
+            ):
+                while chunk := response.read(1024 * 1024):
+                    stream.write(chunk)
+                    digest.update(chunk)
+                    size += len(chunk)
+                stream.flush()
+                os.fsync(stream.fileno())
+                final = response.geturl()
+                etag = response.headers.get("ETag")
+                modified = response.headers.get("Last-Modified")
+
+            metadata = DownloadMetadata(
+                final,
+                etag,
+                modified,
+                size,
+                digest.hexdigest(),
+                time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+            )
+            os.replace(temp_path, destination)
+            metadata_path.write_text(
+                json.dumps(metadata.as_dict(), sort_keys=True, indent=2) + "\n",
+                encoding="utf-8",
+            )
+            return metadata
         except BaseException:
-            try: os.unlink(tmp)
-            except FileNotFoundError: pass
-            if attempt+1==retries: raise
+            try:
+                os.unlink(temp_path)
+            except FileNotFoundError:
+                pass
+            if attempt + 1 == retries:
+                raise
             time.sleep(2**attempt)
+
     raise AssertionError("unreachable")
+
+
+def download_verified_centers(
+    url: str,
+    manifest_url: str,
+    manifest_key: str,
+    destination: Path,
+    metadata_path: Path,
+    force: bool = False,
+) -> DownloadMetadata:
+    """Download the master catalogue artefact and verify its declared hash."""
+    expected = fetch_manifest_sha256(manifest_url, manifest_key)
+    metadata = download(
+        url,
+        destination,
+        metadata_path,
+        force=force,
+    )
+    if metadata.sha256.lower() != expected:
+        destination.unlink(missing_ok=True)
+        metadata_path.unlink(missing_ok=True)
+        raise ValidationError(
+            "Downloaded centres catalogue does not match the master manifest "
+            f"({metadata.sha256} != {expected})"
+        )
+    return metadata

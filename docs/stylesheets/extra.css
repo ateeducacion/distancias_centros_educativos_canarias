@@ -4,3 +4,19 @@
 .md-typeset .md-button + .md-button {
   margin-inline-start: 0.4rem;
 }
+
+.md-typeset .lesson-summary {
+  margin-block: 1.5rem;
+  padding: 1rem 1.2rem;
+  border-inline-start: 0.25rem solid var(--md-primary-fg-color);
+  border-radius: 0.2rem;
+  background: color-mix(in srgb, var(--md-primary-fg-color) 8%, transparent);
+}
+
+.md-typeset .lesson-summary > :first-child {
+  margin-top: 0;
+}
+
+.md-typeset .lesson-summary > :last-child {
+  margin-bottom: 0;
+}

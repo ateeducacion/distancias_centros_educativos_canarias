@@ -10,7 +10,7 @@ import sys
 from .binary.reader import Reader
 from .config import load_settings
 from .csv_importer import import_centers, write_report
-from .downloader import download, resolve_centers_resource
+from .downloader import download, download_verified_centers
 from .errors import RouteMatrixError
 
 
@@ -64,13 +64,10 @@ def run(args: argparse.Namespace) -> int:
         )
         return 0
     if args.command == "download-centers":
-        url = resolve_centers_resource(
-            settings.ckan_api_url,
-            settings.dataset_id,
-            settings.centers_fallback_url,
-        )
-        metadata = download(
-            url,
+        metadata = download_verified_centers(
+            settings.centers_url,
+            settings.centers_manifest_url,
+            settings.centers_manifest_key,
             args.cache_dir / "centers.csv",
             args.cache_dir / "centers.meta.json",
             force=args.force,

@@ -34,6 +34,8 @@ servicio externo en cada comparación.
 ## Por dónde empezar
 
 - [Uso rápido](quick-start.md) — calcula tu primera distancia en unos minutos.
+- [La matemática de la eficiencia](mathematical-efficiency.md) — demostración
+  divulgativa con matrices, complejidad, almacenamiento y propuestas de aula.
 - [Arquitectura](architecture.md) — cómo se generan y publican los datos.
 - [Formato CEDIST04](binary-format.md) — estructura del artefacto binario.
 - [Fuentes de datos](data-sources.md) (incluye CEP/EOEP/CER/ATE/CONSEJERIA y la exclusión de UAPA) y [calidad](data-quality.md).
