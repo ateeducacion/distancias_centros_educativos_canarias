@@ -48,7 +48,8 @@ def manifest_sha256(payload: dict[str, object], key: str) -> str:
 
 def fetch_manifest_sha256(url: str, key: str, timeout: float = 30) -> str:
     """Fetch the catalogue manifest and return the expected artefact hash."""
-    with urlopen(Request(url, headers={"User-Agent": "canarias-route-matrix/0.1"}), timeout=timeout) as response:
+    request = Request(url, headers={"User-Agent": "canarias-route-matrix/0.1"})
+    with urlopen(request, timeout=timeout) as response:
         payload = json.load(response)
     if not isinstance(payload, dict):
         raise ValidationError("Centres manifest is not a JSON object")
