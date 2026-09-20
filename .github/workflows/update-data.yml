@@ -4,14 +4,13 @@ on:
   workflow_dispatch:
     inputs:
       check_only: {type: boolean, default: true}
-      publish: {type: boolean, default: false}
 permissions: {contents: read}
 concurrency: {group: update-data, cancel-in-progress: false}
 jobs:
   check:
     runs-on: ubuntu-latest
     timeout-minutes: 360
-    env: {CHECK_ONLY: "${{ inputs.check_only || 'true' }}", PUBLISH: "${{ inputs.publish || 'false' }}"}
+    env: {CHECK_ONLY: "${{ inputs.check_only || 'true' }}"}
     steps:
       - uses: actions/checkout@v7 # v4
       - uses: astral-sh/setup-uv@v7 # v5
