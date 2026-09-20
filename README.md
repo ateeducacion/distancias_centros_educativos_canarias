@@ -1,6 +1,6 @@
 # Distancias por carretera en Canarias
 
-Matriz abierta y versionada de distancias por carretera entre centros educativos, aeropuertos y puertos principales de Canarias. Las distancias se calculan con datos oficiales, OpenStreetMap y OSRM, y se publican como un archivo estático que puede consultarse sin llamadas a APIs comerciales.
+Matriz abierta y versionada de distancias por carretera entre centros educativos, aeropuertos y puertos principales de Canarias. Las distancias se calculan a partir del catálogo versionado `listado-centros-educativos-canarias`, OpenStreetMap y OSRM, y se publican como un archivo estático que puede consultarse sin llamadas a APIs comerciales.
 
 **Demo y documentación:** https://ateeducacion.github.io/distancias_centros_educativos_canarias/
 
@@ -92,6 +92,14 @@ Los centros mantienen sus códigos oficiales de ocho cifras. Los nodos sintétic
 
 Los códigos deben intercambiarse como cadenas, aunque se almacenen como `uint32` dentro del `.dat`.
 
+## Fuente de centros
+
+Los centros ordinarios ya no se descargan directamente de CKAN. La generación consume el contrato `centros-distancias.csv` publicado por [listado-centros-educativos-canarias](https://github.com/ateeducacion/listado-centros-educativos-canarias), que consolida OpenData, correcciones revisadas y estado de vigencia.
+
+Antes de aceptar el CSV se descarga `manifest.json` y se comprueba su SHA-256. Si el fichero no coincide con el manifiesto, la generación aborta y elimina la descarga.
+
+`config/additional-centers.csv` se mantiene únicamente para nodos educativos adicionales propios de la matriz cuya geolocalización se resuelve mediante coordenadas o un centro anfitrión.
+
 ## Generación y publicación
 
 ```sh
@@ -104,7 +112,7 @@ GitHub Pages se construye desde `main` y consume los artefactos de la última re
 
 ## Arquitectura
 
-La generación descarga y valida las fuentes, ajusta las coordenadas a la red de OSRM y calcula tablas de distancias por bloques. El consumidor busca los dos códigos en un índice ordenado y lee directamente dos bytes de la matriz CEDIST04 correspondiente.
+La generación descarga y verifica el catálogo maestro, valida las ubicaciones, ajusta las coordenadas a la red de OSRM y calcula tablas de distancias por bloques. El consumidor busca los dos códigos en un índice ordenado y lee directamente dos bytes de la matriz CEDIST04 correspondiente.
 
 [Documentación de arquitectura](https://ateeducacion.github.io/distancias_centros_educativos_canarias/architecture/)
 
