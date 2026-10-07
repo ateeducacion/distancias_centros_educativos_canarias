@@ -2,6 +2,8 @@
 
 Matriz abierta y versionada de distancias por carretera entre centros educativos, aeropuertos y puertos principales de Canarias. Las distancias se calculan a partir del catálogo versionado `listado-centros-educativos-canarias`, OpenStreetMap y OSRM, y se publican como un archivo estático que puede consultarse sin llamadas a APIs comerciales.
 
+[![Distancias entre centros de Canarias](www/assets/og-image.jpg)](https://ateeducacion.github.io/distancias_centros_educativos_canarias/assets/og-image.jpg)
+
 **Demo y documentación:** https://ateeducacion.github.io/distancias_centros_educativos_canarias/
 
 ## Características
