@@ -1,6 +1,8 @@
 # ADR 0003: No incorporar UAPA a la matriz de distancias
 
-- Estado: aceptado
+- Estado: sustituido el 2026-10-07 por la importación del catálogo maestro versionado
+
+> Decisión histórica. La matriz incorpora ahora las filas del catálogo maestro con coordenadas válidas, sin la exclusión descrita aquí. Véase [Fuentes](../data-sources.md).
 - Fecha: 2026-07-18
 
 ## Contexto
