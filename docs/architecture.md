@@ -26,7 +26,7 @@ flowchart LR
 3. Se validan códigos, coordenadas, islas, duplicados y campos permitidos.
 4. Cada coordenada se ajusta al punto accesible más cercano de la red viaria de OSRM.
 5. Las ubicaciones se agrupan por isla.
-6. OSRM calcula tablas dirigidas por bloques solicitando únicamente la anotación `distance`.
+6. OSRM calcula tablas dirigidas por bloques con un perfil de automóvil cuyo peso es la distancia, y devuelve la anotación `distance`.
 7. Se calcula la máxima distancia y se comprueba que no supera 655.340 metros.
 8. Los metros de OSRM se redondean a decámetros y se escriben en CEDIST04.
 9. Se generan el manifiesto, los informes y los hashes SHA-256.
@@ -82,4 +82,4 @@ Los nombres y otros campos descriptivos permanecen en `centers.min.json`. El `.d
 - perfil de automóvil y red disponibles en la fecha de generación;
 - precisión de 10 metros;
 - sin tráfico, obras o incidencias en tiempo real;
-- el resultado representa la ruta considerada más rápida por el perfil usado, no necesariamente la ruta geométricamente más corta.
+- el resultado representa el camino accesible de menor distancia en la red y perfil usados, no la distancia en línea recta ni el itinerario efectivamente recorrido.
