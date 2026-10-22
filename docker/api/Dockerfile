@@ -3,7 +3,7 @@ WORKDIR /app
 COPY packages/php /packages/php
 COPY api/composer.json ./composer.json
 RUN composer install --no-dev --classmap-authoritative
-FROM php:8.3-fpm-alpine3.20
+FROM php:8.3-fpm-alpine
 RUN addgroup -S app && adduser -S -G app app
 WORKDIR /app
 COPY --from=vendor /app/vendor ./vendor
