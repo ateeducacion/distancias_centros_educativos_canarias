@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: GPL-3.0-only
 const MAGIC = "CEDIST04";
 const MAJOR = 4;
 const HEADER = 64;

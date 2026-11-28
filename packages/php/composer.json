@@ -2,7 +2,7 @@
   "name": "ateeducacion/canarias-route-matrix",
   "description": "Lector de distancias CEDIST04 para PHP",
   "type": "library",
-  "license": "MIT",
+  "license": "GPL-3.0-only",
   "require": {
     "php": "^8.2"
   },

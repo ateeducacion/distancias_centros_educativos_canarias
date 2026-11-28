@@ -120,6 +120,6 @@ La generación descarga y verifica el catálogo maestro, valida las ubicaciones,
 
 ## Licencias y límites
 
-Código MIT; documentación CC BY 4.0; fuentes y base derivada se detallan en `DATA_LICENSES.md`. © OpenStreetMap contributors.
+Código GPL-3.0; documentación CC BY 4.0; fuentes y base derivada se detallan en `DATA_LICENSES.md`. © OpenStreetMap contributors.
 
 Solo se calculan distancias dentro de una misma isla y para las ubicaciones incluidas. No hay tráfico, obras, incidencias, horarios ni restricciones temporales. Los puertos y aeropuertos representan accesos por carretera, no trayectos marítimos o aéreos.
