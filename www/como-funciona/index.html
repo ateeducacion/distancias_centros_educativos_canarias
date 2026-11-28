@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cómo funciona · Distancias entre centros de Canarias</title>
+    <meta
+      name="description"
+      content="Cómo se calculan y consultan al instante las distancias por carretera entre centros educativos de Canarias, explicado paso a paso."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link href="../assets/styles.css" rel="stylesheet" />
+    <script src="../assets/theme.js"></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap">
+        <a class="brand" href="../">
+          <img
+            src="../assets/ate-logo.png"
+            alt="Área de Tecnología Educativa"
+            width="545"
+            height="563"
+          />
+          <span>Distancias entre centros de Canarias</span>
+        </a>
+        <nav class="site-nav" aria-label="Principal">
+          <a href="../">Calculadora</a>
+          <a href="./" aria-current="page">Cómo funciona</a>
+          <a href="../desarrolladores/">Para desarrolladores</a>
+          <button
+            type="button"
+            id="theme-toggle"
+            class="nav-btn icon-btn"
+            aria-label="Cambiar entre modo claro y oscuro"
+            title="Cambiar tema"
+          >
+            <svg
+              class="icon-sun"
+              aria-hidden="true"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            >
+              <circle cx="12" cy="12" r="4"></circle>
+              <path
+                d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"
+              ></path>
+            </svg>
+            <svg
+              class="icon-moon"
+              aria-hidden="true"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+            >
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79"></path>
+            </svg>
+          </button>
+          <a
+            class="nav-btn"
+            href="https://github.com/ateeducacion/distancias_centros_educativos_canarias"
+          >
+            <svg
+              aria-hidden="true"
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="currentColor"
+            >
+              <path
+                d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"
+              ></path>
+            </svg>
+            GitHub
+          </a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="wrap narrow article">
+      <div style="display: flex; flex-direction: column; gap: 12px">
+        <h1 class="page-title">Cómo funciona</h1>
+        <p class="intro">
+          Cuando pulsa en la calculadora, nadie busca la ruta en ese momento.
+          Todas las rutas se calcularon antes y están guardadas en una tabla.
+          Solo hay que mirar la casilla correcta.
+        </p>
+      </div>
+
+      <section aria-labelledby="h-tabla">
+        <h2 id="h-tabla" class="section-title">
+          Como la tabla de un mapa de carreteras
+        </h2>
+        <p>
+          Los mapas de papel traían una tabla con los kilómetros entre ciudades:
+          se busca la fila de una, la columna de otra y se lee el número. Esta
+          web hace lo mismo con todos los centros, puertos y aeropuertos de cada
+          isla. Pulse una casilla para probar.
+        </p>
+        <div class="table-box">
+          <table class="demo-table">
+            <caption id="table-caption">
+              Cargando las distancias publicadas…
+            </caption>
+            <thead>
+              <tr id="table-head"></tr>
+            </thead>
+            <tbody id="table-body"></tbody>
+          </table>
+        </div>
+        <p id="table-say" class="say" aria-live="polite">
+          Pulse una casilla de la tabla.
+        </p>
+        <p class="muted small">
+          La diagonal está vacía: es la distancia de un sitio a sí mismo. Y la
+          ida y la vuelta pueden no coincidir, porque una calle de sentido único
+          cambia la ruta.
+        </p>
+      </section>
+
+      <section aria-labelledby="h-pasos">
+        <h2 id="h-pasos" class="section-title">Cómo se prepara la tabla</h2>
+        <p>
+          Se hace una vez, cada vez que se publica una versión nueva de los
+          datos. Son tres pasos.
+        </p>
+        <ol class="steps">
+          <li>
+            <span class="step-num" aria-hidden="true">1</span>
+            <div>
+              <h3>Reunir los lugares</h3>
+              <p>
+                Los centros salen del
+                <a
+                  href="https://ateeducacion.github.io/listado-centros-educativos-canarias/"
+                  >listado de centros educativos de Canarias</a
+                >. Se añaden los puertos y aeropuertos, situando cada uno en su
+                entrada por carretera.
+              </p>
+            </div>
+          </li>
+          <li>
+            <span class="step-num" aria-hidden="true">2</span>
+            <div>
+              <h3>Calcular todas las rutas de cada isla</h3>
+              <p>
+                Un programa de rutas (OSRM) recorre el mapa de carreteras de
+                OpenStreetMap y encuentra, para cada pareja de lugares, la ruta
+                en coche más rápida. Se guarda su longitud.
+              </p>
+            </div>
+          </li>
+          <li>
+            <span class="step-num" aria-hidden="true">3</span>
+            <div>
+              <h3>Guardarlas en un archivo pequeño</h3>
+              <p>
+                Una tabla por isla, con cada distancia redondeada a 10 metros
+                para que ocupe solo dos bytes. Todo cabe en un único archivo que
+                la calculadora descarga una vez.
+              </p>
+            </div>
+          </li>
+        </ol>
+      </section>
+
+      <section aria-labelledby="h-buscar">
+        <h2 id="h-buscar" class="section-title">
+          Cómo se encuentra la fila sin mirar todas
+        </h2>
+        <p>
+          Los lugares están ordenados, como las palabras de un diccionario. Para
+          encontrar uno se abre por la mitad y se descarta la mitad que no
+          sirve, una y otra vez. Pruébelo buscando
+          <strong id="bs-target"></strong>
+          entre estos municipios de Gran Canaria.
+        </p>
+        <div class="bsearch">
+          <ol id="bs-list"></ol>
+          <div class="bsearch-controls">
+            <button type="button" id="bs-next" class="btn btn-primary">
+              Siguiente paso
+            </button>
+            <p id="bs-say" aria-live="polite"></p>
+          </div>
+        </div>
+        <p>
+          Con 16 nombres bastan 4 pasos. Con 1.600 bastarían 11, porque cada
+          paso divide la lista por la mitad. Después, la casilla se localiza con
+          una cuenta directa, sin buscar más.
+        </p>
+      </section>
+
+      <section aria-labelledby="h-porque">
+        <h2 id="h-porque" class="section-title">Qué se gana y qué no</h2>
+        <div class="grid-2">
+          <div class="card">
+            <h3>Sirve para</h3>
+            <ul>
+              <li>
+                Respuestas al instante, incluso sin conexión una vez descargado
+                el archivo.
+              </li>
+              <li>Ninguna clave, cuota ni coste por cada consulta.</li>
+              <li>
+                El mismo resultado siempre con la misma versión, así que se
+                puede comprobar después.
+              </li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>No sirve para</h3>
+            <ul>
+              <li>
+                Tráfico, obras o cortes de hoy: para eso, un navegador GPS.
+              </li>
+              <li>Direcciones cualquiera: solo los lugares de la tabla.</li>
+              <li>
+                Viajes entre islas ni tiempos de viaje: la tabla solo guarda
+                kilómetros.
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section aria-labelledby="h-video">
+        <h2 id="h-video" class="section-title">En vídeo</h2>
+        <video controls preload="metadata" playsinline>
+          <source
+            src="../docs/assets/matriz-distancias-canarias.mp4"
+            type="video/mp4"
+          />
+          <track
+            kind="subtitles"
+            src="../docs/assets/matriz-distancias-canarias.vtt"
+            srclang="es"
+            label="Español"
+            default
+          />
+          Su navegador no puede reproducir el vídeo.
+          <a href="../docs/assets/matriz-distancias-canarias.mp4"
+            >Descargue el archivo MP4</a
+          >.
+        </video>
+      </section>
+
+      <section
+        aria-labelledby="h-aula"
+        style="border-top: 1px solid var(--line); padding-top: 24px; gap: 8px"
+      >
+        <h2 id="h-aula" class="section-title" style="font-size: 20px">
+          Para el aula
+        </h2>
+        <p>
+          Esta página sirve para explicar en clase qué es una matriz, por qué
+          ordenar ahorra trabajo y cuánto ocupa un dato.
+          <a href="../docs/mathematical-efficiency/"
+            >La matemática, paso a paso</a
+          >
+          desarrolla las cuentas con más detalle y propone actividades.
+        </p>
+        <p class="muted">
+          ¿Ve una distancia que no cuadra?
+          <a
+            href="https://github.com/ateeducacion/distancias_centros_educativos_canarias/issues"
+            >Avísenos</a
+          >
+          indicando los dos lugares.
+        </p>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <div class="foot-brand">
+          <span class="foot-logo"
+            ><img src="../assets/ate-logo.png" alt="" width="545" height="563"
+          /></span>
+          <p>
+            Un proyecto del <strong>Área de Tecnología Educativa</strong
+            ><br /><span>Consejería de Educación del Gobierno de Canarias</span>
+          </p>
+        </div>
+        <nav class="foot-nav" aria-label="Proyecto">
+          <a
+            href="https://ateeducacion.github.io/listado-centros-educativos-canarias/"
+            >Listado de centros</a
+          >
+          <a href="../docs/licensing/">Licencias</a>
+          <span
+            >Red viaria: © colaboradores de
+            <a href="https://www.openstreetmap.org/copyright"
+              >OpenStreetMap</a
+            ></span
+          >
+        </nav>
+      </div>
+    </footer>
+
+    <script type="module" src="../assets/como-funciona.js"></script>
+  </body>
+</html>

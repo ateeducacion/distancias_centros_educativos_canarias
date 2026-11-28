@@ -3,271 +3,387 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Distancias por carretera · Canarias</title>
+    <title>Distancias por carretera entre centros educativos · Canarias</title>
     <meta
       name="description"
-      content="Calcula la distancia estimada por carretera y el tiempo en coche entre centros educativos, aeropuertos y puertos de Canarias."
+      content="Calcula la distancia por carretera entre centros educativos, aeropuertos y puertos de una misma isla de Canarias."
     />
     <meta property="og:title" content="Distancias por carretera · Canarias" />
-    <meta property="og:description" content="Consulta distancias entre centros educativos, aeropuertos y puertos de Canarias. Datos abiertos para tus aplicaciones." />
+    <meta
+      property="og:description"
+      content="Consulta distancias entre centros educativos, aeropuertos y puertos de Canarias. Datos abiertos para tus aplicaciones."
+    />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://ateeducacion.github.io/distancias_centros_educativos_canarias/" />
-    <meta property="og:image" content="https://ateeducacion.github.io/distancias_centros_educativos_canarias/assets/og-image.jpg" />
+    <meta
+      property="og:url"
+      content="https://ateeducacion.github.io/distancias_centros_educativos_canarias/"
+    />
+    <meta
+      property="og:image"
+      content="https://ateeducacion.github.io/distancias_centros_educativos_canarias/assets/og-image.jpg"
+    />
     <meta property="og:image:type" content="image/jpeg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="Distancias entre centros de Canarias. Tarjeta de ATE con una consulta del calculador de distancias por carretera." />
+    <meta
+      property="og:image:alt"
+      content="Distancias entre centros de Canarias. Tarjeta de ATE con una consulta del calculador de distancias por carretera."
+    />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Distancias por carretera · Canarias" />
-    <meta name="twitter:description" content="Consulta distancias entre centros educativos, aeropuertos y puertos de Canarias. Datos abiertos para tus aplicaciones." />
-    <meta name="twitter:image" content="https://ateeducacion.github.io/distancias_centros_educativos_canarias/assets/og-image.jpg" />
-    <meta name="twitter:image:alt" content="Distancias entre centros de Canarias. Tarjeta de ATE con una consulta del calculador de distancias por carretera." />
+    <meta
+      name="twitter:description"
+      content="Consulta distancias entre centros educativos, aeropuertos y puertos de Canarias. Datos abiertos para tus aplicaciones."
+    />
+    <meta
+      name="twitter:image"
+      content="https://ateeducacion.github.io/distancias_centros_educativos_canarias/assets/og-image.jpg"
+    />
+    <meta
+      name="twitter:image:alt"
+      content="Distancias entre centros de Canarias. Tarjeta de ATE con una consulta del calculador de distancias por carretera."
+    />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Fraunces:opsz,wght@9..144,500;9..144,700&display=swap"
-      rel="stylesheet"
-    />
-    <link
-      href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
     <link href="assets/styles.css" rel="stylesheet" />
+    <script src="assets/theme.js"></script>
   </head>
   <body>
     <header class="site-header">
-      <a
-        class="brand"
-        href="./"
-        aria-label="Distancias entre centros educativos de Canarias · Área de Tecnología Educativa"
-      >
-        <img
-          class="brand-logo"
-          src="assets/ate-logo.png"
-          alt="Área de Tecnología Educativa"
-          width="545"
-          height="563"
-        />
-        <span>Distancias entre centros educativos de Canarias</span>
-      </a>
-      <div class="header-actions">
-        <button
-          type="button"
-          id="theme-toggle"
-          class="icon-btn"
-          title="Cambiar tema"
-          aria-label="Cambiar entre modo claro y oscuro"
-        >
-          <svg
-            class="icon-sun"
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-          >
-            <circle cx="12" cy="12" r="4"></circle>
-            <path
-              d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"
-            ></path>
-          </svg>
-          <svg
-            class="icon-moon"
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-          >
-            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79" />
-          </svg>
-        </button>
-        <a class="btn btn-ghost" href="docs/">Documentación</a>
-        <a
-          class="btn btn-primary"
-          href="https://github.com/ateeducacion/distancias_centros_educativos_canarias"
-        >
-          <svg
-            class="octocat"
-            viewBox="0 0 16 16"
-            width="16"
-            height="16"
-            fill="currentColor"
-            aria-hidden="true"
-          >
-            <path
-              d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"
-            />
-          </svg>
-          GitHub
+      <div class="wrap">
+        <a class="brand" href="./">
+          <img
+            src="assets/ate-logo.png"
+            alt="Área de Tecnología Educativa"
+            width="545"
+            height="563"
+          />
+          <span>Distancias entre centros de Canarias</span>
         </a>
+        <nav class="site-nav" aria-label="Principal">
+          <a href="como-funciona/">Cómo funciona</a>
+          <a href="desarrolladores/">Para desarrolladores</a>
+          <button
+            type="button"
+            id="theme-toggle"
+            class="nav-btn icon-btn"
+            aria-label="Cambiar entre modo claro y oscuro"
+            title="Cambiar tema"
+          >
+            <svg
+              class="icon-sun"
+              aria-hidden="true"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            >
+              <circle cx="12" cy="12" r="4"></circle>
+              <path
+                d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"
+              ></path>
+            </svg>
+            <svg
+              class="icon-moon"
+              aria-hidden="true"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+            >
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79"></path>
+            </svg>
+          </button>
+          <a
+            class="nav-btn"
+            href="https://github.com/ateeducacion/distancias_centros_educativos_canarias"
+          >
+            <svg
+              aria-hidden="true"
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="currentColor"
+            >
+              <path
+                d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"
+              ></path>
+            </svg>
+            GitHub
+          </a>
+        </nav>
       </div>
     </header>
 
-    <main class="page">
-      <h1>Distancias entre centros educativos de <em>Canarias</em>.</h1>
-      <p class="lead">
-        Elige una isla y un <strong>centro de origen</strong> y de
-        <strong>destino</strong>. Calculamos la distancia estimada por carretera
-        y el tiempo aproximado en coche.
-      </p>
+    <main>
+      <section class="band">
+        <div class="wrap">
+          <div style="display: flex; flex-direction: column; gap: 6px">
+            <h1 class="page-title">
+              Distancias por carretera entre centros educativos
+            </h1>
+            <p class="lead">
+              Elija dos centros, puertos o aeropuertos de la misma isla y verá
+              los kilómetros que los separan por carretera.
+            </p>
+          </div>
 
-      <p id="demo-status" class="status" role="status" aria-live="polite">
-        <span class="status-dot" aria-hidden="true"></span>
-        Cargando los datos…
-      </p>
+          <div id="missing-notice" class="notice" role="alert" hidden>
+            <div class="notice-body">
+              <p>
+                <strong
+                  >El centro <code id="missing-code"></code> no está en esta
+                  calculadora.</strong
+                >
+              </p>
+              <p class="muted">
+                Puede que ya no exista o que no tenga ubicación. Busque otro
+                lugar o
+                <a
+                  id="missing-link"
+                  href="https://ateeducacion.github.io/listado-centros-educativos-canarias/"
+                  >consulte su ficha en el listado</a
+                >.
+              </p>
+            </div>
+            <button type="button" id="missing-dismiss" class="btn btn-quiet">
+              Entendido
+            </button>
+          </div>
 
-      <form id="route-demo" class="calc" hidden>
-        <div class="calc-islands">
-          <span class="field-label">Isla</span>
-          <div
-            id="island-group"
-            class="pills"
-            role="group"
-            aria-label="Selecciona una isla"
-          ></div>
-        </div>
+          <div>
+            <span id="island-label" class="chips-label">Isla</span>
+            <div
+              id="island-group"
+              class="chips"
+              role="group"
+              aria-labelledby="island-label"
+            ></div>
+          </div>
 
-        <div class="calc-body">
-          <div class="selectors">
-            <label class="field">
-              <span class="field-label">Origen</span>
-              <select id="origin" name="origin" disabled required></select>
-            </label>
+          <form
+            id="route-form"
+            class="route-form"
+            role="search"
+            autocomplete="off"
+          >
+            <div class="field">
+              <label for="origin">Desde</label>
+              <input
+                id="origin"
+                type="text"
+                role="combobox"
+                aria-autocomplete="list"
+                aria-expanded="false"
+                aria-controls="origin-list"
+                placeholder="Nombre, código o municipio"
+                spellcheck="false"
+                disabled
+              />
+              <ul
+                id="origin-list"
+                class="suggestions"
+                role="listbox"
+                aria-label="Lugares de salida"
+                hidden
+              ></ul>
+            </div>
             <button
               type="button"
-              id="swap-centers"
+              id="swap"
               class="swap"
+              aria-label="Intercambiar desde y hasta"
               disabled
-              title="Intercambiar origen y destino"
-              aria-label="Intercambiar origen y destino"
             >
-              ⇄
-            </button>
-            <label class="field">
-              <span class="field-label">Destino</span>
-              <select
-                id="destination"
-                name="destination"
-                disabled
-                required
-              ></select>
-            </label>
-          </div>
-
-          <div class="result-grid">
-            <output id="result" class="result-card" aria-live="polite">
-              <span id="result-state" class="result-state"
-                >Selecciona una isla para empezar.</span
-              >
-              <span id="result-value" hidden>
-                <span id="result-route" class="route-label"></span>
-                <span class="figure">
-                  <strong id="result-kilometers" class="figure-num"></strong>
-                  <span class="figure-unit">km</span>
-                </span>
-                <span id="result-meters" class="result-meters"></span>
-                <span class="drivetime">
-                  <span class="drivetime-ico" aria-hidden="true">◷</span>
-                  <span id="result-time-value"></span> en coche
-                </span>
-              </span>
-            </output>
-
-            <div id="route-map-card" class="map-card" hidden>
               <svg
-                viewBox="0 0 100 100"
-                class="map-svg"
-                role="img"
-                aria-label="Mapa esquemático de la isla seleccionada"
+                aria-hidden="true"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
               >
-                <path id="island-outline" class="island-outline"></path>
-                <g id="route-points"></g>
+                <path d="M4 8h15M15 4l4 4-4 4M20 16H5M9 12l-4 4 4 4"></path>
               </svg>
-              <div class="map-legend">
-                <span><span class="dot dot--origin"></span>Origen</span>
-                <span><span class="dot dot--dest"></span>Destino</span>
-              </div>
+            </button>
+            <div class="field">
+              <label for="destination">Hasta</label>
+              <input
+                id="destination"
+                type="text"
+                role="combobox"
+                aria-autocomplete="list"
+                aria-expanded="false"
+                aria-controls="destination-list"
+                placeholder="Nombre, código o municipio"
+                spellcheck="false"
+                disabled
+              />
+              <ul
+                id="destination-list"
+                class="suggestions"
+                role="listbox"
+                aria-label="Lugares de llegada"
+                hidden
+              ></ul>
             </div>
-          </div>
+          </form>
+
+          <p class="data-line">
+            <span id="data-date">Cargando los datos…</span> · se comprueban cada
+            semana · Solo trayectos dentro de una misma isla
+          </p>
         </div>
-      </form>
+      </section>
 
-      <div class="note" role="note">
-        <span class="note-ico" aria-hidden="true">
-          <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor">
-            <path
-              d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"
-            />
-          </svg>
-        </span>
-        <p>
-          El tiempo en coche es una estimación orientativa (75&nbsp;km/h de
-          media).
-        </p>
-      </div>
+      <section
+        class="wrap section"
+        aria-labelledby="result-title"
+        aria-live="polite"
+      >
+        <h2 id="result-title" class="result-title">Resultado</h2>
 
-      <section class="promo" aria-label="Características">
-        <ul class="promo-features">
-          <li>
-            <span class="promo-title">Inmediato</span>
-            <span class="promo-desc"
-              >Sin llamadas a la API, se resuelve en el navegador</span
-            >
-          </li>
-          <li>
-            <span class="promo-title">Precalculado</span>
-            <span class="promo-desc"
-              >Todas las distancias por carretera ya computadas</span
-            >
-          </li>
-          <li>
-            <span class="promo-title">Ultraligero</span>
-            <span class="promo-desc"
-              >Todas las distancias entre centros en un único archivo de
-              <strong class="promo-size">~640&nbsp;KB</strong></span
-            >
-          </li>
-        </ul>
-        <div class="promo-links">
-          <a class="promo-link" href="docs/#video"
-            >Cómo funciona · Vídeo (2 min) →</a
-          >
-          <a class="promo-link" href="docs/architecture/"
-            >Cómo funciona · Arquitectura →</a
-          >
+        <div id="result" class="result" hidden>
+          <div class="result-main">
+            <div class="figures">
+              <p>
+                <span id="result-km" class="km"></span
+                ><span class="km-unit">km</span>
+              </p>
+              <p class="drive">
+                unos <strong id="result-time"></strong> en coche
+              </p>
+            </div>
+            <ol class="legs">
+              <li>
+                <span class="leg-label">Desde</span>
+                <span id="origin-name" class="leg-name"></span>
+                <span id="origin-where" class="leg-where"></span>
+                <a id="origin-link" class="leg-link" href="#" hidden
+                  >Ver ficha del centro</a
+                >
+              </li>
+              <li>
+                <span class="leg-label">Hasta</span>
+                <span id="destination-name" class="leg-name"></span>
+                <span id="destination-where" class="leg-where"></span>
+                <a id="destination-link" class="leg-link" href="#" hidden
+                  >Ver ficha del centro</a
+                >
+              </li>
+            </ol>
+            <p class="muted small">
+              El tiempo es orientativo: se estima a 75 km/h de media y no tiene
+              en cuenta el tráfico. La tabla solo guarda kilómetros.
+            </p>
+          </div>
+
+          <figure class="map">
+            <svg viewBox="0 0 100 100" role="img" aria-labelledby="map-caption">
+              <path id="island-outline" class="island-outline"></path>
+              <g id="route-points"></g>
+            </svg>
+            <figcaption id="map-caption">
+              <span class="key"
+                ><span class="key-origin" aria-hidden="true"></span>Desde</span
+              >
+              <span class="key"
+                ><span class="key-dest" aria-hidden="true"></span>Hasta</span
+              >
+              <span
+                ><span id="map-island"></span> · esquema, no es la ruta</span
+              >
+            </figcaption>
+          </figure>
+        </div>
+
+        <div id="hint" class="hint">
+          <p id="hint-title" class="hint-title">Cargando los datos…</p>
+          <p id="hint-text" class="muted"></p>
+        </div>
+      </section>
+
+      <section
+        class="band"
+        aria-labelledby="more-title"
+        style="border-top: 1px solid var(--line); border-bottom: 0"
+      >
+        <div class="wrap">
+          <h2 id="more-title" class="visually-hidden">Más información</h2>
+          <div class="tiles" style="padding-block: 8px">
+            <a class="tile" href="como-funciona/">
+              <span class="tile-title">Cómo funciona</span>
+              <span class="tile-text"
+                >Por qué el resultado sale al instante, de dónde salen los datos
+                y cuándo es mejor usar un navegador GPS.</span
+              >
+            </a>
+            <a class="tile" href="desarrolladores/">
+              <span class="tile-title">Usar los datos en su aplicación</span>
+              <span class="tile-text"
+                >Los archivos que puede descargar, qué contiene cada uno y
+                ejemplos en JavaScript, Python, PHP y WordPress.</span
+              >
+            </a>
+          </div>
         </div>
       </section>
     </main>
 
     <footer class="site-footer">
-      <div class="foot-inner">
-        <nav class="foot-links" aria-label="Documentación y descargas">
-          <a href="docs/">Documentación</a>
-          <a href="docs/python/">Python</a>
-          <a href="docs/javascript/">JavaScript</a>
-          <a href="docs/php/">PHP</a>
-          <a href="docs/wordpress/">WordPress</a>
-          <a href="data/latest/canarias-distances.dat">↓ Descargar datos</a>
-          <a href="data/latest/manifest.json">Manifiesto</a>
-        </nav>
-        <div class="foot-meta">
+      <div class="wrap">
+        <div class="foot-brand">
+          <span class="foot-logo"
+            ><img src="assets/ate-logo.png" alt="" width="545" height="563"
+          /></span>
+          <p>
+            Un proyecto del <strong>Área de Tecnología Educativa</strong
+            ><br /><span>Consejería de Educación del Gobierno de Canarias</span>
+          </p>
+        </div>
+        <nav class="foot-nav" aria-label="Proyecto">
+          <a
+            class="foot-strong"
+            href="https://github.com/ateeducacion/distancias_centros_educativos_canarias"
+          >
+            <svg
+              aria-hidden="true"
+              width="18"
+              height="18"
+              viewBox="0 0 16 16"
+              fill="currentColor"
+            >
+              <path
+                d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"
+              ></path>
+            </svg>
+            Código fuente
+          </a>
+          <a
+            href="https://ateeducacion.github.io/listado-centros-educativos-canarias/"
+            >Listado de centros</a
+          >
+          <a href="docs/licensing/">Licencias</a>
           <span
-            >Hecho por
-            <a href="https://www3.gobiernodecanarias.org/medusa/ecoescuela/ate/"
-              >Área de Tecnología Educativa</a
+            >Red viaria: © colaboradores de
+            <a href="https://www.openstreetmap.org/copyright"
+              >OpenStreetMap</a
             ></span
           >
-          <span id="demo-version" class="version"
-            >CEDIST04 · datos abiertos</span
-          >
-        </div>
+        </nav>
       </div>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
     <script type="module" src="assets/app.js"></script>
   </body>
 </html>

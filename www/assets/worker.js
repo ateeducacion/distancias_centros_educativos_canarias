@@ -120,10 +120,12 @@ self.addEventListener("message", async ({ data }) => {
         type: "ready",
         locations,
         dataVersion: manifest.data_version,
+        generatedAt: manifest.generated_at,
       });
     } else if (data.type === "query") {
       self.postMessage({
         type: "distance",
+        id: data.id,
         result: distance(data.origin, data.destination),
         origin: locations.find((location) => location.code === data.origin),
         destination: locations.find(

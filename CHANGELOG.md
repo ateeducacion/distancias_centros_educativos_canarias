@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Redesign the landing page with the shared look of the centers listing: accent-insensitive search by name, code or municipality instead of select2 and jQuery, optional island chips, a notice for unknown `?origin=` codes, links to each center's record in the listing and the data date read from the manifest.
+- Add hand-written "Cómo funciona" (distance table with published data and a step-by-step search demo) and "Para desarrolladores" (files, manifest fields, examples, query links) pages.
+- Share the light/dark toggle across pages through `assets/theme.js`.
 - Drop the `38016672` longitude override: the master catalogue now publishes the decimal separator, so the patch no longer matches its declared `old_value` and blocked every rebuild.
 - Drop the unused `publish` input of the data check workflow; `docs.yml` is what publishes.
 - Add the Área de Tecnología Educativa (Oficina Medusa) seats in Gran Canaria (`35700081`) and La Laguna (`38700195`) to the curated additional centers.
