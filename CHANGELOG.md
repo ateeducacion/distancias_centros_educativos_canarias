@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Unify the footer with the other ATE sites and link them from every page.
+- Extend "La matemática" with a real lookup traced byte by byte over the published file (including the return trip) and a chart for the amortisation exercise; link it from "Cómo funciona" instead of the home page.
 - Replace the Zensical documentation site with hand-written pages: add an interactive "La matemática" page that reads the published island counts, keep the technical Markdown in `docs/` for reading on GitHub and drop the Zensical build, config, generated pages and `docs` extra.
 - Replace the explainer video with a shorter one that follows the website's look, with Spanish subtitles and narration text.
 - Show a "Volver" link instead of a "Calculadora" menu item on secondary pages.

@@ -1202,3 +1202,112 @@ var {
 .back:hover {
   text-decoration: underline;
 }
+
+.foot-sub {
+  flex: 1 1 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 24px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+  font-size: 14px;
+  color: var(--footer-muted);
+}
+.foot-sub p {
+  margin: 0;
+}
+.foot-sub a {
+  color: var(--footer-muted);
+}
+.foot-sub a:hover,
+.foot-nav a:hover {
+  color: var(--footer-fg);
+}
+
+.real-pickers {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+.real-pickers label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-weight: 600;
+  min-width: 0;
+}
+.real-pickers select {
+  min-height: 44px;
+  padding: 0 10px;
+  font: inherit;
+  font-weight: 400;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  max-width: 100%;
+}
+.trace {
+  margin: 0;
+  padding-left: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.trace li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.trace-title {
+  font-weight: 600;
+}
+.chart {
+  width: 100%;
+  height: auto;
+  background: var(--soft);
+  border-radius: 6px;
+}
+.chart-axis {
+  stroke: var(--line-strong);
+  stroke-width: 1;
+}
+.chart-pre,
+.chart-demand {
+  fill: none;
+  stroke-width: 3;
+}
+.chart-pre {
+  stroke: var(--accent);
+}
+.chart-demand {
+  stroke: var(--dest);
+  stroke-dasharray: 8 5;
+}
+.chart-cross {
+  stroke: var(--ink);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+.chart-label {
+  fill: var(--muted);
+  font-size: 13px;
+  font-family: var(--font-sans);
+}
+.chart-key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+  font-size: 14px;
+  color: var(--muted);
+}
+.key-line {
+  display: inline-block;
+  width: 24px;
+  height: 0;
+  border-top: 3px solid var(--accent);
+}
+.key-demand {
+  border-top: 3px dashed var(--dest);
+}
