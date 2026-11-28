@@ -1008,3 +1008,197 @@ video {
   flex-direction: row;
   gap: 24px 48px;
 }
+
+/* Mathematics page --------------------------------------------------------- */
+var {
+  font-family: var(--font-mono);
+  font-style: normal;
+  font-size: 0.95em;
+}
+.toc ol {
+  margin: 0;
+  padding: 16px 20px 16px 40px;
+  background: var(--soft);
+  border-radius: 6px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 6px 24px;
+}
+.plain {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.article .formula {
+  padding: 14px 18px;
+  border-left: 3px solid var(--accent);
+  background: var(--accent-faint);
+  font-size: 18px;
+  overflow-x: auto;
+}
+.lab {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.lab-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  font-weight: 600;
+}
+.lab-controls input[type="number"] {
+  width: 160px;
+  height: 44px;
+  padding: 0 12px;
+  font: inherit;
+  color: var(--ink);
+  background: var(--surface);
+  border: 2px solid var(--ink);
+  border-radius: 6px;
+}
+.lab input[type="range"] {
+  accent-color: var(--accent);
+  min-width: 160px;
+}
+.lab-caption {
+  font-size: 15px;
+  color: var(--muted);
+}
+.lab-sliders {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(140px, 220px) 4em;
+  align-items: center;
+  gap: 10px 16px;
+}
+.lab-sliders output {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  text-align: right;
+}
+@media (max-width: 560px) {
+  .lab-sliders {
+    grid-template-columns: 1fr 4em;
+  }
+  .lab-sliders label {
+    grid-column: 1 / -1;
+  }
+}
+.pos-grid {
+  display: grid;
+  gap: 4px;
+  max-width: 460px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+}
+.pos-head {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  color: var(--muted);
+  font-weight: 600;
+}
+.pos-head.is-line {
+  color: var(--accent);
+}
+.pos-cell {
+  min-height: 44px;
+  padding: 0;
+  font: inherit;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  cursor: pointer;
+}
+.pos-cell.is-diag {
+  color: var(--faint);
+  background: var(--soft);
+}
+.pos-cell.is-line {
+  background: var(--accent-faint);
+}
+.pos-cell[aria-pressed="true"] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+  font-weight: 700;
+}
+.pos-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+.strip-cell {
+  min-width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  color: var(--muted);
+}
+.strip-cell.is-odd {
+  background: var(--soft);
+}
+.strip-cell.is-hit {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+  font-weight: 700;
+}
+.readout {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+.readout div {
+  padding: 12px 14px;
+  background: var(--soft);
+  border-radius: 6px;
+}
+.readout dt {
+  font-size: 14px;
+  color: var(--muted);
+}
+.readout dd {
+  margin: 4px 0 0;
+  font-size: 20px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.fields.num td:not(:first-child),
+.fields.num th:not(:first-child) {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.fields tfoot th {
+  border-bottom: 0;
+  border-top: 2px solid var(--ink);
+  padding: 10px 12px 10px 0;
+}
+
+.back {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  margin-bottom: -24px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.back:hover {
+  text-decoration: underline;
+}

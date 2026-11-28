@@ -4,7 +4,7 @@ UV ?= uv
 NPM ?= npm
 COMPOSER ?= composer
 
-.PHONY: help bootstrap install lint format format-check test test-python test-php test-js test-shell test-conformance coverage validate-config download-centers validate-centers download-osm prepare-osrm validate-snapping build-matrix build-data verify-artifacts query api-serve demo-serve docs-serve docs-build site-build site-preview docker-build docker-test ci release-check clean distclean
+.PHONY: help bootstrap install lint format format-check test test-python test-php test-js test-shell test-conformance coverage validate-config download-centers validate-centers download-osm prepare-osrm validate-snapping build-matrix build-data verify-artifacts query api-serve demo-serve site-build site-preview docker-build docker-test ci release-check clean distclean
 help:
 	@awk 'BEGIN{FS=":.*## "} /^[a-zA-Z0-9_-]+:.*## /{printf "%-22s %s\n",$$1,$$2}' $(MAKEFILE_LIST)
 bootstrap: ## Prepare local dependencies
@@ -58,13 +58,9 @@ query: ## Query fixture; set ORIGIN and DESTINATION
 	bin/route-matrix query $(ORIGIN) $(DESTINATION)
 api-serve: ## Serve PHP API
 	php -S 127.0.0.1:8080 -t api/public
-demo-serve: site-preview ## Serve the full static site (landing + docs) locally
-docs-serve: ## Serve Zensical documentation (docs only, live reload)
-	zensical serve
-docs-build: ## Build Zensical documentation
-	zensical build --clean
-site-build: docs-build ## Assemble the Pages artifact (landing + docs) into public/
-	WWW_DIR=www SITE_DIR=site DATA_DIR="$(DATA_DIR)" OUT_DIR=public sh scripts/assemble-site.sh
+demo-serve: site-preview ## Serve the static site locally
+site-build: ## Assemble the Pages artifact (website + data) into public/
+	WWW_DIR=www DATA_DIR="$(DATA_DIR)" OUT_DIR=public sh scripts/assemble-site.sh
 site-preview: ## Build and serve the full site locally with sample data
 	rm -rf .preview-data && mkdir -p .preview-data
 	cp data/samples/sample.dat .preview-data/canarias-distances.dat
@@ -78,7 +74,7 @@ docker-build: ## Build container images
 	docker compose build
 docker-test: ## Run tests in containers
 	docker compose --profile generation run --rm generator make test-python
-ci: lint test test-shell test-conformance docs-build ## Run local CI suite
+ci: lint test test-shell test-conformance ## Run local CI suite
 release-check: ci docker-build ## Validate a local release candidate
 clean: ## Remove inexpensive generated files, preserving downloads
 	rm -rf site public .preview-data .coverage coverage

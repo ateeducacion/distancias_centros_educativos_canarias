@@ -2,9 +2,7 @@
 
 CEDIST04 guarda únicamente distancias dirigidas y cuantizadas a 10 metros. Cada consulta termina en la lectura de dos bytes, sin deserializar la matriz completa.
 
-[Consultar la especificación normativa](FORMAT.md){ .md-button .md-button--primary }
-
-[Consultar la decisión de diseño](decisions/0002-cedist04-byte-planes.md){ .md-button }
+Consulte la [especificación normativa](FORMAT.md) y la [decisión de diseño](decisions/0002-cedist04-byte-planes.md).
 
 ## Resumen
 

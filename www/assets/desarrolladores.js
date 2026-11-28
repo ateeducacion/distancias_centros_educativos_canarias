@@ -91,13 +91,14 @@ fetch(new URL("manifest.json", base))
   });
 
 /* Examples ----------------------------------------------------------------- */
-const DOCS = "../docs/";
+const DOCS =
+  "https://github.com/ateeducacion/distancias_centros_educativos_canarias/blob/main/docs/";
 const EXAMPLES = [
   {
     label: "JavaScript",
     intro:
       "En el navegador o en Node. Descarga los dos archivos una vez; después cada consulta es instantánea y no hace peticiones.",
-    more: ["Guía completa de JavaScript", `${DOCS}javascript/`],
+    more: ["Guía completa de JavaScript", `${DOCS}javascript.md`],
     code: `import { DistanceMatrix } from "https://cdn.jsdelivr.net/gh/ateeducacion/distancias_centros_educativos_canarias@main/packages/javascript/src/index.js";
 
 const base = "${base.href}";
@@ -113,7 +114,7 @@ console.log(\`\${(distanceMeters / 1000).toFixed(1)} km\`);`,
     label: "Python",
     intro:
       "Instale el lector desde el repositorio y abra el archivo descargado.",
-    more: ["Guía completa de Python", `${DOCS}python/`],
+    more: ["Guía completa de Python", `${DOCS}python.md`],
     code: `# python -m pip install "canarias-route-matrix @ git+https://github.com/ateeducacion/distancias_centros_educativos_canarias.git"
 
 from canarias_route_matrix.binary import Reader
@@ -127,7 +128,7 @@ print(result.distance_meters)`,
     label: "PHP",
     intro:
       "Lee solo la casilla pedida del archivo, sin cargarlo entero en memoria.",
-    more: ["Guía completa de PHP", `${DOCS}php/`],
+    more: ["Guía completa de PHP", `${DOCS}php.md`],
     code: `<?php
 use AteEducacion\\CanariasRouteMatrix\\Reader;
 
@@ -140,13 +141,13 @@ echo $distance->distanceMeters;`,
     label: "WordPress",
     intro:
       "Un fragmento de código añade un shortcode. Escríbalo en cualquier entrada o página.",
-    more: ["Guía completa de WordPress", `${DOCS}wordpress/`],
+    more: ["Guía completa de WordPress", `${DOCS}wordpress.md`],
     code: `[distancia_canarias origen="35000011" destino="98030001"]`,
   },
   {
     label: "Terminal",
     intro: "La biblioteca de Python trae una orden para consultas sueltas.",
-    more: ["Guía de la línea de órdenes", `${DOCS}cli/`],
+    more: ["Guía de la línea de órdenes", `${DOCS}cli.md`],
     code: `canarias-route-matrix --json query 35000011 98030001 \\
   --data canarias-distances.dat`,
   },
@@ -154,7 +155,7 @@ echo $distance->distanceMeters;`,
     label: "API REST",
     intro:
       "Si prefiere no instalar nada en su aplicación, puede desplegar el servicio web del repositorio y consultarlo por HTTP.",
-    more: ["Guía de la API REST", `${DOCS}rest-api/`],
+    more: ["Guía de la API REST", `${DOCS}rest-api.md`],
     code: `GET /v1/distances/35000011/98030001
 
 { "distance_m": … }`,

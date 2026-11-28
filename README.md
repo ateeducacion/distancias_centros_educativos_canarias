@@ -4,7 +4,7 @@ Matriz abierta y versionada de distancias por carretera entre centros educativos
 
 [![Distancias entre centros de Canarias](www/assets/og-image.jpg)](https://ateeducacion.github.io/distancias_centros_educativos_canarias/assets/og-image.jpg)
 
-**Demo y documentación:** https://ateeducacion.github.io/distancias_centros_educativos_canarias/
+**Web:** https://ateeducacion.github.io/distancias_centros_educativos_canarias/ (calculadora, [cómo funciona](https://ateeducacion.github.io/distancias_centros_educativos_canarias/como-funciona/), [la matemática](https://ateeducacion.github.io/distancias_centros_educativos_canarias/matematica/) y [guía para desarrolladores](https://ateeducacion.github.io/distancias_centros_educativos_canarias/desarrolladores/)). La documentación técnica está en [`docs/`](docs/README.md).
 
 ## Características
 
@@ -116,7 +116,7 @@ GitHub Pages se construye desde `main` y consume los artefactos de la última re
 
 La generación descarga y verifica el catálogo maestro, valida las ubicaciones, ajusta las coordenadas a la red de OSRM y calcula tablas de distancias por bloques. El consumidor busca los dos códigos en un índice ordenado y lee directamente dos bytes de la matriz CEDIST04 correspondiente.
 
-[Documentación de arquitectura](https://ateeducacion.github.io/distancias_centros_educativos_canarias/architecture/)
+[Documentación de arquitectura](docs/architecture.md)
 
 ## Licencias y límites
 

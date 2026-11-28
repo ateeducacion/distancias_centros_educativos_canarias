@@ -18,11 +18,4 @@ services:
     profiles: [api]
     read_only: true
     healthcheck: {test: [CMD, php, -r, "exit(0);"], interval: 30s, timeout: 5s, retries: 3}
-  docs:
-    image: python:3.12-alpine3.20
-    working_dir: /app
-    command: sh -c "pip install zensical && zensical serve --dev-addr 0.0.0.0:8000"
-    volumes: [.:/app:ro]
-    ports: ["8000:8000"]
-    profiles: [docs]
 volumes: {osrm-data: {}}

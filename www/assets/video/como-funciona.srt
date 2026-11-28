@@ -1,0 +1,59 @@
+1
+00:00:00,600 --> 00:00:05,306
+¿Cuántos kilómetros hay por carretera entre un instituto de La Laguna y el aeropuerto del sur de Tenerife?
+
+2
+00:00:05,756 --> 00:00:08,619
+Lo habitual sería abrir un mapa y esperar a que calcule la ruta.
+
+3
+00:00:10,219 --> 00:00:14,750
+Pero si mil personas hacen la misma pregunta, el mapa calcula la misma ruta mil veces.
+
+4
+00:00:15,200 --> 00:00:19,360
+Cada vez hay que esperar, y cada consulta puede necesitar una clave y costar dinero.
+
+5
+00:00:20,960 --> 00:00:22,222
+Esta web lo hace al revés.
+
+6
+00:00:22,672 --> 00:00:29,726
+Una sola vez, calcula todas las rutas entre los centros, puertos y aeropuertos de cada isla, sobre el mapa libre de OpenStreetMap.
+
+7
+00:00:30,176 --> 00:00:33,702
+Y las guarda en una tabla, como la de los antiguos mapas de carreteras.
+
+8
+00:00:35,302 --> 00:00:38,312
+Para encontrar un lugar, no hace falta mirar la lista entera.
+
+9
+00:00:38,762 --> 00:00:44,308
+Está ordenada, así que se abre por la mitad, como un diccionario, y se descarta la mitad que no sirve.
+
+10
+00:00:44,758 --> 00:00:47,548
+Con mil seiscientos lugares, bastan once pasos.
+
+11
+00:00:49,148 --> 00:00:53,563
+Con la fila del origen y la columna del destino, se va directo a la casilla y se lee el número.
+
+12
+00:00:54,013 --> 00:00:58,851
+No hay que calcular nada, ni conectarse a ningún sitio. Por eso la respuesta es inmediata.
+
+13
+00:01:00,451 --> 00:01:06,288
+No sabe de tráfico ni de obras, ni sirve para ir de una isla a otra. Para eso, mejor un navegador GPS.
+
+14
+00:01:06,738 --> 00:01:10,886
+Pero para comparar distancias entre centros educativos, es la forma más rápida.
+
+15
+00:01:11,336 --> 00:01:14,102
+Pruébelo en la web de distancias entre centros de Canarias.

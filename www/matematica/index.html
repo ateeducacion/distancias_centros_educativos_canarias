@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>La matemática · Distancias entre centros de Canarias</title>
+    <meta
+      name="description"
+      content="Matrices, índices, bytes y búsqueda binaria: la matemática que hace rápida la calculadora de distancias, con ejercicios interactivos para el aula."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link href="../assets/styles.css" rel="stylesheet" />
+    <script src="../assets/theme.js"></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap">
+        <a class="brand" href="../">
+          <img
+            src="../assets/ate-logo.png"
+            alt="Área de Tecnología Educativa"
+            width="545"
+            height="563"
+          />
+          <span>Distancias entre centros de Canarias</span>
+        </a>
+        <nav class="site-nav" aria-label="Principal">
+          <a href="../como-funciona/">Cómo funciona</a>
+          <a href="../desarrolladores/">Para desarrolladores</a>
+          <button
+            type="button"
+            id="theme-toggle"
+            class="nav-btn icon-btn"
+            aria-label="Cambiar entre modo claro y oscuro"
+            title="Cambiar tema"
+          >
+            <svg
+              class="icon-sun"
+              aria-hidden="true"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            >
+              <circle cx="12" cy="12" r="4"></circle>
+              <path
+                d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"
+              ></path>
+            </svg>
+            <svg
+              class="icon-moon"
+              aria-hidden="true"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+            >
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79"></path>
+            </svg>
+          </button>
+          <a
+            class="nav-btn"
+            href="https://github.com/ateeducacion/distancias_centros_educativos_canarias"
+          >
+            <svg
+              aria-hidden="true"
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="currentColor"
+            >
+              <path
+                d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"
+              ></path>
+            </svg>
+            GitHub
+          </a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="wrap narrow article">
+      <a class="back" href="../">
+        <svg
+          aria-hidden="true"
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M19 12H5M11 6l-6 6 6 6"></path>
+        </svg>
+        Volver
+      </a>
+      <div style="display: flex; flex-direction: column; gap: 12px">
+        <h1 class="page-title">La matemática de la calculadora</h1>
+        <p class="intro">
+          La calculadora no busca caminos en un mapa: busca una respuesta ya
+          calculada en una tabla. Esta página explica, con cuentas que se pueden
+          hacer en clase, por qué eso es tan rápido y cabe en tan poco espacio.
+        </p>
+        <p class="muted">
+          Cada apartado tiene un ejercicio interactivo. Los recuentos de lugares
+          por isla son los de la versión publicada de los datos.
+        </p>
+      </div>
+
+      <nav class="toc" aria-label="En esta página">
+        <ol>
+          <li><a href="#matriz">Del mapa a una matriz</a></li>
+          <li><a href="#posicion">De dos índices a una posición</a></li>
+          <li><a href="#bytes">Dos bytes por distancia</a></li>
+          <li><a href="#islas">Una tabla por isla</a></li>
+          <li><a href="#busqueda">Encontrar un código</a></li>
+          <li><a href="#amortizar">¿Cuándo compensa calcular antes?</a></li>
+          <li><a href="#geografia">Lo que la cuenta no ve</a></li>
+          <li><a href="#aula">Propuestas para el aula</a></li>
+        </ol>
+      </nav>
+
+      <section id="matriz" aria-labelledby="h-matriz">
+        <h2 id="h-matriz" class="section-title">1. Del mapa a una matriz</h2>
+        <p>
+          Para una isla con <var>n</var> lugares se construye una tabla cuadrada
+          de <var>n</var> filas y <var>n</var> columnas: la
+          <strong>matriz de distancias</strong>. Cada fila es un origen y cada
+          columna un destino; en la casilla <var>d<sub>ij</sub></var> está la
+          distancia por carretera desde el lugar <var>i</var> hasta el lugar
+          <var>j</var>.
+        </p>
+        <ul class="plain">
+          <li>
+            La diagonal vale cero: <var>d<sub>ii</sub></var> = 0, porque origen
+            y destino coinciden.
+          </li>
+          <li>
+            La matriz no es simétrica: en general
+            <var>d<sub>ij</sub></var> ≠ <var>d<sub>ji</sub></var
+            >. Una calle de sentido único o un acceso distinto a la autopista
+            hacen que ida y vuelta midan distinto. Por eso no basta con guardar
+            media tabla.
+          </li>
+        </ul>
+      </section>
+
+      <section id="posicion" aria-labelledby="h-posicion">
+        <h2 id="h-posicion" class="section-title">
+          2. De dos índices a una posición
+        </h2>
+        <p>
+          En el archivo la tabla no se guarda como cuadrado, sino como una sola
+          fila larga: primero la fila 0, después la fila 1, y así. Si el origen
+          es el lugar <var>i</var> y el destino el <var>j</var>, su casilla está
+          en la posición
+        </p>
+        <p class="formula">
+          <var>p</var> = <var>i</var> · <var>n</var> + <var>j</var>
+        </p>
+        <p>
+          No hace falta recorrer las casillas anteriores: se calcula dónde está
+          y se va directo, igual que se encuentra una vivienda con la calle y el
+          número del portal. Pulse una casilla.
+        </p>
+
+        <div class="lab">
+          <div class="lab-controls">
+            <label for="n-size">Lugares en la isla (<var>n</var>)</label>
+            <input id="n-size" type="range" min="3" max="7" value="5" />
+            <output id="n-out" for="n-size">5</output>
+          </div>
+          <div
+            id="pos-grid"
+            class="pos-grid"
+            role="group"
+            aria-label="Matriz de distancias"
+          ></div>
+          <p class="lab-caption">
+            La misma matriz, guardada como una sola fila:
+          </p>
+          <div id="pos-strip" class="pos-strip" aria-hidden="true"></div>
+          <p id="pos-say" class="say" aria-live="polite"></p>
+        </div>
+      </section>
+
+      <section id="bytes" aria-labelledby="h-bytes">
+        <h2 id="h-bytes" class="section-title">3. Dos bytes por distancia</h2>
+        <p>
+          Las distancias se guardan en <strong>decámetros</strong> (unidades de
+          10 m), redondeando al más cercano:
+        </p>
+        <p class="formula">
+          <var>q</var> = redondeo(<var>d</var> / 10) &nbsp;y al leer&nbsp;
+          <var>d̂</var> = 10 · <var>q</var>
+        </p>
+        <p>
+          Así el error nunca pasa de 5 m (las distancias de menos de 5 m se
+          guardan como 10 m, para que el cero quede reservado a la diagonal). El
+          número <var>q</var> cabe en dos bytes (16 bits), es decir, entre 0 y
+          65.535. El valor más alto se reserva para «sin ruta», de modo que la
+          distancia máxima que se puede guardar es 65.534 × 10 = 655.340 m,
+          mucho más que cualquier trayecto dentro de una isla. Pruebe con una
+          distancia:
+        </p>
+
+        <div class="lab">
+          <div class="lab-controls">
+            <label for="meters">Distancia real en metros</label>
+            <input
+              id="meters"
+              type="number"
+              min="1"
+              max="655340"
+              step="1"
+              value="1235"
+              inputmode="numeric"
+            />
+          </div>
+          <dl class="readout">
+            <div>
+              <dt>Decámetros guardados (<var>q</var>)</dt>
+              <dd id="q-out"></dd>
+            </div>
+            <div>
+              <dt>Distancia publicada (<var>d̂</var>)</dt>
+              <dd id="d-out"></dd>
+            </div>
+            <div>
+              <dt>Error</dt>
+              <dd id="e-out"></dd>
+            </div>
+            <div>
+              <dt>Byte bajo · byte alto</dt>
+              <dd id="b-out"></dd>
+            </div>
+          </dl>
+          <p class="lab-caption">
+            Se recupera con <var>q</var> = byte bajo + 256 · byte alto. Los
+            bytes bajos de todas las casillas se guardan juntos y después los
+            altos: como los altos se repiten mucho, el archivo se comprime
+            mejor.
+          </p>
+        </div>
+      </section>
+
+      <section id="islas" aria-labelledby="h-islas">
+        <h2 id="h-islas" class="section-title">4. Una tabla por isla</h2>
+        <p>
+          Si hubiera una sola tabla para todo Canarias, con
+          <var>N</var> lugares, tendría <var>N</var>² casillas. Pero por
+          carretera no se va de una isla a otra, así que basta con una tabla por
+          isla:
+        </p>
+        <p class="formula">
+          casillas = <var>n</var><sub>1</sub>² + <var>n</var><sub>2</sub>² + … +
+          <var>n</var><sub>7</sub>²
+        </p>
+        <div class="lab">
+          <div class="table-box">
+            <table class="fields num">
+              <caption id="isl-caption">
+                Lugares por isla en la versión publicada
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">Isla</th>
+                  <th scope="col">Lugares (<var>n</var>)</th>
+                  <th scope="col">Casillas (<var>n</var>²)</th>
+                </tr>
+              </thead>
+              <tbody id="isl-body"></tbody>
+              <tfoot id="isl-foot"></tfoot>
+            </table>
+          </div>
+          <p id="isl-say" class="say"></p>
+          <p class="lab-caption">
+            Tamaño exacto del archivo, antes de comprimir:
+            <var>S</var> = 64 + 12·<var>N</var> + 16·<var>I</var> + 2·Σ<var
+              >n</var
+            ><sub>k</sub>² bytes (cabecera, índice de códigos, directorio de
+            islas y tablas).
+          </p>
+          <p id="size-say" class="say"></p>
+        </div>
+      </section>
+
+      <section id="busqueda" aria-labelledby="h-busqueda">
+        <h2 id="h-busqueda" class="section-title">5. Encontrar un código</h2>
+        <p>
+          Antes de leer la casilla hay que saber en qué fila y columna está cada
+          lugar. Los códigos están ordenados, así que se buscan como en un
+          diccionario: se mira el del medio y se descarta la mitad que no sirve.
+          Con <var>N</var> lugares bastan unos log<sub>2</sub>
+          <var>N</var> pasos.
+        </p>
+        <p id="search-say" class="say"></p>
+        <p>
+          En resumen, una consulta cuesta dos búsquedas de unos pocos pasos y
+          una cuenta. No se ejecuta ningún algoritmo de rutas ni se pregunta a
+          ningún servidor.
+          <a href="../como-funciona/#h-buscar">Pruebe la búsqueda paso a paso</a
+          >.
+        </p>
+      </section>
+
+      <section id="amortizar" aria-labelledby="h-amortizar">
+        <h2 id="h-amortizar" class="section-title">
+          6. ¿Cuándo compensa calcular antes?
+        </h2>
+        <p>
+          Calcular todas las rutas tiene un coste inicial <var>G</var>. Después,
+          cada consulta cuesta muy poco (<var>L</var>). Calcular cada ruta
+          cuando se pide cuesta <var>R</var> cada vez. Tras <var>Q</var>
+          consultas:
+        </p>
+        <p class="formula">
+          precalcular: <var>G</var> + <var>Q</var>·<var>L</var> &nbsp;·&nbsp;
+          bajo demanda: <var>Q</var>·<var>R</var>
+        </p>
+        <p>
+          Precalcular compensa a partir de <var>Q</var> &gt; <var>G</var> /
+          (<var>R</var> − <var>L</var>). Los valores de abajo son
+          <strong>hipotéticos</strong>, para jugar con la fórmula; no son
+          mediciones del proyecto.
+        </p>
+        <div class="lab">
+          <div class="lab-sliders">
+            <label for="g-cost">Coste inicial <var>G</var> (unidades)</label>
+            <input
+              id="g-cost"
+              type="range"
+              min="100"
+              max="10000"
+              step="100"
+              value="2000"
+            />
+            <output id="g-out" for="g-cost"></output>
+            <label for="r-cost"
+              >Coste de una ruta bajo demanda <var>R</var></label
+            >
+            <input
+              id="r-cost"
+              type="range"
+              min="2"
+              max="50"
+              step="1"
+              value="10"
+            />
+            <output id="r-out" for="r-cost"></output>
+            <label for="l-cost">Coste de una lectura <var>L</var></label>
+            <input
+              id="l-cost"
+              type="range"
+              min="0"
+              max="1"
+              step="0.1"
+              value="0.1"
+            />
+            <output id="l-out" for="l-cost"></output>
+          </div>
+          <p id="amort-say" class="say" aria-live="polite"></p>
+        </div>
+      </section>
+
+      <section id="geografia" aria-labelledby="h-geografia">
+        <h2 id="h-geografia" class="section-title">
+          7. Lo que la cuenta no ve
+        </h2>
+        <p>
+          La distancia de la tabla no es la distancia en línea recta, sino la
+          longitud de la ruta en coche que el programa considera más rápida con
+          el mapa de una fecha concreta. En ella influyen el relieve, el trazado
+          de las carreteras, los accesos a cada lugar y los sentidos de
+          circulación. No incluye tráfico, obras ni cortes: es una fotografía
+          fija de la red, y precisamente por eso el resultado es siempre el
+          mismo para la misma versión.
+        </p>
+      </section>
+
+      <section id="aula" aria-labelledby="h-aula">
+        <h2 id="h-aula" class="section-title">8. Propuestas para el aula</h2>
+        <ol class="steps">
+          <li>
+            <span class="step-num" aria-hidden="true">1</span>
+            <div>
+              <h3>Índices y matrices</h3>
+              <p>
+                Construir una matriz de cinco lugares del municipio y localizar
+                varias parejas con <var>p</var> = <var>i</var>·<var>n</var> +
+                <var>j</var>.
+              </p>
+            </div>
+          </li>
+          <li>
+            <span class="step-num" aria-hidden="true">2</span>
+            <div>
+              <h3>Asimetría</h3>
+              <p>
+                Buscar en la calculadora dos lugares cuya ida y vuelta midan
+                distinto y explicar en un mapa qué lo provoca.
+              </p>
+            </div>
+          </li>
+          <li>
+            <span class="step-num" aria-hidden="true">3</span>
+            <div>
+              <h3>Redondeo y error</h3>
+              <p>
+                Calcular <var>q</var>, <var>d̂</var> y el error para distancias a
+                ambos lados de un medio decámetro (1.234 m y 1.235 m).
+              </p>
+            </div>
+          </li>
+          <li>
+            <span class="step-num" aria-hidden="true">4</span>
+            <div>
+              <h3>Insularidad</h3>
+              <p>
+                Comparar <var>N</var>² con Σ<var>n</var><sub>k</sub>² usando la
+                tabla de islas y explicar qué casillas se ahorran y por qué
+                tienen sentido geográfico.
+              </p>
+            </div>
+          </li>
+          <li>
+            <span class="step-num" aria-hidden="true">5</span>
+            <div>
+              <h3>Línea recta o carretera</h3>
+              <p>
+                Medir la distancia en línea recta entre dos centros y compararla
+                con la de la calculadora. ¿Qué pregunta responde cada una?
+              </p>
+            </div>
+          </li>
+          <li>
+            <span class="step-num" aria-hidden="true">6</span>
+            <div>
+              <h3>Amortización</h3>
+              <p>
+                Inventar valores de <var>G</var>, <var>L</var> y <var>R</var> y
+                calcular a partir de cuántas consultas conviene precalcular.
+              </p>
+            </div>
+          </li>
+        </ol>
+        <p class="say">
+          <strong>Para recordar:</strong> la rapidez no viene de encontrar rutas
+          más deprisa, sino de modelar bien el problema. Un conjunto cerrado de
+          lugares, una tabla por isla, dos bytes por casilla y acceso directo.
+          La geografía decide qué relaciones tienen sentido; las matemáticas
+          permiten guardarlas y consultarlas con muy poco trabajo.
+        </p>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <div class="foot-brand">
+          <span class="foot-logo"
+            ><img src="../assets/ate-logo.png" alt="" width="545" height="563"
+          /></span>
+          <p>
+            Un proyecto del <strong>Área de Tecnología Educativa</strong
+            ><br /><span>Consejería de Educación del Gobierno de Canarias</span>
+          </p>
+        </div>
+        <nav class="foot-nav" aria-label="Proyecto">
+          <a
+            href="https://ateeducacion.github.io/listado-centros-educativos-canarias/"
+            >Listado de centros</a
+          >
+          <a
+            href="https://github.com/ateeducacion/distancias_centros_educativos_canarias/blob/main/DATA_LICENSES.md"
+            >Licencias</a
+          >
+          <span
+            >Red viaria: © colaboradores de
+            <a href="https://www.openstreetmap.org/copyright"
+              >OpenStreetMap</a
+            ></span
+          >
+        </nav>
+      </div>
+    </footer>
+
+    <script type="module" src="../assets/matematica.js"></script>
+  </body>
+</html>

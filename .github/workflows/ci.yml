@@ -48,13 +48,6 @@ jobs:
       - run: composer install
         working-directory: packages/php
       - run: tests/conformance/run.sh
-  docs:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v7 # v4
-      - uses: astral-sh/setup-uv@v7 # v5
-      - run: uvx zensical build --clean
   shell:
     runs-on: ubuntu-latest
     timeout-minutes: 10

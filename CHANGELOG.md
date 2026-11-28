@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Replace the Zensical documentation site with hand-written pages: add an interactive "La matemática" page that reads the published island counts, keep the technical Markdown in `docs/` for reading on GitHub and drop the Zensical build, config, generated pages and `docs` extra.
+- Replace the explainer video with a shorter one that follows the website's look, with Spanish subtitles and narration text.
+- Show a "Volver" link instead of a "Calculadora" menu item on secondary pages.
 - Redesign the landing page with the shared look of the centers listing: accent-insensitive search by name, code or municipality instead of select2 and jQuery, optional island chips, a notice for unknown `?origin=` codes, links to each center's record in the listing and the data date read from the manifest.
 - Add hand-written "Cómo funciona" (distance table with published data and a step-by-step search demo) and "Para desarrolladores" (files, manifest fields, examples, query links) pages.
 - Share the light/dark toggle across pages through `assets/theme.js`.

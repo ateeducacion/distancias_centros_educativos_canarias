@@ -1,0 +1,28 @@
+Narración del vídeo «Cómo funciona» (voz: Mónica, síntesis de macOS)
+
+1. La pregunta
+¿Cuántos kilómetros hay por carretera entre un instituto de La Laguna y el aeropuerto del sur de Tenerife?
+Lo habitual sería abrir un mapa y esperar a que calcule la ruta.
+
+2. El problema
+Pero si mil personas hacen la misma pregunta, el mapa calcula la misma ruta mil veces.
+Cada vez hay que esperar, y cada consulta puede necesitar una clave y costar dinero.
+
+3. La idea: calcular antes
+Esta web lo hace al revés.
+Una sola vez, calcula todas las rutas entre los centros, puertos y aeropuertos de cada isla, sobre el mapa libre de OpenStreetMap.
+Y las guarda en una tabla, como la de los antiguos mapas de carreteras.
+
+4. Encontrar la fila
+Para encontrar un lugar, no hace falta mirar la lista entera.
+Está ordenada, así que se abre por la mitad, como un diccionario, y se descarta la mitad que no sirve.
+Con mil seiscientos lugares, bastan once pasos.
+
+5. Leer la casilla
+Con la fila del origen y la columna del destino, se va directo a la casilla y se lee el número.
+No hay que calcular nada, ni conectarse a ningún sitio. Por eso la respuesta es inmediata.
+
+6. Para qué sí y para qué no
+No sabe de tráfico ni de obras, ni sirve para ir de una isla a otra. Para eso, mejor un navegador GPS.
+Pero para comparar distancias entre centros educativos, es la forma más rápida.
+Pruébelo en la web de distancias entre centros de Canarias.
